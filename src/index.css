@@ -12,6 +12,12 @@
     50% { transform: translateY(-15px); }
   }
   --animate-float: float 6s ease-in-out infinite;
+
+  --background-image-radial-gradient: radial-gradient(var(--tw-gradient-stops));
+}
+
+@utility bg-radial-gradient {
+  background-image: radial-gradient(circle, var(--tw-gradient-stops));
 }
 
 :root {
