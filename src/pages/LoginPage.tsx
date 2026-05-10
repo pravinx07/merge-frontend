@@ -54,47 +54,47 @@ const LoginPage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md z-10"
       >
-        <div className="text-center mb-10">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6 group">
-            <div className="w-10 h-10 bg-linear-to-br from-brand-cyan to-brand-purple rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.3)] group-hover:scale-110 transition-transform">
-              <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="3">
+        <div className="text-center mb-6">
+          <Link to="/" className="inline-flex items-center gap-2 mb-4 group">
+            <div className="w-9 h-9 bg-linear-to-br from-brand-cyan to-brand-purple rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.3)] group-hover:scale-110 transition-transform">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="3">
                 <path d="M12 4v16m8-8H4" strokeLinecap="round" />
               </svg>
             </div>
-            <span className="text-3xl font-bold tracking-tight text-white">Merge</span>
+            <span className="text-2xl font-bold tracking-tight text-white">Merge</span>
           </Link>
-          <h1 className="text-2xl font-bold text-white">Welcome Back</h1>
-          <p className="text-slate-400 mt-2">Continue your developer journey.</p>
+          <h1 className="text-xl font-bold text-white">Welcome Back</h1>
+          <p className="text-slate-400 mt-1 text-sm">Continue your developer journey.</p>
         </div>
 
-        <div className="bg-dark-card/50 backdrop-blur-xl border border-dark-border p-8 rounded-[32px] shadow-2xl">
-          <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="bg-dark-card/50 backdrop-blur-xl border border-dark-border p-6 rounded-3xl shadow-2xl">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2 ml-1">Email Address</label>
+              <label className="block text-xs font-medium text-slate-400 mb-1.5 ml-1">Email Address</label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-dark-border rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 transition-all"
-                  placeholder="name@example.com"
-                  required
+                   type="email" 
+                   value={email}
+                   onChange={(e) => setEmail(e.target.value)}
+                   className="w-full bg-slate-900/50 border border-dark-border rounded-xl py-3 pl-11 pr-4 text-white text-sm focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 transition-all"
+                   placeholder="name@example.com"
+                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2 ml-1">Password</label>
+              <label className="block text-xs font-medium text-slate-400 mb-1.5 ml-1">Password</label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-900/50 border border-dark-border rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 transition-all"
-                  placeholder="••••••••"
-                  required
+                   type="password" 
+                   value={password}
+                   onChange={(e) => setPassword(e.target.value)}
+                   className="w-full bg-slate-900/50 border border-dark-border rounded-xl py-3 pl-11 pr-4 text-white text-sm focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 transition-all"
+                   placeholder="••••••••"
+                   required
                 />
               </div>
             </div>
@@ -112,14 +112,14 @@ const LoginPage = () => {
             <button 
               type="submit" 
               disabled={isLoading}
-              className="w-full py-4 bg-brand-cyan text-dark-bg rounded-2xl font-bold shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:translate-y-0 cursor-pointer"
+              className="w-full py-3 bg-brand-cyan text-dark-bg rounded-xl font-bold shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:translate-y-0 cursor-pointer text-sm"
             >
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
-              {!isLoading && <ArrowRight className="w-5 h-5" />}
+              {!isLoading && <ArrowRight className="w-4 h-4" />}
             </button>
           </form>
 
-          <div className="relative my-8">
+          <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-dark-border"></div>
             </div>
@@ -130,13 +130,13 @@ const LoginPage = () => {
 
           <a 
             href="http://localhost:5000/api/auth/github"
-            className="w-full py-4 border border-dark-border text-white rounded-2xl font-bold hover:bg-white/5 transition-all flex items-center justify-center gap-3 cursor-pointer"
+            className="w-full py-3 border border-dark-border text-white rounded-xl font-bold hover:bg-white/5 transition-all flex items-center justify-center gap-3 cursor-pointer text-sm"
           >
-            <GitHubIcon className="w-5 h-5" />
+            <GitHubIcon className="w-4 h-4" />
             GitHub
           </a>
 
-          <p className="text-center text-slate-400 mt-8 text-sm">
+          <p className="text-center text-slate-400 mt-6 text-sm">
             Don't have an account? <Link to="/signup" className="text-brand-cyan font-bold hover:underline">Sign up</Link>
           </p>
         </div>

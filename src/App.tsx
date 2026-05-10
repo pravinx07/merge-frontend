@@ -4,6 +4,7 @@ import SignupPage from './pages/SignupPage';
 import OnboardingPage from './pages/OnboardingPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
+import DiscoverPage from './pages/DiscoverPage';
 import MainLayout from './components/MainLayout';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -39,13 +40,14 @@ function AppRoutes() {
       {/* Protected Routes */}
       <Route 
         path="/dashboard" 
+        element={<Navigate to="/discover" replace />} 
+      />
+      <Route 
+        path="/discover" 
         element={
           <ProtectedRoute>
             <MainLayout>
-              <div className="min-h-screen bg-dark-bg text-white p-20 text-center">
-                <h1 className="text-4xl font-bold">Welcome to your Dashboard</h1>
-                <p className="mt-4 text-slate-400">Onboarding and personalized matching coming soon.</p>
-              </div>
+              <DiscoverPage />
             </MainLayout>
           </ProtectedRoute>
         } 

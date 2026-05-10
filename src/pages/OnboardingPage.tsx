@@ -115,60 +115,60 @@ const OnboardingPage = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="bg-dark-card/50 backdrop-blur-xl border border-dark-border rounded-[40px] p-8 md:p-12 shadow-2xl"
+              className="bg-dark-card/50 backdrop-blur-xl border border-dark-border rounded-3xl p-6 md:p-8 shadow-2xl"
             >
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 rounded-2xl bg-brand-purple/10 flex items-center justify-center text-brand-purple">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-brand-purple/10 flex items-center justify-center text-brand-purple">
                   {(() => {
                     const Icon = steps[currentStep].icon;
-                    return <Icon className="w-6 h-6" />;
+                    return <Icon className="w-5 h-5" />;
                   })()}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-brand-purple uppercase tracking-widest">Step {currentStep + 1} of {steps.length}</p>
-                  <h1 className="text-3xl font-bold">{steps[currentStep].title}</h1>
+                  <p className="text-[10px] font-bold text-brand-purple uppercase tracking-widest">Step {currentStep + 1} of {steps.length}</p>
+                  <h1 className="text-2xl font-bold">{steps[currentStep].title}</h1>
                 </div>
               </div>
 
               {currentStep === 0 && (
-                <div className="space-y-8">
+                <div className="space-y-6">
                   <div className="flex flex-col items-center">
                     <div 
                       onClick={() => fileInputRef.current?.click()}
-                      className="group relative w-32 h-32 rounded-full bg-slate-900 border-2 border-dashed border-dark-border flex items-center justify-center cursor-pointer overflow-hidden hover:border-brand-cyan transition-all"
+                      className="group relative w-24 h-24 rounded-full bg-slate-900 border-2 border-dashed border-dark-border flex items-center justify-center cursor-pointer overflow-hidden hover:border-brand-cyan transition-all"
                     >
                       {avatarPreview ? (
                         <img src={avatarPreview} alt="Avatar Preview" className="w-full h-full object-cover" />
                       ) : (
-                        <Camera className="w-8 h-8 text-slate-500 group-hover:text-brand-cyan transition-colors" />
+                        <Camera className="w-6 h-6 text-slate-500 group-hover:text-brand-cyan transition-colors" />
                       )}
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                        <span className="text-xs font-bold uppercase tracking-tighter">Change</span>
+                        <span className="text-[10px] font-bold uppercase tracking-tighter">Change</span>
                       </div>
                     </div>
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
-                    <p className="text-sm text-slate-500 mt-3 font-medium">Upload a profile picture</p>
+                    <p className="text-xs text-slate-500 mt-2 font-medium">Upload a profile picture</p>
                   </div>
 
                   <div className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-slate-500 flex items-center gap-2 mb-2 ml-1">
-                        <MapPin className="w-4 h-4" /> Location
+                      <label className="text-xs font-medium text-slate-500 flex items-center gap-2 mb-1.5 ml-1">
+                        <MapPin className="w-3.5 h-3.5" /> Location
                       </label>
                       <input 
                         type="text"
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
-                        className="w-full bg-slate-900/50 border border-dark-border rounded-2xl p-4 text-white focus:outline-none focus:border-brand-cyan/50 transition-all"
+                        className="w-full bg-slate-900/50 border border-dark-border rounded-xl p-3 text-white text-sm focus:outline-none focus:border-brand-cyan/50 transition-all"
                         placeholder="City, Country"
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-slate-500 mb-2 ml-1 block">Bio</label>
+                      <label className="text-xs font-medium text-slate-500 mb-1.5 ml-1 block">Bio</label>
                       <textarea 
                         value={bio}
                         onChange={(e) => setBio(e.target.value)}
-                        className="w-full bg-slate-900/50 border border-dark-border rounded-2xl p-4 text-white focus:outline-none focus:border-brand-cyan/50 transition-all min-h-[120px] resize-none"
+                        className="w-full bg-slate-900/50 border border-dark-border rounded-xl p-3 text-white text-sm focus:outline-none focus:border-brand-cyan/50 transition-all min-h-[100px] resize-none"
                         placeholder="I build high-performance web apps..."
                       />
                     </div>
@@ -177,14 +177,14 @@ const OnboardingPage = () => {
               )}
 
               {currentStep === 1 && (
-                <div className="space-y-6">
-                  <p className="text-slate-400">Where are you in your developer journey?</p>
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-400">Where are you in your developer journey?</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {EXPERIENCE_LEVELS.map(level => (
                       <button
                         key={level}
                         onClick={() => setExpLevel(level)}
-                        className={`px-4 py-4 rounded-2xl border font-bold transition-all ${
+                        className={`px-4 py-3 rounded-xl border font-bold text-sm transition-all ${
                           expLevel === level
                             ? 'bg-brand-purple/10 border-brand-purple text-brand-purple'
                             : 'bg-white/5 border-dark-border text-slate-400 hover:border-slate-600'
@@ -198,15 +198,15 @@ const OnboardingPage = () => {
               )}
 
               {currentStep === 2 && (
-                <div className="space-y-8">
+                <div className="space-y-6">
                   <div>
-                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Tech Stack</h3>
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Tech Stack</h3>
                     <div className="flex flex-wrap gap-2">
                       {SKILLS_LIST.map(skill => (
                         <button
                           key={skill}
                           onClick={() => toggleItem(skill, selectedSkills, setSelectedSkills)}
-                          className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
+                          className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
                             selectedSkills.includes(skill)
                               ? 'bg-brand-cyan/10 border-brand-cyan text-brand-cyan'
                               : 'bg-white/5 border-dark-border text-slate-400 hover:border-slate-600'
@@ -218,13 +218,13 @@ const OnboardingPage = () => {
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Interests</h3>
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Interests</h3>
                     <div className="flex flex-wrap gap-2">
                       {INTERESTS_LIST.map(interest => (
                         <button
                           key={interest}
                           onClick={() => toggleItem(interest, selectedInterests, setSelectedInterests)}
-                          className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
+                          className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
                             selectedInterests.includes(interest)
                               ? 'bg-brand-purple/10 border-brand-purple text-brand-purple'
                               : 'bg-white/5 border-dark-border text-slate-400 hover:border-slate-600'
@@ -239,46 +239,46 @@ const OnboardingPage = () => {
               )}
 
               {currentStep === 3 && (
-                <div className="space-y-4">
-                  <p className="text-slate-400 mb-6">What are you looking for on Merge?</p>
-                  <div className="grid gap-3">
+                <div className="space-y-3">
+                  <p className="text-sm text-slate-400 mb-4">What are you looking for on Merge?</p>
+                  <div className="grid gap-2">
                     {INTENTS_LIST.map(intent => (
                       <button
                         key={intent.id}
                         onClick={() => setSelectedIntent(intent.id)}
-                        className={`text-left p-6 rounded-3xl border transition-all ${
+                        className={`text-left p-4 rounded-2xl border transition-all ${
                           selectedIntent === intent.id
                             ? 'bg-brand-cyan/10 border-brand-cyan'
                             : 'bg-white/5 border-dark-border hover:border-slate-700'
                         }`}
                       >
-                        <div className="flex justify-between items-center mb-1">
-                          <h3 className="font-bold text-lg">{intent.label}</h3>
-                          {selectedIntent === intent.id && <div className="w-6 h-6 rounded-full bg-brand-cyan flex items-center justify-center shadow-[0_0_15px_rgba(0,229,255,0.4)]"><Check className="w-4 h-4 text-dark-bg" /></div>}
+                        <div className="flex justify-between items-center mb-0.5">
+                          <h3 className="font-bold text-base">{intent.label}</h3>
+                          {selectedIntent === intent.id && <div className="w-5 h-5 rounded-full bg-brand-cyan flex items-center justify-center shadow-[0_0_15px_rgba(0,229,255,0.4)]"><Check className="w-3 h-3 text-dark-bg" /></div>}
                         </div>
-                        <p className="text-sm text-slate-400">{intent.desc}</p>
+                        <p className="text-xs text-slate-400">{intent.desc}</p>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              <div className="flex items-center justify-between mt-12 pt-8 border-t border-dark-border">
+              <div className="flex items-center justify-between mt-8 pt-6 border-t border-dark-border">
                 <button
                   onClick={handleBack}
                   disabled={currentStep === 0}
-                  className={`flex items-center gap-2 text-slate-400 hover:text-white transition-colors disabled:opacity-0`}
+                  className={`flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-colors disabled:opacity-0`}
                 >
-                  <ArrowLeft className="w-5 h-5" />
+                  <ArrowLeft className="w-4 h-4" />
                   Back
                 </button>
                 <button
                   onClick={handleNext}
                   disabled={isLoading || (currentStep === 3 && !selectedIntent)}
-                  className="px-10 py-4 bg-brand-cyan text-dark-bg rounded-2xl font-bold shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:translate-y-0"
+                  className="px-8 py-3 bg-brand-cyan text-dark-bg rounded-xl font-bold shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:translate-y-0 text-sm"
                 >
-                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : currentStep === steps.length - 1 ? 'Go to Dashboard' : 'Continue'}
-                  {!isLoading && <ArrowRight className="w-5 h-5" />}
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : currentStep === steps.length - 1 ? 'Go to Dashboard' : 'Continue'}
+                  {!isLoading && <ArrowRight className="w-4 h-4" />}
                 </button>
               </div>
             </motion.div>
