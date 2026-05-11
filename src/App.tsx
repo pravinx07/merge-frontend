@@ -5,8 +5,11 @@ import OnboardingPage from './pages/OnboardingPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import DiscoverPage from './pages/DiscoverPage';
+import MatchesPage from './pages/MatchesPage';
+import ChatPage from './pages/ChatPage';
 import MainLayout from './components/MainLayout';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SocketProvider } from './context/SocketContext';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
@@ -53,6 +56,26 @@ function AppRoutes() {
         } 
       />
       <Route 
+        path="/matches" 
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <MatchesPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/chat/:chatId" 
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <ChatPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
         path="/profile/:id" 
         element={
           <ProtectedRoute>
@@ -81,10 +104,12 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Toaster position="top-right" toastOptions={{ duration: 3000, style: { background: '#111112', color: '#fff', border: '1px solid rgba(255,255,255,0.05)' } }} />
-        <AppRoutes />
-      </Router>
+      <SocketProvider>
+        <Router>
+          <Toaster position="top-right" toastOptions={{ duration: 3000, style: { background: '#111112', color: '#fff', border: '1px solid rgba(255,255,255,0.05)' } }} />
+          <AppRoutes />
+        </Router>
+      </SocketProvider>
     </AuthProvider>
   );
 }

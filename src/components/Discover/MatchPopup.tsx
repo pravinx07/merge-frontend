@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Heart, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 interface Props {
   match: any;
@@ -7,7 +9,17 @@ interface Props {
 }
 
 const MatchPopup = ({ match, onClose }: Props) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
   if (!match) return null;
+
+  const otherUser = match.user1Id === user?.id ? match.user2 : match.user1;
+
+  const handleSendMessage = () => {
+    onClose();
+    navigate(`/chat/${match.chatId || match.chat?.id}`);
+  };
 
   return (
     <AnimatePresence>
@@ -71,11 +83,14 @@ const MatchPopup = ({ match, onClose }: Props) => {
             </div>
             
             <p className="text-slate-400 mb-8 px-4">
-              You and <span className="text-white font-bold">{match.user2.name}</span> liked each other. You can now start building together.
+              You and <span className="text-white font-bold">{otherUser.name}</span> liked each other. You can now start building together.
             </p>
 
             <div className="space-y-3">
-              <button className="w-full py-4 bg-brand-cyan text-dark-bg rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:scale-[1.02] transition-all flex items-center justify-center gap-3">
+              <button 
+                onClick={handleSendMessage}
+                className="w-full py-4 bg-brand-cyan text-dark-bg rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
+              >
                 <MessageSquare className="w-5 h-5" />
                 Send Message
               </button>
