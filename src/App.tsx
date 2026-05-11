@@ -6,6 +6,7 @@ import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import DiscoverPage from './pages/DiscoverPage';
 import MatchesPage from './pages/MatchesPage';
+import MessagesPage from './pages/MessagesPage';
 import ChatPage from './pages/ChatPage';
 import MainLayout from './components/MainLayout';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -61,6 +62,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <MainLayout>
               <MatchesPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/messages" 
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <MessagesPage />
             </MainLayout>
           </ProtectedRoute>
         } 

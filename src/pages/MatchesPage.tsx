@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquare, Users, Loader2, Sparkles } from 'lucide-react';
+import { Users, Search, MessageSquare, ExternalLink, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/axios';
 import { useSocket } from '../context/SocketContext';
+import LoadingSkeleton from '../components/LoadingSkeleton';
+import { PageHeader, DashboardContainer, EmptyState } from '../components/DashboardComponents';
 
 const MatchesPage = () => {
   const [matches, setMatches] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { onlineUsers } = useSocket();
 
@@ -19,98 +22,138 @@ const MatchesPage = () => {
       } catch (error) {
         console.error('Fetch matches error:', error);
       } finally {
-        setIsLoading(false);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 800);
       }
     };
 
     fetchMatches();
   }, []);
 
+  const filteredMatches = matches.filter(match => 
+    match.user.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-brand-cyan animate-spin" />
-      </div>
+      <DashboardContainer>
+        <div className="animate-pulse space-y-8">
+          <div className="space-y-2">
+            <div className="h-8 bg-white/5 rounded-full w-48" />
+            <div className="h-4 bg-white/5 rounded-full w-64" />
+          </div>
+          <LoadingSkeleton type="card" />
+        </div>
+      </DashboardContainer>
     );
   }
 
   return (
-    <div className="min-h-screen bg-dark-bg pt-24 pb-20 px-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center gap-4 mb-12">
-          <div className="p-3 rounded-2xl bg-linear-to-br from-brand-cyan to-brand-purple text-white shadow-lg">
-            <Users className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-black italic tracking-tighter text-white uppercase">Your Matches</h1>
-            <p className="text-slate-400 font-medium">Connect with developers you've matched with.</p>
-          </div>
+    <DashboardContainer>
+      <div className="mb-8">
+        <div className="relative group max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-brand-cyan transition-colors" />
+          <input 
+            type="text" 
+            placeholder="Search connections..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-11 bg-zinc-900/50 border border-zinc-800 rounded-xl pl-10 pr-4 text-sm text-white focus:outline-none focus:border-brand-cyan/50 transition-all w-full"
+          />
         </div>
+      </div>
 
-        {matches.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {matches.map((match) => {
-              const isOnline = onlineUsers.includes(match.user.id);
-              return (
-                <motion.div
-                  key={match.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-dark-card border border-white/5 rounded-3xl p-6 hover:border-brand-cyan/30 transition-all group"
-                >
-                  <div className="flex items-center gap-4 mb-6">
+      {filteredMatches.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {filteredMatches.map((match, idx) => {
+            const isOnline = onlineUsers.includes(match.user.id);
+            return (
+              <motion.div
+                key={match.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className="group relative bg-zinc-900/40 hover:bg-zinc-900/60 border border-zinc-800/50 rounded-2xl p-5 transition-all duration-300"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-4">
                     <div className="relative">
                       <img
                         src={match.user.avatar || '/default-avatar.png'}
                         alt={match.user.name}
-                        className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
+                        className="w-12 h-12 rounded-xl object-cover border border-white/5"
                       />
                       {isOnline && (
-                        <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-dark-card rounded-full" />
+                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-zinc-900 rounded-full" />
                       )}
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-white group-hover:text-brand-cyan transition-colors">
+                      <h3 className="text-base font-medium text-white group-hover:text-brand-cyan transition-colors">
                         {match.user.name}
                       </h3>
-                      <div className="flex items-center gap-2">
-                        {isOnline ? (
-                          <span className="text-xs font-bold text-green-500 uppercase tracking-widest">Online</span>
-                        ) : (
-                          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Offline</span>
-                        )}
-                      </div>
+                      <p className="text-xs text-zinc-500 font-medium truncate">
+                        {match.user.personality || 'Full Stack Developer'}
+                      </p>
                     </div>
                   </div>
+                  <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${isOnline ? 'bg-green-500/10 text-green-500' : 'bg-zinc-800 text-zinc-500'}`}>
+                    {isOnline ? 'Online' : 'Offline'}
+                  </div>
+                </div>
 
+                {/* Skills Tag Area */}
+                <div className="flex flex-wrap gap-1.5 mb-6">
+                  {(match.user.skills?.slice(0, 3) || ['React', 'Node', 'AI']).map((skill: string) => (
+                    <span key={skill} className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-zinc-400">
+                      {skill}
+                    </span>
+                  ))}
+                  {match.user.skills?.length > 3 && (
+                    <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-zinc-500">
+                      +{match.user.skills.length - 3}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-brand-purple" style={{ width: '92%' }} />
+                    </div>
+                    <span className="text-[10px] font-bold text-brand-purple uppercase">92% Match</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => navigate(`/chat/${match.chatId}`)}
-                    className="w-full py-4 bg-white/5 hover:bg-brand-cyan hover:text-dark-bg border border-white/10 hover:border-brand-cyan rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 text-white"
+                    className="flex items-center justify-center gap-2 py-2.5 bg-brand-cyan text-dark-bg rounded-xl text-xs font-bold hover:scale-105 active:scale-95 transition-all"
                   >
-                    <MessageSquare className="w-4 h-4" />
+                    <MessageSquare className="w-3.5 h-3.5" />
                     Message
                   </button>
-                </motion.div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-center py-20 bg-dark-card/20 rounded-[40px] border border-dashed border-dark-border">
-            <Sparkles className="w-12 h-12 text-slate-700 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">No matches yet</h3>
-            <p className="text-slate-500 mb-8 max-w-xs mx-auto">
-              Keep discovering and liking profiles to find your next collaborator!
-            </p>
-            <button
-              onClick={() => navigate('/discover')}
-              className="px-8 py-3 bg-brand-cyan text-dark-bg rounded-xl font-bold hover:scale-105 transition-all"
-            >
-              Discover Developers
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+                  <button
+                    onClick={() => navigate(`/profile/${match.user.id}`)}
+                    className="flex items-center justify-center gap-2 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl text-xs font-bold hover:bg-white/10 transition-all"
+                  >
+                    View Profile
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      ) : (
+        <EmptyState 
+          icon={Users}
+          title="No connections yet"
+          description="Start discovering builders and create meaningful collaborations. Your next big project starts with a single match."
+          actionLabel="Explore Developers"
+          onAction={() => navigate('/discover')}
+        />
+      )}
+    </DashboardContainer>
   );
 };
 

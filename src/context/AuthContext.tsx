@@ -6,6 +6,20 @@ interface User {
   name: string;
   email: string;
   avatar?: string;
+  bio?: string;
+  skills: string[];
+  experienceLevel?: string;
+  interests: string[];
+  intent?: string;
+  location?: string;
+  website?: string;
+  twitter?: string;
+  linkedin?: string;
+  githubUrl?: string;
+  personality?: string;
+  status?: string;
+  badges: string[];
+  projects: any;
 }
 
 interface AuthContextType {

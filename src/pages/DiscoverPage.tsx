@@ -1,76 +1,91 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Users, Search, RefreshCw, LayoutGrid } from 'lucide-react';
-import SearchBar from '../components/Discover/SearchBar';
+import { Users, Search, RefreshCw, Sparkles, Filter, X, Heart, MessageSquare, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import FilterSidebar from '../components/Discover/FilterSidebar';
-import DeveloperCard from '../components/Discover/DeveloperCard';
+import SwipeCard from '../components/Discover/SwipeCard';
 import MatchPopup from '../components/Discover/MatchPopup';
 import api from '../lib/axios';
 import { toast } from 'react-hot-toast';
+import LoadingSkeleton from '../components/LoadingSkeleton';
+import { PageHeader, DashboardContainer, EmptyState } from '../components/DashboardComponents';
 
 const DiscoverPage = () => {
   const [developers, setDevelopers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const [filters, setFilters] = useState({
     skills: [] as string[],
     intent: '',
     experienceLevel: '',
-    search: ''
   });
   const [matchData, setMatchData] = useState<any>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const navigate = useNavigate();
 
-  const fetchDevelopers = useCallback(async (isNewSearch = false) => {
+  const fetchDevelopers = useCallback(async () => {
     try {
-      if (isNewSearch) setIsLoading(true);
-      
+      setIsLoading(true);
       const queryParams = new URLSearchParams({
-        page: String(isNewSearch ? 1 : page),
-        ...(filters.search && { search: filters.search }),
         ...(filters.intent && { intent: filters.intent }),
         ...(filters.experienceLevel && { experienceLevel: filters.experienceLevel }),
         ...(filters.skills.length > 0 && { skills: filters.skills.join(',') })
       });
 
-      const response = await api.get(`/users/discover?${queryParams}`);
-      const newDevs = response.data;
-
-      if (isNewSearch) {
-        setDevelopers(newDevs);
-        setPage(2);
-      } else {
-        setDevelopers(prev => [...prev, ...newDevs]);
-        setPage(prev => prev + 1);
-      }
-
-      setHasMore(newDevs.length === 10);
+      const response = await api.get(`/swipe/feed?${queryParams}`);
+      setDevelopers(response.data);
     } catch (error) {
-      console.error('Fetch developers error:', error);
-      toast.error('Failed to load developers');
+      console.error('Fetch swipe feed error:', error);
+      toast.error('Failed to load builders');
     } finally {
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 800);
     }
-  }, [page, filters]);
+  }, [filters]);
 
   useEffect(() => {
-    fetchDevelopers(true);
-  }, [filters.intent, filters.experienceLevel, filters.skills, filters.search]);
+    fetchDevelopers();
+  }, [filters]);
 
-  const handleLike = async (receiverId: string) => {
-    try {
-      const response = await api.post('/matches/like', { receiverId });
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (matchData || isLoading || developers.length === 0) return;
       
-      if (response.data.isMatch) {
-        setMatchData(response.data.match);
-      } else {
-        toast.success(response.data.message);
+      if (e.key === 'ArrowLeft') {
+        handleSwipe('left');
+      } else if (e.key === 'ArrowRight') {
+        handleSwipe('right');
       }
+    };
 
-      // Remove the liked user from the feed
-      setDevelopers(prev => prev.filter(dev => dev.id !== receiverId));
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to connect');
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [developers, isLoading, matchData]);
+
+  const handleSwipe = async (direction: 'left' | 'right') => {
+    if (developers.length === 0) return;
+    
+    const currentDev = developers[0];
+    const remainingDevs = developers.slice(1);
+    
+    setDevelopers(remainingDevs);
+
+    try {
+      if (direction === 'right') {
+        const response = await api.post('/swipe/right', { receiverId: currentDev.id });
+        if (response.data.isMatch) {
+          setMatchData(response.data.match);
+        }
+      } else {
+        await api.post('/swipe/left', { receiverId: currentDev.id });
+      }
+    } catch (error) {
+      console.error('Swipe action error:', error);
+    }
+
+    if (remainingDevs.length === 3) {
+      // Pre-fetch more devs when running low? 
+      // For now we'll just let it finish.
     }
   };
 
@@ -79,105 +94,145 @@ const DiscoverPage = () => {
       skills: [],
       intent: '',
       experienceLevel: '',
-      search: ''
     });
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg pt-24 pb-20 px-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2.5 rounded-2xl bg-linear-to-br from-brand-cyan to-brand-purple text-white shadow-lg shadow-brand-purple/20">
-                <LayoutGrid className="w-6 h-6" />
-              </div>
-              <h1 className="text-3xl font-black italic tracking-tighter text-white uppercase">Discover Builders</h1>
+    <DashboardContainer>
+        <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setShowFilters(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-bold text-zinc-400 hover:text-white hover:border-zinc-700 transition-all"
+                >
+                  <Filter className="w-3.5 h-3.5" />
+                  Filters
+                  {(filters.intent || filters.experienceLevel || filters.skills.length > 0) && (
+                    <span className="w-1.5 h-1.5 bg-brand-cyan rounded-full" />
+                  )}
+                </button>
             </div>
-            <p className="text-slate-400 font-medium">Explore and connect with developers worldwide.</p>
-          </div>
-          
-          <div className="w-full md:w-1/2 max-w-lg">
-            <SearchBar onSearch={(query) => setFilters({ ...filters, search: query })} />
-          </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                <Users className="w-3 h-3" />
+                <span>{developers.length} in stack</span>
+            </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-10">
-          {/* Sidebar */}
-          <aside className="w-full lg:w-72 shrink-0">
-            <div className="sticky top-28 bg-dark-card/30 backdrop-blur-xl border border-dark-border rounded-[32px] p-8 shadow-2xl">
-              <FilterSidebar 
-                filters={filters} 
-                setFilters={setFilters} 
-                onClear={handleClearFilters}
-              />
-            </div>
-          </aside>
-
-          {/* Feed Grid */}
-          <main className="flex-1">
-            <AnimatePresence mode="popLayout">
-              {isLoading ? (
-                <div className="flex flex-col items-center justify-center py-32 space-y-4">
-                  <div className="relative">
-                    <Loader2 className="w-12 h-12 text-brand-cyan animate-spin" />
-                    <div className="absolute inset-0 blur-xl bg-brand-cyan/20 animate-pulse"></div>
-                  </div>
-                  <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Finding matches...</p>
-                </div>
-              ) : developers.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {developers.map((dev) => (
-                    <DeveloperCard 
-                      key={dev.id} 
-                      developer={dev} 
-                      onLike={handleLike}
-                    />
-                  ))}
-                </div>
-              ) : (
+        <div className="relative">
+          {/* Filter Overlay / Drawer */}
+          <AnimatePresence>
+            {showFilters && (
+              <>
                 <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col items-center justify-center py-32 text-center bg-dark-card/20 rounded-[40px] border border-dashed border-dark-border"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowFilters(false)}
+                  className="fixed inset-0 bg-[#0A0A0B]/80 backdrop-blur-sm z-[60]"
+                />
+                <motion.aside 
+                  initial={{ x: '100%' }}
+                  animate={{ x: 0 }}
+                  exit={{ x: '100%' }}
+                  transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                  className="fixed top-0 right-0 h-full w-full max-w-sm bg-zinc-900 border-l border-zinc-800 p-8 z-[70] shadow-2xl overflow-y-auto"
                 >
-                  <div className="w-20 h-20 rounded-full bg-slate-900 flex items-center justify-center mb-6">
-                    <Users className="w-10 h-10 text-slate-700" />
+                  <div className="flex items-center justify-between mb-8">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-brand-cyan/10 flex items-center justify-center text-brand-cyan">
+                          <Filter className="w-5 h-5" />
+                        </div>
+                        <h2 className="text-xl font-bold text-white tracking-tight">Discovery Filters</h2>
+                      </div>
+                      <button 
+                        onClick={() => setShowFilters(false)}
+                        className="p-2 hover:bg-white/5 rounded-full text-zinc-500 transition-colors"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2">No builders found</h3>
-                  <p className="text-slate-500 max-w-xs mx-auto mb-8">
-                    Try adjusting your filters or search terms to find more developers.
-                  </p>
-                  <button 
-                    onClick={handleClearFilters}
-                    className="flex items-center gap-2 px-6 py-3 bg-white/5 border border-dark-border rounded-2xl text-sm font-bold text-white hover:bg-white/10 transition-all"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    Reset Filters
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  
+                  <FilterSidebar 
+                      filters={filters as any} 
+                      setFilters={setFilters as any} 
+                      onClear={handleClearFilters}
+                  />
 
-            {/* Load More */}
-            {hasMore && !isLoading && (
-              <div className="mt-16 flex justify-center">
-                <button 
-                  onClick={() => fetchDevelopers()}
-                  className="px-10 py-4 bg-dark-card/50 backdrop-blur-xl border border-dark-border rounded-2xl text-sm font-bold text-slate-300 hover:text-white hover:border-brand-cyan/50 transition-all shadow-xl"
-                >
-                  Load More Developers
-                </button>
-              </div>
+                  <div className="mt-12">
+                    <button 
+                      onClick={() => setShowFilters(false)}
+                      className="w-full py-4 bg-brand-cyan text-dark-bg font-bold rounded-2xl text-sm uppercase tracking-widest shadow-lg shadow-brand-cyan/10"
+                    >
+                      Apply Filters
+                    </button>
+                  </div>
+                </motion.aside>
+              </>
             )}
+          </AnimatePresence>
+
+          {/* Swipe Stack Area */}
+          <main className="w-full max-w-xl mx-auto py-4 md:py-8">
+            <div className="relative h-[500px] md:h-[600px] w-full">
+              <AnimatePresence mode="popLayout">
+                {isLoading ? (
+                  <div className="absolute inset-0 bg-zinc-900/40 border border-zinc-800/50 rounded-[40px] p-8 flex flex-col items-center justify-center space-y-4 animate-pulse">
+                     <div className="w-40 h-40 bg-zinc-800 rounded-[40px]" />
+                     <div className="h-8 bg-zinc-800 rounded-full w-48" />
+                     <div className="h-4 bg-zinc-800 rounded-full w-32" />
+                  </div>
+                ) : developers.length > 0 ? (
+                  <>
+                    {developers.slice(0, 2).reverse().map((dev, idx) => (
+                      <SwipeCard 
+                        key={dev.id}
+                        developer={dev}
+                        onSwipe={handleSwipe}
+                        isTop={idx === (developers.length === 1 ? 0 : 1)}
+                      />
+                    ))}
+                    
+                    {/* Swipe Buttons Controls */}
+                    <div className="absolute -bottom-20 md:-bottom-24 left-0 right-0 flex items-center justify-center gap-6 md:gap-8 z-30">
+                        <button 
+                            onClick={() => handleSwipe('left')}
+                            className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-red-500 hover:bg-red-500/10 hover:border-red-500/50 transition-all shadow-xl active:scale-90 group"
+                        >
+                            <X className="w-6 h-6 md:w-8 md:h-8 group-hover:scale-110 transition-transform" />
+                        </button>
+                        <button 
+                            onClick={() => handleSwipe('right')}
+                            className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-green-500 hover:bg-green-500/10 hover:border-green-500/50 transition-all shadow-xl active:scale-90 group"
+                        >
+                            <Heart className="w-6 h-6 md:w-8 md:h-8 group-hover:scale-110 transition-transform fill-green-500/10" />
+                        </button>
+                    </div>
+                  </>
+                ) : (
+                  <EmptyState 
+                    icon={Users}
+                    title="Stack finished"
+                    description="You've seen all builders matching your criteria. Try resetting filters or check back later for new talents."
+                    actionLabel="Reset Filters"
+                    onAction={handleClearFilters}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+            
+            <div className="mt-32 text-center">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600 mb-2">Keyboard Shortcuts</p>
+                <div className="flex justify-center gap-4">
+                    <span className="px-2 py-1 bg-zinc-900 border border-zinc-800 rounded text-[10px] text-zinc-400">← Skip</span>
+                    <span className="px-2 py-1 bg-zinc-900 border border-zinc-800 rounded text-[10px] text-zinc-400">→ Match</span>
+                </div>
+            </div>
           </main>
         </div>
-      </div>
 
       {/* Match Popup */}
       <MatchPopup match={matchData} onClose={() => setMatchData(null)} />
-    </div>
+    </DashboardContainer>
   );
 };
 
