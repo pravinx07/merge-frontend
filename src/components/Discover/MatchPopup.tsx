@@ -23,80 +23,67 @@ const MatchPopup = ({ match, onClose }: Props) => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-100 flex items-center justify-center p-6">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-dark-bg/80 backdrop-blur-md"
+          className="absolute inset-0 bg-[#0A0A0B]/90 backdrop-blur-sm"
         />
         
         <motion.div 
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-md bg-dark-card border border-white/10 rounded-[40px] p-8 text-center shadow-[0_0_50px_rgba(0,229,255,0.2)] overflow-hidden"
+          className="relative w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-[40px] p-10 text-center shadow-2xl overflow-hidden"
         >
-          {/* Animated Background Elements */}
-          <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-            <motion.div 
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute -top-1/2 -left-1/2 w-full h-full bg-brand-cyan/5 blur-[100px] rounded-full"
-            />
-            <motion.div 
-              animate={{ rotate: -360 }}
-              transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-              className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-brand-purple/5 blur-[100px] rounded-full"
-            />
-          </div>
+          {/* Subtle Glow */}
+          <div className="absolute -top-24 -left-24 w-48 h-48 bg-brand-cyan/10 blur-[100px] rounded-full" />
+          <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-brand-purple/10 blur-[100px] rounded-full" />
 
           <button 
             onClick={onClose}
-            className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/5 text-slate-500 transition-colors"
+            className="absolute top-8 right-8 p-2 rounded-full hover:bg-white/5 text-zinc-500 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
 
           <div className="relative z-10">
-            <div className="flex items-center justify-center gap-4 mb-8">
+            <div className="flex items-center justify-center gap-6 mb-10">
               <div className="relative">
-                <div className="w-20 h-20 rounded-full border-2 border-brand-cyan p-1 bg-dark-bg">
-                  <img src={match.user1.avatar || '/default-avatar.png'} className="w-full h-full rounded-full object-cover" alt="" />
+                <div className="w-20 h-20 rounded-[24px] border-2 border-zinc-800 p-1 bg-zinc-900 shadow-xl">
+                  <img src={user?.avatar || '/default-avatar.png'} className="w-full h-full rounded-[18px] object-cover" alt="" />
                 </div>
               </div>
-              <div className="w-12 h-12 rounded-full bg-linear-to-br from-brand-cyan to-brand-purple flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-brand-cyan to-brand-purple flex items-center justify-center shadow-lg shadow-brand-cyan/20">
                 <Heart className="w-6 h-6 text-white fill-white" />
               </div>
               <div className="relative">
-                <div className="w-20 h-20 rounded-full border-2 border-brand-purple p-1 bg-dark-bg">
-                  <img src={match.user2.avatar || '/default-avatar.png'} className="w-full h-full rounded-full object-cover" alt="" />
+                <div className="w-20 h-20 rounded-[24px] border-2 border-zinc-800 p-1 bg-zinc-900 shadow-xl">
+                  <img src={otherUser.avatar || '/default-avatar.png'} className="w-full h-full rounded-[18px] object-cover" alt="" />
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Sparkles className="w-5 h-5 text-brand-cyan" />
-              <h2 className="text-3xl font-black italic tracking-tighter text-white">IT'S A MATCH!</h2>
-              <Sparkles className="w-5 h-5 text-brand-purple" />
+            <div className="space-y-2 mb-10">
+              <h2 className="text-3xl font-bold tracking-tight text-white uppercase italic">It's a Match!</h2>
+              <p className="text-sm text-zinc-400 max-w-[280px] mx-auto leading-relaxed">
+                You and <span className="text-white font-bold">{otherUser.name}</span> are now connected. Start building your next big project!
+              </p>
             </div>
-            
-            <p className="text-slate-400 mb-8 px-4">
-              You and <span className="text-white font-bold">{otherUser.name}</span> liked each other. You can now start building together.
-            </p>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <button 
                 onClick={handleSendMessage}
-                className="w-full py-4 bg-brand-cyan text-dark-bg rounded-2xl font-black text-sm uppercase tracking-widest shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
+                className="w-full py-4 bg-brand-cyan text-dark-bg rounded-2xl font-bold text-sm uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-xl shadow-brand-cyan/20"
               >
                 <MessageSquare className="w-5 h-5" />
                 Send Message
               </button>
               <button 
                 onClick={onClose}
-                className="w-full py-4 bg-white/5 text-white border border-white/10 rounded-2xl font-bold text-sm hover:bg-white/10 transition-all"
+                className="w-full py-4 bg-zinc-800/50 text-white border border-zinc-700/50 rounded-2xl font-bold text-sm hover:bg-zinc-800 transition-all"
               >
                 Keep Discovering
               </button>

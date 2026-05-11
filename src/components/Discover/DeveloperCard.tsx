@@ -25,97 +25,88 @@ const DeveloperCard = ({ developer, onLike, isLiked }: Props) => {
   return (
     <motion.div 
       layout
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -5 }}
-      className="group relative bg-dark-card/40 backdrop-blur-xl border border-dark-border rounded-3xl overflow-hidden shadow-2xl hover:border-brand-cyan/30 transition-all duration-300"
+      className="group relative bg-zinc-900/40 hover:bg-zinc-900/60 border border-zinc-800/50 rounded-2xl p-5 transition-all duration-300"
     >
-      {/* Compatibility Badge */}
       <div className="absolute top-4 right-4 z-10">
         <CompatibilityBadge score={developer.compatibilityScore} />
       </div>
 
-      {/* Profile Image & Basic Info */}
-      <div className="p-5">
-        <div className="flex items-start gap-4 mb-4">
-          <div className="relative">
-            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-900 border border-dark-border group-hover:border-brand-cyan/50 transition-colors">
-              {developer.avatar ? (
-                <img src={developer.avatar} alt={developer.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-500">
-                  <User className="w-7 h-7" />
-                </div>
-              )}
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-dark-bg"></div>
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-white truncate">{developer.name}</h3>
-            <p className="text-xs text-slate-400 truncate">{developer.experienceLevel || 'Developer'}</p>
-            <div className="flex items-center gap-1 mt-0.5 text-[9px] text-slate-500 font-medium uppercase tracking-wider">
-              <MapPin className="w-2.5 h-2.5" />
-              {developer.location || 'Remote'}
-            </div>
-          </div>
-        </div>
-
-        {/* Bio */}
-        <p className="text-xs text-slate-400 line-clamp-2 mb-4 h-8 italic">
-          {developer.bio || "Building something amazing. Let's connect!"}
-        </p>
-
-        {/* Skills */}
-        <div className="flex flex-wrap gap-1 mb-5 h-[44px] overflow-hidden">
-          {developer.skills.slice(0, 5).map(skill => (
-            <span key={skill} className="px-2 py-0.5 rounded-lg bg-white/5 border border-dark-border text-[10px] font-medium text-slate-300">
-              {skill}
-            </span>
-          ))}
-          {developer.skills.length > 5 && (
-            <span className="px-2 py-0.5 rounded-lg bg-white/5 border border-dark-border text-[10px] font-medium text-slate-500">
-              +{developer.skills.length - 5}
-            </span>
-          )}
-        </div>
-
-        {/* Intent */}
-        <div className="flex items-center gap-2 py-2 px-3 rounded-xl bg-slate-900/50 border border-dark-border mb-5">
-          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Looking for:</span>
-          <span className="text-[10px] font-bold text-brand-purple">{developer.intent || 'Collaboration'}</span>
-        </div>
-
-        {/* Actions */}
-        <div className="grid grid-cols-2 gap-2">
-          <Link 
-            to={`/profile/${developer.id}`}
-            className="flex items-center justify-center gap-2 py-2 rounded-xl border border-dark-border text-[10px] font-bold text-slate-300 hover:bg-white/5 transition-all"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            Profile
-          </Link>
-          <button 
-            onClick={() => onLike(developer.id)}
-            disabled={isLiked}
-            className={`flex items-center justify-center gap-2 py-2 rounded-xl text-[10px] font-bold transition-all shadow-lg ${
-              isLiked 
-                ? 'bg-brand-purple/20 text-brand-purple border border-brand-purple/30 cursor-default' 
-                : 'bg-brand-cyan text-dark-bg hover:scale-105 active:scale-95 cursor-pointer shadow-brand-cyan/20'
-            }`}
-          >
-            {isLiked ? (
-              <>
-                <Check className="w-3.5 h-3.5" />
-                Sent
-              </>
+      <div className="flex items-start gap-4 mb-4">
+        <div className="relative shrink-0">
+          <div className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-800 border border-zinc-700/50 group-hover:border-brand-cyan/50 transition-colors">
+            {developer.avatar ? (
+              <img src={developer.avatar} alt={developer.name} className="w-full h-full object-cover" />
             ) : (
-              <>
-                <Heart className="w-3.5 h-3.5" />
-                Connect
-              </>
+              <div className="w-full h-full flex items-center justify-center text-zinc-600">
+                <User className="w-6 h-6" />
+              </div>
             )}
-          </button>
+          </div>
+          <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-[#0A0A0B]"></div>
         </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-semibold text-white truncate group-hover:text-brand-cyan transition-colors">{developer.name}</h3>
+          <p className="text-[11px] text-zinc-400 truncate font-medium">{developer.experienceLevel || 'Developer'}</p>
+          <div className="flex items-center gap-1 mt-0.5 text-[9px] text-zinc-500 font-bold uppercase tracking-wider">
+            <MapPin className="w-2.5 h-2.5" />
+            {developer.location || 'Remote'}
+          </div>
+        </div>
+      </div>
+
+      <p className="text-[11px] text-zinc-400 line-clamp-2 mb-4 h-8 leading-relaxed">
+        {developer.bio || "Building something amazing. Let's connect!"}
+      </p>
+
+      <div className="flex flex-wrap gap-1.5 mb-5 h-[40px] overflow-hidden">
+        {developer.skills.slice(0, 3).map(skill => (
+          <span key={skill} className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-zinc-400">
+            {skill}
+          </span>
+        ))}
+        {developer.skills.length > 3 && (
+          <span className="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-zinc-600">
+            +{developer.skills.length - 3}
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2 py-2 px-3 rounded-lg bg-zinc-900/50 border border-zinc-800/50 mb-5">
+        <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest">Target:</span>
+        <span className="text-[10px] font-bold text-brand-purple truncate">{developer.intent || 'Collaboration'}</span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <Link 
+          to={`/profile/${developer.id}`}
+          className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-zinc-800 text-[10px] font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-all"
+        >
+          <Eye className="w-3.5 h-3.5" />
+          Profile
+        </Link>
+        <button 
+          onClick={() => onLike(developer.id)}
+          disabled={isLiked}
+          className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-bold transition-all ${
+            isLiked 
+              ? 'bg-brand-purple/10 text-brand-purple border border-brand-purple/20 cursor-default' 
+              : 'bg-brand-cyan text-dark-bg hover:scale-105 active:scale-95 cursor-pointer shadow-lg shadow-brand-cyan/10'
+          }`}
+        >
+          {isLiked ? (
+            <>
+              <Check className="w-3.5 h-3.5" />
+              Sent
+            </>
+          ) : (
+            <>
+              <Heart className="w-3.5 h-3.5" />
+              Match
+            </>
+          )}
+        </button>
       </div>
     </motion.div>
   );
