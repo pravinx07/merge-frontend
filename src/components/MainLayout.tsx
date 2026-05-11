@@ -37,6 +37,13 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     { name: "Settings", icon: SettingsIcon, path: "/settings" },
   ];
 
+  const getPageTitle = (path: string) => {
+    const item = navItems.find((item) => item.path === path);
+    return item ? item.name : "";
+  };
+
+  const pageTitle = getPageTitle(location.pathname);
+
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-white flex font-sans selection:bg-brand-cyan/30">
       {/* Sidebar */}
@@ -94,18 +101,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
       <div className="flex-1 lg:ml-[260px] flex flex-col min-w-0">
         <header className="h-16 border-b border-white/5 flex items-center justify-between px-8 sticky top-0 bg-[#0A0A0B]/80 backdrop-blur-xl z-40">
-          <div className="flex-1 max-w-xl">
-            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-brand-cyan transition-all" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="w-full bg-white/[0.02] border border-white/10 rounded-xl py-2 pl-12 pr-4 text-xs font-medium focus:outline-none focus:border-brand-cyan/50 transition-all"
-              />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded-md bg-white/5 text-[8px] font-black text-slate-600 border border-white/5">
-                ⌘ K
-              </div>
-            </div>
+          <div className="flex-1">
+            <h1 className="text-lg font-bold text-white tracking-tight">{pageTitle}</h1>
           </div>
 
           <div className="flex items-center gap-6">

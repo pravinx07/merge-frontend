@@ -19,6 +19,7 @@ const DiscoverPage = () => {
     experienceLevel: '',
   });
   const [matchData, setMatchData] = useState<any>(null);
+  const [showFilters, setShowFilters] = useState(false);
   const navigate = useNavigate();
 
   const fetchDevelopers = useCallback(async () => {
@@ -98,36 +99,80 @@ const DiscoverPage = () => {
 
   return (
     <DashboardContainer>
-        <PageHeader 
-            title="Discover" 
-            description="Swipe right to connect with builders. Build something legendary together."
-        >
+        <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                    <Users className="w-3 h-3" />
-                    <span>{developers.length} in stack</span>
-                </div>
+                <button 
+                  onClick={() => setShowFilters(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-bold text-zinc-400 hover:text-white hover:border-zinc-700 transition-all"
+                >
+                  <Filter className="w-3.5 h-3.5" />
+                  Filters
+                  {(filters.intent || filters.experienceLevel || filters.skills.length > 0) && (
+                    <span className="w-1.5 h-1.5 bg-brand-cyan rounded-full" />
+                  )}
+                </button>
             </div>
-        </PageHeader>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                <Users className="w-3 h-3" />
+                <span>{developers.length} in stack</span>
+            </div>
+        </div>
 
-        <div className="flex flex-col lg:flex-row gap-8 items-start relative">
-          {/* Sidebar Filters - Sticky but hidden on mobile or shown as a compact row */}
-          <aside className="w-full lg:w-[260px] shrink-0 sticky top-24 z-10">
-            <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-2xl p-4 lg:p-6">
-                <div className="flex items-center gap-2 mb-6">
-                    <Filter className="w-4 h-4 text-zinc-500" />
-                    <span className="text-sm font-semibold text-white uppercase tracking-wider">Filters</span>
-                </div>
-                <FilterSidebar 
-                    filters={filters as any} 
-                    setFilters={setFilters as any} 
-                    onClear={handleClearFilters}
+        <div className="relative">
+          {/* Filter Overlay / Drawer */}
+          <AnimatePresence>
+            {showFilters && (
+              <>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowFilters(false)}
+                  className="fixed inset-0 bg-[#0A0A0B]/80 backdrop-blur-sm z-[60]"
                 />
-            </div>
-          </aside>
+                <motion.aside 
+                  initial={{ x: '100%' }}
+                  animate={{ x: 0 }}
+                  exit={{ x: '100%' }}
+                  transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                  className="fixed top-0 right-0 h-full w-full max-w-sm bg-zinc-900 border-l border-zinc-800 p-8 z-[70] shadow-2xl overflow-y-auto"
+                >
+                  <div className="flex items-center justify-between mb-8">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-brand-cyan/10 flex items-center justify-center text-brand-cyan">
+                          <Filter className="w-5 h-5" />
+                        </div>
+                        <h2 className="text-xl font-bold text-white tracking-tight">Discovery Filters</h2>
+                      </div>
+                      <button 
+                        onClick={() => setShowFilters(false)}
+                        className="p-2 hover:bg-white/5 rounded-full text-zinc-500 transition-colors"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
+                  </div>
+                  
+                  <FilterSidebar 
+                      filters={filters as any} 
+                      setFilters={setFilters as any} 
+                      onClear={handleClearFilters}
+                  />
+
+                  <div className="mt-12">
+                    <button 
+                      onClick={() => setShowFilters(false)}
+                      className="w-full py-4 bg-brand-cyan text-dark-bg font-bold rounded-2xl text-sm uppercase tracking-widest shadow-lg shadow-brand-cyan/10"
+                    >
+                      Apply Filters
+                    </button>
+                  </div>
+                </motion.aside>
+              </>
+            )}
+          </AnimatePresence>
 
           {/* Swipe Stack Area */}
-          <main className="flex-1 w-full max-w-xl mx-auto pb-32 lg:pb-0">
+          <main className="w-full max-w-xl mx-auto py-4 md:py-8">
             <div className="relative h-[500px] md:h-[600px] w-full">
               <AnimatePresence mode="popLayout">
                 {isLoading ? (

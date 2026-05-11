@@ -51,21 +51,18 @@ const MatchesPage = () => {
 
   return (
     <DashboardContainer>
-      <PageHeader 
-        title="Connections" 
-        description="People you've matched and collaborated with."
-      >
-        <div className="relative group">
+      <div className="mb-8">
+        <div className="relative group max-w-md">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-brand-cyan transition-colors" />
           <input 
             type="text" 
             placeholder="Search connections..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-10 bg-zinc-900/50 border border-zinc-800 rounded-xl pl-10 pr-4 text-sm text-white focus:outline-none focus:border-brand-cyan/50 transition-all w-64"
+            className="h-11 bg-zinc-900/50 border border-zinc-800 rounded-xl pl-10 pr-4 text-sm text-white focus:outline-none focus:border-brand-cyan/50 transition-all w-full"
           />
         </div>
-      </PageHeader>
+      </div>
 
       {filteredMatches.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">

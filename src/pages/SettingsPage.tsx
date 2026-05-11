@@ -180,11 +180,6 @@ const SettingsPage = () => {
 
   return (
     <DashboardContainer>
-      <PageHeader 
-        title="Settings" 
-        description="Manage your account preferences and professional profile."
-      />
-
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Navigation Sidebar */}
         <div className="w-full lg:w-[260px] flex flex-col gap-1 shrink-0">

@@ -51,21 +51,19 @@ const MessagesPage = () => {
 
   return (
     <DashboardContainer>
-      <PageHeader 
-        title="Messages" 
-        description="Manage your matches and conversations."
-      >
-        <div className="relative group">
+      {/* Search Bar - Moved below title */}
+      <div className="mb-8">
+        <div className="relative group max-w-md">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-brand-cyan transition-colors" />
           <input 
             type="text" 
             placeholder="Search messages..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-10 bg-zinc-900/50 border border-zinc-800 rounded-xl pl-10 pr-4 text-sm text-white focus:outline-none focus:border-brand-cyan/50 transition-all w-64"
+            className="h-11 bg-zinc-900/50 border border-zinc-800 rounded-xl pl-10 pr-4 text-sm text-white focus:outline-none focus:border-brand-cyan/50 transition-all w-full"
           />
         </div>
-      </PageHeader>
+      </div>
 
       <div className="space-y-3">
         {filteredChats.length > 0 ? (
