@@ -1,14 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Search, RefreshCw, Sparkles, Filter, X, Heart, MessageSquare, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Users, Filter, X, Heart } from 'lucide-react';
 import FilterSidebar from '../components/Discover/FilterSidebar';
 import SwipeCard from '../components/Discover/SwipeCard';
 import MatchPopup from '../components/Discover/MatchPopup';
 import api from '../lib/axios';
 import { toast } from 'react-hot-toast';
-import LoadingSkeleton from '../components/LoadingSkeleton';
-import { PageHeader, DashboardContainer, EmptyState } from '../components/DashboardComponents';
+import { DashboardContainer, EmptyState } from '../components/DashboardComponents';
 
 const DiscoverPage = () => {
   const [developers, setDevelopers] = useState<any[]>([]);
@@ -20,7 +18,6 @@ const DiscoverPage = () => {
   });
   const [matchData, setMatchData] = useState<any>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const navigate = useNavigate();
 
   const fetchDevelopers = useCallback(async () => {
     try {

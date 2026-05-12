@@ -1,5 +1,4 @@
 import { Filter, X, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 const SKILLS = ['React', 'TypeScript', 'Node.js', 'Python', 'Go', 'Rust', 'Next.js', 'PostgreSQL', 'Docker', 'AWS', 'Solidity', 'AI/ML'];
 const INTENTS = ['Friendship', 'Collaboration', 'Cofounder', 'Hackathon', 'Mentor/Mentee'];

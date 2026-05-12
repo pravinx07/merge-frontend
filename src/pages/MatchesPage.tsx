@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Search, MessageSquare, ExternalLink, Sparkles } from 'lucide-react';
+import { Users, Search, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/axios';
 import { useSocket } from '../context/SocketContext';
 import LoadingSkeleton from '../components/LoadingSkeleton';
-import { PageHeader, DashboardContainer, EmptyState } from '../components/DashboardComponents';
+import { DashboardContainer, EmptyState } from '../components/DashboardComponents';
 
 const MatchesPage = () => {
   const [matches, setMatches] = useState<any[]>([]);

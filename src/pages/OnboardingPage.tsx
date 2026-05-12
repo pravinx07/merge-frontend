@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { User, Rocket, Code, Heart, ArrowRight, ArrowLeft, Check, Loader2, Camera, MapPin, Briefcase } from 'lucide-react';
+import { User, Rocket, Code, ArrowRight, ArrowLeft, Check, Loader2, Camera, MapPin, Briefcase } from 'lucide-react';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 
