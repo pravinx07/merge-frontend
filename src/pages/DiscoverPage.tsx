@@ -172,8 +172,8 @@ const DiscoverPage = () => {
           </AnimatePresence>
 
           {/* Swipe Stack Area */}
-          <main className="w-full max-w-xl mx-auto py-4 md:py-8">
-            <div className="relative h-[500px] md:h-[600px] w-full">
+          <main className="w-full max-w-xl mx-auto py-2 md:py-4">
+            <div className="relative h-[340px] md:h-[400px] w-full">
               <AnimatePresence mode="popLayout">
                 {isLoading ? (
                   <div className="absolute inset-0 bg-zinc-900/40 border border-zinc-800/50 rounded-[40px] p-8 flex flex-col items-center justify-center space-y-4 animate-pulse">
@@ -193,18 +193,18 @@ const DiscoverPage = () => {
                     ))}
                     
                     {/* Swipe Buttons Controls */}
-                    <div className="absolute -bottom-20 md:-bottom-24 left-0 right-0 flex items-center justify-center gap-6 md:gap-8 z-30">
+                    <div className="absolute -bottom-16 md:-bottom-20 left-0 right-0 flex items-center justify-center gap-6 md:gap-8 z-30">
                         <button 
                             onClick={() => handleSwipe('left')}
-                            className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-red-500 hover:bg-red-500/10 hover:border-red-500/50 transition-all shadow-xl active:scale-90 group"
+                            className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-red-500 hover:bg-red-500/10 hover:border-red-500/50 transition-all shadow-xl active:scale-90 group"
                         >
-                            <X className="w-6 h-6 md:w-8 md:h-8 group-hover:scale-110 transition-transform" />
+                            <X className="w-6 h-6 md:w-7 md:h-7 group-hover:scale-110 transition-transform" />
                         </button>
                         <button 
                             onClick={() => handleSwipe('right')}
-                            className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-green-500 hover:bg-green-500/10 hover:border-green-500/50 transition-all shadow-xl active:scale-90 group"
+                            className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-green-500 hover:bg-green-500/10 hover:border-green-500/50 transition-all shadow-xl active:scale-90 group"
                         >
-                            <Heart className="w-6 h-6 md:w-8 md:h-8 group-hover:scale-110 transition-transform fill-green-500/10" />
+                            <Heart className="w-6 h-6 md:w-7 md:h-7 group-hover:scale-110 transition-transform fill-green-500/10" />
                         </button>
                     </div>
                   </>
@@ -220,7 +220,7 @@ const DiscoverPage = () => {
               </AnimatePresence>
             </div>
             
-            <div className="mt-32 text-center">
+            <div className="mt-24 text-center">
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600 mb-2">Keyboard Shortcuts</p>
                 <div className="flex justify-center gap-4">
                     <span className="px-2 py-1 bg-zinc-900 border border-zinc-800 rounded text-[10px] text-zinc-400">← Skip</span>

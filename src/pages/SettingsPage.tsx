@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Shield, Bell, Trash2, Camera, 
-  Save, AlertCircle, CheckCircle2, ChevronRight,
+  Save, AlertCircle, CheckCircle2, ChevronRight, ChevronDown,
   Globe, Briefcase, Rocket, Brain, Coffee, MapPin, Key,
   Loader2
 } from 'lucide-react';
@@ -29,6 +29,56 @@ const LinkedInIcon = (props: any) => (
     <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect width="4" height="12" x="2" y="9" /><circle cx="4" cy="4" r="2" />
   </svg>
 );
+
+const CustomSelect = ({ value, onChange, options, label }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; label: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <div className="space-y-2">
+      <label className="text-xs font-semibold text-zinc-400 ml-1">{label}</label>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-sm text-white flex items-center justify-between focus:outline-none focus:border-brand-cyan/50 transition-all"
+        >
+          <span className={!value ? 'text-zinc-500' : ''}>{options.find(o => o.value === value)?.label || `Select ${label}`}</span>
+          <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+        
+        <AnimatePresence>
+          {isOpen && (
+            <>
+              <div className="fixed inset-0 z-[80]" onClick={() => setIsOpen(false)} />
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute left-0 right-0 mt-2 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-[90] overflow-hidden"
+              >
+                {options.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      onChange(opt.value);
+                      setIsOpen(false);
+                    }}
+                    className={`w-full px-4 py-3 text-sm text-left hover:bg-white/5 transition-colors ${
+                      value === opt.value ? 'text-brand-cyan bg-brand-cyan/5' : 'text-zinc-400'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
 
 const SettingsPage = () => {
   const { user, setUser, isLoading: isAuthLoading } = useAuth();
@@ -201,13 +251,13 @@ const SettingsPage = () => {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 bg-zinc-900/20 border border-zinc-800/50 rounded-[32px] p-6 lg:p-10 shadow-xl relative overflow-hidden">
+        <div className="flex-1 bg-zinc-900/20 border border-zinc-800/50 rounded-[32px] p-6 lg:p-10 shadow-xl relative">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, x: 5 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -5 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
               {activeTab === 'profile' && (
@@ -255,19 +305,17 @@ const SettingsPage = () => {
                         placeholder="Tell us about yourself..."
                       ></textarea>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-zinc-400 ml-1">Personality</label>
-                      <select 
-                        value={formData.personality} onChange={(e) => setFormData({...formData, personality: e.target.value})}
-                        className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-cyan/50 transition-all appearance-none"
-                      >
-                        <option value="">Select Type</option>
-                        <option value="AI Builder">AI Builder</option>
-                        <option value="Startup Enthusiast">Startup Enthusiast</option>
-                        <option value="Night Owl Coder">Night Owl Coder</option>
-                        <option value="Open Source Warrior">Open Source Warrior</option>
-                      </select>
-                    </div>
+                    <CustomSelect 
+                      label="Personality"
+                      value={formData.personality}
+                      onChange={(v) => setFormData({...formData, personality: v})}
+                      options={[
+                        { value: 'AI Builder', label: 'AI Builder' },
+                        { value: 'Startup Enthusiast', label: 'Startup Enthusiast' },
+                        { value: 'Night Owl Coder', label: 'Night Owl Coder' },
+                        { value: 'Open Source Warrior', label: 'Open Source Warrior' },
+                      ]}
+                    />
                     <div className="space-y-2">
                       <label className="text-xs font-semibold text-zinc-400 ml-1">Status</label>
                       <input 
@@ -299,28 +347,26 @@ const SettingsPage = () => {
                         className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-cyan/50 transition-all"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-zinc-400 ml-1">Experience Level</label>
-                      <select 
-                        value={formData.experienceLevel} onChange={(e) => setFormData({...formData, experienceLevel: e.target.value})}
-                        className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-cyan/50 transition-all appearance-none"
-                      >
-                        <option value="Junior">Junior</option>
-                        <option value="Intermediate">Intermediate</option>
-                        <option value="Senior">Senior</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-zinc-400 ml-1">Looking For</label>
-                      <select 
-                        value={formData.intent} onChange={(e) => setFormData({...formData, intent: e.target.value})}
-                        className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-brand-cyan/50 transition-all appearance-none"
-                      >
-                        <option value="Cofounder">Cofounder</option>
-                        <option value="Collaboration">Collaboration</option>
-                        <option value="Networking">Networking</option>
-                      </select>
-                    </div>
+                    <CustomSelect 
+                      label="Experience Level"
+                      value={formData.experienceLevel}
+                      onChange={(v) => setFormData({...formData, experienceLevel: v})}
+                      options={[
+                        { value: 'Junior', label: 'Junior' },
+                        { value: 'Intermediate', label: 'Intermediate' },
+                        { value: 'Senior', label: 'Senior' },
+                      ]}
+                    />
+                    <CustomSelect 
+                      label="Looking For"
+                      value={formData.intent}
+                      onChange={(v) => setFormData({...formData, intent: v})}
+                      options={[
+                        { value: 'Cofounder', label: 'Cofounder' },
+                        { value: 'Collaboration', label: 'Collaboration' },
+                        { value: 'Networking', label: 'Networking' },
+                      ]}
+                    />
                     <div className="space-y-2">
                       <label className="text-xs font-semibold text-zinc-400 ml-1 flex items-center gap-2"><GitHubIcon className="w-3.5 h-3.5" /> GitHub URL</label>
                       <input type="text" value={formData.githubUrl} onChange={(e) => setFormData({...formData, githubUrl: e.target.value})} className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none" />
