@@ -1,19 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { 
-  Globe, MapPin, 
-  ExternalLink, Calendar, Heart, Briefcase, 
-  Settings, MessageSquare, Plus, ChevronRight,
-  Monitor, Layers, Zap, Clock, Star, Trophy,
-  Shield, Rocket, Brain, Coffee, CheckCircle2,
-  Mail, User, Code, MoreHorizontal, Search, Bell,
-  LayoutGrid, Map as MapIcon, Users
+  MapPin, 
+  Heart, 
+  Settings, MessageSquare,
+  Layers, Clock, Trophy,
+  CheckCircle2
 } from 'lucide-react';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import LoadingSkeleton from '../components/LoadingSkeleton';
-import { PageHeader, DashboardContainer, SectionTitle } from '../components/DashboardComponents';
+import { DashboardContainer, SectionTitle } from '../components/DashboardComponents';
 
 const GitHubIcon = (props: any) => (
   <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

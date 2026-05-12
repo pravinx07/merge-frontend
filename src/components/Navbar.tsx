@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { User, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 export const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);

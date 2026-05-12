@@ -1,7 +1,6 @@
-import React from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import type { PanInfo } from 'framer-motion';
-import { Heart, X, User, MapPin, Eye } from 'lucide-react';
+import { User, MapPin, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import CompatibilityBadge from './CompatibilityBadge';
 

@@ -2,15 +2,11 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Home,
-  Search,
   Users,
   MessageSquare,
-  Layers,
   Globe,
   Calendar,
   Bell,
-  ChevronDown,
-  Zap,
   Map as MapIcon,
   LayoutGrid,
   Settings as SettingsIcon,

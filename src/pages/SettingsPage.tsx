@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  User, Shield, Bell, Trash2, Camera, 
-  Save, AlertCircle, CheckCircle2, ChevronRight, ChevronDown,
-  Globe, Briefcase, Rocket, Brain, Coffee, MapPin, Key,
+  User, Shield, Trash2, Camera, 
+  Save, ChevronRight, ChevronDown,
+  Briefcase, Key,
   Loader2
 } from 'lucide-react';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import LoadingSkeleton from '../components/LoadingSkeleton';
-import { PageHeader, DashboardContainer } from '../components/DashboardComponents';
+import { DashboardContainer } from '../components/DashboardComponents';
 
 const GitHubIcon = (props: any) => (
   <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -18,11 +18,6 @@ const GitHubIcon = (props: any) => (
   </svg>
 );
 
-const TwitterIcon = (props: any) => (
-  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
-  </svg>
-);
 
 const LinkedInIcon = (props: any) => (
   <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

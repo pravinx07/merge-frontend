@@ -1,4 +1,3 @@
-import React from 'react';
 
 const LoadingSkeleton = ({ type }: { type: 'card' | 'list' | 'profile' | 'settings' }) => {
   if (type === 'card') {
