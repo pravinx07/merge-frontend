@@ -109,6 +109,10 @@ const LoginPage = () => {
               </motion.div>
             )}
 
+            <div className="flex justify-end">
+              <Link to="/forgot-password" className="text-xs text-brand-cyan hover:underline">Forgot password?</Link>
+            </div>
+
             <button 
               type="submit" 
               disabled={isLoading}
