@@ -12,6 +12,7 @@ import MessagesPage from './pages/MessagesPage';
 import ChatPage from './pages/ChatPage';
 import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetailsPage from './pages/ProjectDetailsPage';
+import FeedPage from './pages/FeedPage';
 import MainLayout from './components/MainLayout';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
@@ -50,7 +51,15 @@ function AppRoutes() {
       {/* Protected Routes */}
       <Route 
         path="/dashboard" 
-        element={<Navigate to="/discover" replace />} 
+        element={<Navigate to="/feed" replace />} 
+      />
+      <Route 
+        path="/feed" 
+        element={
+          <ProtectedRoute>
+            <FeedPage />
+          </ProtectedRoute>
+        } 
       />
       <Route 
         path="/discover" 

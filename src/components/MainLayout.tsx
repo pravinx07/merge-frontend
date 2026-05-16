@@ -1,17 +1,15 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  Home,
   Users,
   MessageSquare,
-  Globe,
-  Calendar,
   Bell,
   Map as MapIcon,
   LayoutGrid,
   Settings as SettingsIcon,
   X,
   Menu,
+  Rss,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
@@ -25,13 +23,11 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const navItems = [
-    { name: "Home", icon: Home, path: "/" },
+    { name: "Feed", icon: Rss, path: "/feed" },
     { name: "Discover", icon: MapIcon, path: "/discover" },
     { name: "Matches", icon: Users, path: "/matches" },
     { name: "Messages", icon: MessageSquare, path: "/messages" },
     { name: "Projects", icon: LayoutGrid, path: "/projects" },
-    { name: "Community", icon: Globe, path: "/community" },
-    { name: "Events", icon: Calendar, path: "/events" },
     { name: "Settings", icon: SettingsIcon, path: "/settings" },
   ];
 
