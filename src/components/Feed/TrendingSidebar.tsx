@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Flame, Code, Users } from 'lucide-react';
-import axios from 'axios';
+import api from '../../lib/axios';
 import { Link } from 'react-router-dom';
 
 interface TrendingData {
@@ -31,7 +31,7 @@ const TrendingSidebar: React.FC = () => {
   useEffect(() => {
     const fetchTrending = async () => {
       try {
-        const response = await axios.get('/api/posts/trending', { withCredentials: true });
+        const response = await api.get('/posts/trending');
         setData(response.data);
       } catch (error) {
         console.error('Error fetching trending data:', error);
@@ -72,7 +72,7 @@ const TrendingSidebar: React.FC = () => {
           Trending Builders
         </h2>
         <div className="space-y-4">
-          {data.trendingDevelopers.map((dev) => (
+          {data?.trendingDevelopers?.map((dev) => (
             <div key={dev.id} className="flex items-center justify-between group">
               <div className="flex items-center gap-3">
                 <img 
@@ -100,7 +100,7 @@ const TrendingSidebar: React.FC = () => {
           Trending Projects
         </h2>
         <div className="space-y-4">
-          {data.trendingProjects.map((project) => (
+          {data?.trendingProjects?.map((project) => (
             <Link to={`/projects/${project.id}`} key={project.id} className="block group">
               <div className="bg-white/5 border border-white/5 rounded-xl p-3 group-hover:bg-white/10 group-hover:border-white/10 transition-all">
                 <h3 className="font-semibold text-sm text-gray-200 mb-1 group-hover:text-blue-400 transition-colors">{project.title}</h3>

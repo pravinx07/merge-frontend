@@ -10,6 +10,8 @@ import {
   X,
   Menu,
   Rss,
+  Globe,
+  Heart,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
@@ -23,9 +25,9 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const navItems = [
-    { name: "Feed", icon: Rss, path: "/feed" },
+    { name: "Community", icon: Globe, path: "/community" },
     { name: "Discover", icon: MapIcon, path: "/discover" },
-    { name: "Matches", icon: Users, path: "/matches" },
+    { name: "Matches", icon: Heart, path: "/matches" },
     { name: "Messages", icon: MessageSquare, path: "/messages" },
     { name: "Projects", icon: LayoutGrid, path: "/projects" },
     { name: "Settings", icon: SettingsIcon, path: "/settings" },
