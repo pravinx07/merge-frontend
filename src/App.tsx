@@ -12,7 +12,7 @@ import MessagesPage from './pages/MessagesPage';
 import ChatPage from './pages/ChatPage';
 import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetailsPage from './pages/ProjectDetailsPage';
-import FeedPage from './pages/FeedPage';
+import CommunityPage from './pages/CommunityPage';
 import MainLayout from './components/MainLayout';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
@@ -51,13 +51,17 @@ function AppRoutes() {
       {/* Protected Routes */}
       <Route 
         path="/dashboard" 
-        element={<Navigate to="/feed" replace />} 
+        element={<Navigate to="/community" replace />} 
       />
       <Route 
         path="/feed" 
+        element={<Navigate to="/community" replace />} 
+      />
+      <Route 
+        path="/community" 
         element={
           <ProtectedRoute>
-            <FeedPage />
+            <CommunityPage />
           </ProtectedRoute>
         } 
       />

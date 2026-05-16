@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Heart, MessageCircle, Share2, Bookmark } from 'lucide-react';
-import axios from 'axios';
+import api from '../../lib/axios';
 
 interface PostCardProps {
   post: {
@@ -31,7 +31,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     if (isLiking) return;
     setIsLiking(true);
     try {
-      const response = await axios.post(`/api/posts/${post.id}/like`, {}, { withCredentials: true });
+      const response = await api.post(`/posts/${post.id}/like`, {});
       if (response.data.hasLiked) {
         setHasLiked(true);
         setLikesCount(prev => prev + 1);

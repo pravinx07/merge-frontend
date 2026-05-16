@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Send } from 'lucide-react';
-import axios from 'axios';
+import api from '../../lib/axios';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -22,7 +22,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onPo
     
     setIsSubmitting(true);
     try {
-      await axios.post('/api/posts', { content, postType }, { withCredentials: true });
+      await api.post('/posts', { content, postType });
       setContent('');
       setPostType('Update');
       onPostCreated();
