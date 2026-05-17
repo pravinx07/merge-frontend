@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  Users,
   MessageSquare,
   Bell,
   Map as MapIcon,
@@ -9,17 +8,18 @@ import {
   Settings as SettingsIcon,
   X,
   Menu,
-  Rss,
   Globe,
   Heart,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
+import { usePWA } from "../context/PWAContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
   const { notifications, clearNotifications } = useSocket();
+  const { isInstallable, installApp } = usePWA();
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -87,7 +87,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         })}
       </nav>
 
-      <div className="p-6">
+      <div className="p-6 flex flex-col gap-4">
         <div className="p-5 rounded-[24px] bg-linear-to-br from-brand-purple/10 to-brand-cyan/10 border border-white/5 relative overflow-hidden group cursor-pointer">
           <h4 className="text-xs font-black mb-1.5 relative z-10 tracking-tight">
             Upgrade to Pro
@@ -99,6 +99,23 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             Upgrade
           </button>
         </div>
+
+        {isInstallable && (
+          <div className="p-5 rounded-[24px] bg-linear-to-br from-brand-cyan/10 to-brand-purple/10 border border-white/5 relative overflow-hidden group cursor-pointer">
+            <h4 className="text-xs font-black mb-1.5 relative z-10 tracking-tight">
+              Install Merge App
+            </h4>
+            <p className="text-[10px] text-slate-500 mb-4 relative z-10 leading-tight">
+              Get the native app experience on your phone!
+            </p>
+            <button 
+              onClick={installApp}
+              className="w-full py-2 bg-brand-cyan text-dark-bg text-[9px] font-black rounded-lg transition-all relative z-10 uppercase tracking-widest shadow-lg active:scale-95 cursor-pointer animate-pulse"
+            >
+              Install
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

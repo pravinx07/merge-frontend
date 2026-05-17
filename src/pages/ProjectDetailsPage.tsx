@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { LayoutGrid, MapPin, Users, Send, Check, X, MessageSquare, Briefcase, Plus, Shield } from 'lucide-react';
+import { LayoutGrid, MapPin, Users, Send, Check, X, MessageSquare, Briefcase, Shield } from 'lucide-react';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import { DashboardContainer } from '../components/DashboardComponents';

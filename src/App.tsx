@@ -18,6 +18,9 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { PWAProvider } from './context/PWAContext';
+import { PWAPrompt } from './components/PWAPrompt';
+import { PWAInstallBanner } from './components/PWAInstallBanner';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -153,14 +156,18 @@ function AppRoutes() {
 
 function App() {
   return (
-    <AuthProvider>
-      <SocketProvider>
-        <Router>
-          <Toaster position="top-right" toastOptions={{ duration: 3000, style: { background: '#111112', color: '#fff', border: '1px solid rgba(255,255,255,0.05)' } }} />
-          <AppRoutes />
-        </Router>
-      </SocketProvider>
-    </AuthProvider>
+    <PWAProvider>
+      <AuthProvider>
+        <SocketProvider>
+          <Router>
+            <Toaster position="top-right" toastOptions={{ duration: 3000, style: { background: '#111112', color: '#fff', border: '1px solid rgba(255,255,255,0.05)' } }} />
+            <AppRoutes />
+            <PWAPrompt />
+            <PWAInstallBanner />
+          </Router>
+        </SocketProvider>
+      </AuthProvider>
+    </PWAProvider>
   );
 }
 

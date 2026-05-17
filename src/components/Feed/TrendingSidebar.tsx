@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Flame, Code, Users } from 'lucide-react';
+import { Flame, Code } from 'lucide-react';
 import api from '../../lib/axios';
 import { Link } from 'react-router-dom';
 
