@@ -34,9 +34,7 @@ const DiscoverPage = () => {
       console.error('Fetch swipe feed error:', error);
       toast.error('Failed to load builders');
     } finally {
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 800);
+      setIsLoading(false);
     }
   }, [filters]);
 
