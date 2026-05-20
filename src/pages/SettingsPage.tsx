@@ -113,6 +113,27 @@ const SettingsPage = () => {
     }
   }, [user]);
 
+  const [isConnectingGithub, setIsConnectingGithub] = useState(false);
+  const [githubUsernameInput, setGithubUsernameInput] = useState('');
+  const [showGithubModal, setShowGithubModal] = useState(false);
+
+  const handleConnectGithub = async () => {
+    if (!githubUsernameInput) return toast.error('Please enter a GitHub username');
+    setIsConnectingGithub(true);
+    const toastId = toast.loading('Connecting to GitHub...');
+    try {
+      const res = await api.post('/github/connect', { username: githubUsernameInput });
+      setUser(res.data.user);
+      toast.success('GitHub connected successfully!', { id: toastId });
+      setShowGithubModal(false);
+      setGithubUsernameInput('');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to connect GitHub', { id: toastId });
+    } finally {
+      setIsConnectingGithub(false);
+    }
+  };
+
   if (isAuthLoading || isInitialLoading) {
     return (
       <DashboardContainer>
@@ -328,8 +349,37 @@ const SettingsPage = () => {
               )}
 
               {activeTab === 'professional' && (
-                <form onSubmit={handleUpdateProfile} className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-8">
+                  <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl p-6 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-16 bg-brand-cyan/5 rounded-bl-full -z-10 blur-3xl"></div>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                          <GitHubIcon className="w-5 h-5" />
+                          Developer Identity
+                          {user?.githubVerified && <span className="text-xs bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full flex items-center gap-1 border border-green-500/20">✓ Verified</span>}
+                        </h3>
+                        <p className="text-sm text-zinc-400 mt-1 max-w-md">
+                          {user?.githubVerified 
+                            ? `Connected as ${user?.githubData?.username}. Your GitHub stats are visible on your profile.` 
+                            : 'Connect your GitHub to display your top repositories, languages, and contributions to build trust.'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => user?.githubVerified ? null : setShowGithubModal(true)}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap flex items-center gap-2 ${
+                          user?.githubVerified 
+                            ? 'bg-zinc-800 text-zinc-400 cursor-default' 
+                            : 'bg-brand-cyan text-dark-bg hover:scale-[1.02] shadow-lg shadow-brand-cyan/20'
+                        }`}
+                      >
+                        {user?.githubVerified ? 'Connected' : 'Connect GitHub'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleUpdateProfile} className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2 space-y-2">
                       <label className="text-xs font-semibold text-zinc-400 ml-1">Skills (comma separated)</label>
                       <input 
@@ -375,6 +425,7 @@ const SettingsPage = () => {
                     {isLoading ? 'Updating...' : 'Save Professional Info'}
                   </button>
                 </form>
+              </div>
               )}
 
               {activeTab === 'security' && (
@@ -420,6 +471,52 @@ const SettingsPage = () => {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* GitHub Connect Modal */}
+      <AnimatePresence>
+        {showGithubModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowGithubModal(false)}></div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            >
+              <h3 className="text-xl font-bold text-white mb-2">Connect GitHub</h3>
+              <p className="text-sm text-zinc-400 mb-6">Enter your GitHub username to sync your developer profile.</p>
+              
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="GitHub Username (e.g. torvalds)"
+                  value={githubUsernameInput}
+                  onChange={(e) => setGithubUsernameInput(e.target.value)}
+                  className="w-full bg-zinc-800/50 border border-zinc-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-brand-cyan transition-all"
+                  autoFocus
+                />
+                
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => setShowGithubModal(false)}
+                    className="flex-1 px-4 py-3 bg-zinc-800 text-white font-bold rounded-xl hover:bg-zinc-700 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleConnectGithub}
+                    disabled={isConnectingGithub || !githubUsernameInput}
+                    className="flex-1 px-4 py-3 bg-brand-cyan text-dark-bg font-bold rounded-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isConnectingGithub ? <Loader2 className="w-4 h-4 animate-spin" /> : <GitHubIcon className="w-4 h-4" />}
+                    {isConnectingGithub ? 'Connecting...' : 'Connect'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </DashboardContainer>
   );
 };

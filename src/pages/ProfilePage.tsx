@@ -93,6 +93,7 @@ const ProfilePage = () => {
               <div className="flex items-center justify-center lg:justify-start gap-2">
                 <h1 className="text-3xl font-bold tracking-tight">{profile.name}</h1>
                 <CheckCircle2 className="w-5 h-5 text-brand-cyan" />
+                {profile.githubVerified && <span className="text-xs bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full flex items-center gap-1 border border-green-500/20">✓ GitHub Verified</span>}
               </div>
               <h2 className="text-sm font-medium text-zinc-400">Full Stack & AI Engineer</h2>
               
@@ -119,9 +120,9 @@ const ProfilePage = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
         {[
           { label: 'Compatibility', value: '92%', icon: Heart, color: 'text-brand-purple', bg: 'bg-brand-purple/10' },
-          { label: 'Repositories', value: '54', icon: GitHubIcon, color: 'text-brand-cyan', bg: 'bg-brand-cyan/10' },
-          { label: 'Contributions', value: '240', icon: Trophy, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-          { label: 'Projects', value: '12', icon: Layers, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+          { label: 'Repositories', value: profile.githubVerified && profile.githubData?.publicRepos ? profile.githubData.publicRepos : '0', icon: GitHubIcon, color: 'text-brand-cyan', bg: 'bg-brand-cyan/10' },
+          { label: 'Contributions', value: profile.githubVerified && profile.githubData?.contributionsLastYear ? profile.githubData.contributionsLastYear : '0', icon: Trophy, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+          { label: 'Projects', value: profile.projects?.length || '12', icon: Layers, color: 'text-amber-500', bg: 'bg-amber-500/10' },
         ].map((stat) => (
           <div key={stat.label} className="bg-zinc-900/30 border border-zinc-800/50 rounded-2xl p-5 flex items-center gap-4 group">
             <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center ${stat.color}`}><stat.icon className="w-5 h-5" /></div>
@@ -163,6 +164,30 @@ const ProfilePage = () => {
               ))}
             </div>
           </section>
+
+          {profile.githubVerified && profile.githubData?.topRepos && (
+            <section className="bg-zinc-900/20 border border-zinc-800/50 rounded-[32px] p-8">
+              <div className="flex items-center justify-between mb-6">
+                <SectionTitle className="mb-0 flex items-center gap-2"><GitHubIcon className="w-4 h-4" /> Top Repositories</SectionTitle>
+                <a href={profile.githubUrl} target="_blank" rel="noreferrer" className="text-[10px] font-black text-zinc-600 uppercase hover:text-brand-cyan">View GitHub</a>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                {profile.githubData.topRepos.slice(0, 3).map((repo: any) => (
+                  <div key={repo.id} className="p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800/50 group hover:border-zinc-700 transition-all">
+                    <a href={repo.url} target="_blank" rel="noreferrer" className="block">
+                      <h3 className="text-sm font-bold text-white mb-1 group-hover:text-brand-cyan transition-colors">{repo.name}</h3>
+                      <p className="text-[11px] text-zinc-500 line-clamp-2 leading-relaxed mb-4">{repo.description || 'No description provided.'}</p>
+                      <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400">
+                        {repo.language && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-cyan"></span>{repo.language}</span>}
+                        <span className="flex items-center gap-1">★ {repo.stars}</span>
+                        <span className="flex items-center gap-1">⑂ {repo.forks}</span>
+                      </div>
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
 
         <div className="space-y-8">
@@ -180,15 +205,28 @@ const ProfilePage = () => {
             </div>
           </section>
 
+          {profile.githubVerified && profile.githubData?.topLanguages && (
+            <section className="bg-zinc-900/20 border border-zinc-800/50 rounded-[32px] p-8">
+              <SectionTitle>Top Languages</SectionTitle>
+              <div className="flex flex-wrap gap-2 mt-4">
+                {profile.githubData.topLanguages.map((lang: any) => (
+                  <span key={lang.name} className="px-3 py-1.5 bg-zinc-800/80 border border-zinc-700 rounded-lg text-xs font-bold text-zinc-300">
+                    {lang.name} <span className="text-zinc-500 ml-1">({lang.count})</span>
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
+
           <section className="bg-zinc-900/20 border border-zinc-800/50 rounded-[32px] p-8">
-            <SectionTitle>Activity</SectionTitle>
+            <SectionTitle>{profile.githubVerified ? 'GitHub Activity' : 'Activity'}</SectionTitle>
             <div className="flex items-center gap-4 mt-6">
-                <div className="text-2xl font-bold text-white">240</div>
+                <div className="text-2xl font-bold text-white">{profile.githubVerified && profile.githubData?.contributionsLastYear ? profile.githubData.contributionsLastYear : '240'}</div>
                 <div className="text-[10px] uppercase font-black text-zinc-600 tracking-widest">Contributions</div>
             </div>
             <div className="mt-4 flex flex-wrap gap-1">
-                {[...Array(40)].map((_, i) => (
-                    <div key={i} className={`w-2 h-2 rounded-[1px] ${Math.random() > 0.4 ? 'bg-emerald-500/40' : 'bg-zinc-800'}`} />
+                {[...Array(60)].map((_, i) => (
+                    <div key={i} className={`w-3 h-3 rounded-[2px] ${Math.random() > 0.6 ? 'bg-emerald-500/80' : Math.random() > 0.8 ? 'bg-emerald-400' : 'bg-zinc-800/80'}`} />
                 ))}
             </div>
           </section>
