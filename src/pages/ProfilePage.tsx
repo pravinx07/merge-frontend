@@ -49,9 +49,7 @@ const ProfilePage = () => {
       } catch (err) {
         console.error('Fetch profile error:', err);
       } finally {
-        setTimeout(() => {
-            setIsLoading(false);
-        }, 800);
+        setIsLoading(false);
       }
     };
     fetchProfile();

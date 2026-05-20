@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   MessageSquare,
@@ -10,6 +10,8 @@ import {
   Menu,
   Globe,
   Heart,
+  User,
+  LogOut,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
@@ -17,12 +19,32 @@ import { usePWA } from "../context/PWAContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { notifications, clearNotifications } = useSocket();
   const { isInstallable, installApp } = usePWA();
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (location.pathname === "/messages") {
+      clearNotifications("message");
+    } else if (location.pathname === "/matches") {
+      clearNotifications("match");
+    } else if (location.pathname === "/projects") {
+      clearNotifications("project_apply");
+      clearNotifications("project_decision");
+    }
+  }, [location.pathname]);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   const navItems = [
     { name: "Community", icon: Globe, path: "/community" },
@@ -32,6 +54,19 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     { name: "Projects", icon: LayoutGrid, path: "/projects" },
     { name: "Settings", icon: SettingsIcon, path: "/settings" },
   ];
+
+  const getNavItemBadgeCount = (itemName: string) => {
+    if (itemName === "Messages") {
+      return notifications.filter(n => n.type === "message" || !n.type).length;
+    }
+    if (itemName === "Matches") {
+      return notifications.filter(n => n.type === "match").length;
+    }
+    if (itemName === "Projects") {
+      return notifications.filter(n => n.type === "project_apply" || n.type === "project_decision").length;
+    }
+    return 0;
+  };
 
   const getPageTitle = (path: string) => {
     const item = navItems.find((item) => item.path === path);
@@ -79,7 +114,12 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
               <span className="font-bold text-[13px] tracking-tight">
                 {item.name}
               </span>
-              {isActive && (
+              {getNavItemBadgeCount(item.name) > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-[0_0_10px_rgba(239,68,68,0.4)] relative z-10">
+                  {getNavItemBadgeCount(item.name)}
+                </span>
+              )}
+              {isActive && getNavItemBadgeCount(item.name) === 0 && (
                 <div className="ml-auto w-1 h-1 bg-brand-cyan rounded-full shadow-[0_0_8px_rgba(0,229,255,0.8)]"></div>
               )}
             </Link>
@@ -197,7 +237,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                           Notifications
                         </h3>
                         <button
-                          onClick={clearNotifications}
+                          onClick={() => clearNotifications()}
                           className="text-[10px] font-bold text-brand-cyan hover:underline"
                         >
                           Clear all
@@ -205,32 +245,37 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                       </div>
                       <div className="max-h-96 overflow-y-auto">
                         {notifications.length > 0 ? (
-                          notifications.map((notif, idx) => (
-                            <Link
-                              key={idx}
-                              to={`/chat/${notif.chatId}`}
-                              onClick={() => setShowNotifications(false)}
-                              className="block p-4 border-b border-white/5 hover:bg-white/5 transition-all"
-                            >
-                              <div className="flex gap-3">
-                                <img
-                                  src={
-                                    notif.sender.avatar || "/default-avatar.png"
-                                  }
-                                  className="w-8 h-8 rounded-full border border-white/10"
-                                  alt=""
-                                />
-                                <div>
-                                  <p className="text-xs font-bold text-white">
-                                    {notif.sender.name} sent you a message
-                                  </p>
-                                  <p className="text-[10px] text-slate-500 truncate w-48 mt-0.5">
-                                    {notif.content}
-                                  </p>
+                          notifications.map((notif, idx) => {
+                            const isMessage = notif.type === 'message' || !notif.type;
+                            const path = isMessage ? `/chat/${notif.chatId}` : (notif.path || '#');
+                            const title = isMessage ? `${notif.sender?.name} sent you a message` : notif.title;
+                            return (
+                              <Link
+                                key={idx}
+                                to={path}
+                                onClick={() => setShowNotifications(false)}
+                                className="block p-4 border-b border-white/5 hover:bg-white/5 transition-all"
+                              >
+                                <div className="flex gap-3">
+                                  <img
+                                    src={
+                                      notif.sender?.avatar || "/default-avatar.png"
+                                    }
+                                    className="w-8 h-8 rounded-full border border-white/10"
+                                    alt=""
+                                  />
+                                  <div>
+                                    <p className="text-xs font-bold text-white">
+                                      {title}
+                                    </p>
+                                    <p className="text-[10px] text-slate-500 truncate w-48 mt-0.5">
+                                      {notif.content}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                            </Link>
-                          ))
+                              </Link>
+                            );
+                          })
                         ) : (
                           <div className="p-8 text-center">
                             <Bell className="w-8 h-8 text-slate-800 mx-auto mb-2" />
@@ -246,29 +291,77 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
               </AnimatePresence>
             </div>
 
-            <Link
-              to={`/profile/${user?.id}`}
-              className="flex items-center gap-2 md:gap-3 pl-2 md:pl-6 border-l border-white/10 group cursor-pointer hover:bg-white/[0.02] p-1 md:p-2 rounded-xl transition-all"
-            >
-              <div className="flex flex-col items-end hidden sm:flex">
-                <span className="text-[13px] font-black tracking-tight group-hover:text-brand-cyan transition-colors">
-                  {user?.name}
-                </span>
-                <span className="text-[9px] text-brand-purple font-black uppercase tracking-widest">
-                  Pro
-                </span>
-              </div>
-              <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl border border-white/10 p-0.5 bg-white/5 overflow-hidden group-hover:border-brand-cyan/50 transition-all">
-                <img
-                  src={
-                    user?.avatar ||
-                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`
-                  }
-                  className="w-full h-full object-cover rounded-lg group-hover:scale-110 transition-transform"
-                  alt="Avatar"
-                />
-              </div>
-            </Link>
+            <div className="relative">
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="flex items-center gap-2 md:gap-3 pl-2 md:pl-6 border-l border-white/10 group cursor-pointer hover:bg-white/[0.02] p-1 md:p-2 rounded-xl transition-all focus:outline-none"
+              >
+                <div className="flex flex-col items-end hidden sm:flex">
+                  <span className="text-[13px] font-black tracking-tight group-hover:text-brand-cyan transition-colors">
+                    {user?.name}
+                  </span>
+                  <span className="text-[9px] text-brand-purple font-black uppercase tracking-widest">
+                    Pro
+                  </span>
+                </div>
+                <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl border border-white/10 p-0.5 bg-white/5 overflow-hidden group-hover:border-brand-cyan/50 transition-all">
+                  <img
+                    src={
+                      user?.avatar ||
+                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`
+                    }
+                    className="w-full h-full object-cover rounded-lg group-hover:scale-110 transition-transform"
+                    alt="Avatar"
+                  />
+                </div>
+              </button>
+
+              <AnimatePresence>
+                {showDropdown && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowDropdown(false)}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute right-0 mt-2 w-48 bg-[#111112] border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                    >
+                      <div className="p-2 space-y-1">
+                        <Link
+                          to={`/profile/${user?.id}`}
+                          onClick={() => setShowDropdown(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all text-xs font-bold"
+                        >
+                          <User className="w-4 h-4 text-slate-500" />
+                          View Profile
+                        </Link>
+                        <Link
+                          to="/settings"
+                          onClick={() => setShowDropdown(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all text-xs font-bold"
+                        >
+                          <SettingsIcon className="w-4 h-4 text-slate-500" />
+                          Settings
+                        </Link>
+                        <button
+                          onClick={() => {
+                            setShowDropdown(false);
+                            handleLogout();
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all text-xs font-bold text-left focus:outline-none"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Logout
+                        </button>
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </header>
 

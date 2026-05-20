@@ -22,9 +22,7 @@ const MatchesPage = () => {
       } catch (error) {
         console.error('Fetch matches error:', error);
       } finally {
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 800);
+        setIsLoading(false);
       }
     };
 

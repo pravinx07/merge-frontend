@@ -109,11 +109,7 @@ const SettingsPage = () => {
         linkedin: user.linkedin || '',
       });
       setAvatarPreview(user.avatar || '');
-      
-      const timer = setTimeout(() => {
-        setIsInitialLoading(false);
-      }, 800);
-      return () => clearTimeout(timer);
+      setIsInitialLoading(false);
     }
   }, [user]);
 

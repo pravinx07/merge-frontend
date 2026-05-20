@@ -22,9 +22,7 @@ const MessagesPage = () => {
       } catch (error) {
         console.error('Fetch chats error:', error);
       } finally {
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 800);
+        setIsLoading(false);
       }
     };
 
