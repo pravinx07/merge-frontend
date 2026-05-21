@@ -27,6 +27,7 @@ interface TrendingData {
 const TrendingSidebar: React.FC = () => {
   const [data, setData] = useState<TrendingData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [followed, setFollowed] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchTrending = async () => {
@@ -85,8 +86,18 @@ const TrendingSidebar: React.FC = () => {
                   <p className="text-xs text-gray-500 line-clamp-1">{dev.bio || dev.skills.join(', ')}</p>
                 </div>
               </div>
-              <button className="px-3 py-1 bg-white/5 hover:bg-white/10 text-xs font-medium text-white rounded-full transition-colors border border-white/10">
-                Follow
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  setFollowed(prev => ({...prev, [dev.id]: !prev[dev.id]}));
+                }}
+                className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all border ${
+                  followed[dev.id] 
+                    ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30' 
+                    : 'bg-white/5 hover:bg-white/10 text-white border-white/10'
+                }`}
+              >
+                {followed[dev.id] ? 'Following' : 'Follow'}
               </button>
             </div>
           ))}
