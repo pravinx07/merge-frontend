@@ -74,7 +74,7 @@ const HackathonsPage = () => {
   if (isLoading) {
     return (
       <DashboardContainer>
-        <LoadingSkeleton type="feed" />
+        <LoadingSkeleton type="card" />
       </DashboardContainer>
     );
   }

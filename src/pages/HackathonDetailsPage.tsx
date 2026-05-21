@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  Trophy, Calendar, MapPin, Users, Send, Check, X, 
-  MessageSquare, Briefcase, Shield, AlertCircle, Sparkles, Plus 
+  Calendar, MapPin, Users, Send, X, 
+  MessageSquare, Sparkles, Plus 
 } from 'lucide-react';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
@@ -130,7 +130,7 @@ const HackathonDetailsPage = () => {
     }
     setIsCreatingTeam(true);
     try {
-      const res = await api.post(`/hackathons/${id}/teams`, {
+      await api.post(`/hackathons/${id}/teams`, {
         name: teamName,
         description: teamDesc,
         lookingFor: lookingForList
