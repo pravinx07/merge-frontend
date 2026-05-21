@@ -20,6 +20,8 @@ interface User {
   status?: string;
   badges: string[];
   projects: any;
+  githubVerified?: boolean;
+  githubData?: any;
 }
 
 interface AuthContextType {
