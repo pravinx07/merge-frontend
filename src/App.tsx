@@ -13,6 +13,8 @@ import ChatPage from './pages/ChatPage';
 import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetailsPage from './pages/ProjectDetailsPage';
 import CommunityPage from './pages/CommunityPage';
+import HackathonsPage from './pages/HackathonsPage';
+import HackathonDetailsPage from './pages/HackathonDetailsPage';
 import MainLayout from './components/MainLayout';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
@@ -148,6 +150,26 @@ function AppRoutes() {
           </ProtectedRoute>
         } 
       />
+      <Route 
+        path="/hackathons" 
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <HackathonsPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/hackathons/:id" 
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <HackathonDetailsPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } 
+      />
       
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
@@ -160,7 +182,7 @@ function App() {
       <AuthProvider>
         <SocketProvider>
           <Router>
-            <Toaster position="top-right" toastOptions={{ duration: 3000, style: { background: '#111112', color: '#fff', border: '1px solid rgba(255,255,255,0.05)' } }} />
+            <Toaster position="bottom-right" toastOptions={{ duration: 3000, style: { background: '#111112', color: '#fff', border: '1px solid rgba(255,255,255,0.05)' } }} />
             <AppRoutes />
             <PWAPrompt />
             <PWAInstallBanner />
