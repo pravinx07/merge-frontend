@@ -105,11 +105,11 @@ const CommunityPage: React.FC = () => {
                 >
                   {/* Create Post Banner */}
                   <div 
-                    className="bg-white/5 border border-white/10 rounded-3xl p-5 mb-8 flex items-center gap-4 cursor-pointer hover:border-white/20 hover:bg-white/[0.07] transition-all group" 
+                    className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6 flex items-center gap-3 cursor-pointer hover:border-white/20 hover:bg-white/[0.07] transition-all group" 
                     onClick={() => setIsModalOpen(true)}
                   >
-                    <div className="w-12 h-12 rounded-2xl bg-linear-to-br from-brand-purple to-brand-cyan flex items-center justify-center shrink-0 shadow-lg group-hover:scale-110 transition-transform">
-                      <PenSquare className="w-6 h-6 text-dark-bg" />
+                    <div className="w-10 h-10 rounded-xl bg-linear-to-br from-brand-purple to-brand-cyan flex items-center justify-center shrink-0 shadow-lg group-hover:scale-110 transition-transform">
+                      <PenSquare className="w-5 h-5 text-dark-bg" />
                     </div>
                     <div className="flex-1 text-slate-400 text-sm font-medium">
                       What's happening in your builder journey?
@@ -122,9 +122,9 @@ const CommunityPage: React.FC = () => {
                   {isLoading ? (
                     <div className="space-y-6">
                       {[1, 2, 3].map(i => (
-                        <div key={i} className="bg-white/5 border border-white/10 rounded-3xl p-6 animate-pulse">
+                        <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-4 animate-pulse">
                           <div className="flex items-center gap-3 mb-4">
-                            <div className="w-12 h-12 rounded-2xl bg-white/10"></div>
+                            <div className="w-10 h-10 rounded-xl bg-white/10"></div>
                             <div className="space-y-2 flex-1">
                               <div className="h-4 bg-white/10 rounded w-1/4"></div>
                               <div className="h-3 bg-white/10 rounded w-1/3"></div>
@@ -170,21 +170,21 @@ const CommunityPage: React.FC = () => {
                   </div>
 
                   {isLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="bg-white/5 border border-white/10 rounded-3xl p-6 h-48 animate-pulse"></div>
+                        <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-4 h-32 animate-pulse"></div>
                       ))}
                     </div>
                   ) : filteredBuilders.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {filteredBuilders.map(builder => (
                         <Link 
                           to={`/profile/${builder.id}`} 
                           key={builder.id}
-                          className="bg-white/5 border border-white/10 rounded-3xl p-6 hover:border-brand-cyan/30 hover:bg-white/[0.07] transition-all group relative overflow-hidden"
+                          className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-brand-cyan/30 hover:bg-white/[0.07] transition-all group relative overflow-hidden"
                         >
-                          <div className="flex gap-4 relative z-10">
-                            <div className="w-16 h-16 rounded-2xl border border-white/10 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+                          <div className="flex gap-3 relative z-10">
+                            <div className="w-12 h-12 rounded-xl border border-white/10 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
                               <img 
                                 src={builder.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${builder.name}`} 
                                 alt={builder.name}
@@ -192,8 +192,8 @@ const CommunityPage: React.FC = () => {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-lg font-black text-white truncate group-hover:text-brand-cyan transition-colors">{builder.name}</h3>
-                              <p className="text-xs text-slate-500 line-clamp-1 mb-3">{builder.bio || 'Building the future.'}</p>
+                              <h3 className="text-base font-black text-white truncate group-hover:text-brand-cyan transition-colors">{builder.name}</h3>
+                              <p className="text-xs text-slate-500 line-clamp-1 mb-2">{builder.bio || 'Building the future.'}</p>
                               <div className="flex flex-wrap gap-1.5">
                                 {builder.skills.slice(0, 3).map((skill: string, idx: number) => (
                                   <span key={idx} className="px-2 py-0.5 rounded-full bg-white/5 border border-white/5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
