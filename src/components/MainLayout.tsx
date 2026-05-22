@@ -19,6 +19,21 @@ import { useSocket } from "../context/SocketContext";
 import { usePWA } from "../context/PWAContext";
 import { motion, AnimatePresence } from "framer-motion";
 
+const getRelativeTime = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  if (diffInSeconds < 60) return 'Just now';
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+  return date.toLocaleDateString();
+};
+
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuth();
   const { notifications, clearNotifications } = useSocket();
@@ -58,14 +73,15 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   ];
 
   const getNavItemBadgeCount = (itemName: string) => {
+    const unread = notifications.filter(n => !n.read);
     if (itemName === "Messages") {
-      return notifications.filter(n => n.type === "message" || !n.type).length;
+      return unread.filter(n => n.type === "message").length;
     }
     if (itemName === "Matches") {
-      return notifications.filter(n => n.type === "match").length;
+      return unread.filter(n => n.type === "match").length;
     }
     if (itemName === "Projects") {
-      return notifications.filter(n => n.type === "project_apply" || n.type === "project_decision").length;
+      return unread.filter(n => n.type === "project").length;
     }
     return 0;
   };
@@ -214,9 +230,9 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                 className="relative p-2 text-slate-500 hover:text-white transition-all"
               >
                 <Bell className="w-5 h-5" />
-                {notifications.length > 0 && (
+                {notifications.filter(n => !n.read).length > 0 && (
                   <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-brand-cyan text-dark-bg text-[8px] font-black flex items-center justify-center rounded-full border-2 border-[#0A0A0B]">
-                    {notifications.length}
+                    {notifications.filter(n => !n.read).length}
                   </span>
                 )}
               </button>
@@ -235,43 +251,64 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                       className="absolute right-0 mt-2 w-80 bg-dark-card border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden"
                     >
                       <div className="p-4 border-b border-white/5 flex items-center justify-between">
-                        <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">
-                          Notifications
-                        </h3>
-                        <button
-                          onClick={() => clearNotifications()}
-                          className="text-[10px] font-bold text-brand-cyan hover:underline"
+                        <Link 
+                          to="/notifications" 
+                          onClick={() => setShowNotifications(false)}
+                          className="text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors"
                         >
-                          Clear all
-                        </button>
+                          Notifications
+                        </Link>
+                        <div className="flex items-center gap-4">
+                          <Link
+                            to="/notifications"
+                            onClick={() => setShowNotifications(false)}
+                            className="text-[10px] font-bold text-slate-400 hover:text-white transition-colors"
+                          >
+                            View all
+                          </Link>
+                          <button
+                            onClick={() => clearNotifications()}
+                            className="text-[10px] font-bold text-brand-cyan hover:underline"
+                          >
+                            Mark all read
+                          </button>
+                        </div>
                       </div>
                       <div className="max-h-96 overflow-y-auto">
                         {notifications.length > 0 ? (
                           notifications.map((notif, idx) => {
-                            const isMessage = notif.type === 'message' || !notif.type;
-                            const path = isMessage ? `/chat/${notif.chatId}` : (notif.path || '#');
-                            const title = isMessage ? `${notif.sender?.name} sent you a message` : notif.title;
+                            let path = '#';
+                            if (notif.type === 'message') path = `/chat/${notif.entityId}`;
+                            else if (notif.type === 'match') path = '/matches';
+                            else if (notif.type === 'project') path = `/projects/${notif.entityId || ''}`;
+                            else if (notif.type === 'hackathon') path = `/hackathons/${notif.entityId || ''}`;
+                            else if (notif.type === 'community' || notif.type === 'follow') path = '/community';
+                            
+                            // fallback for legacy schema during dev
+                            if (notif.path) path = notif.path;
+                            const title = notif.message || notif.title;
+
                             return (
                               <Link
-                                key={idx}
+                                key={notif.id || idx}
                                 to={path}
                                 onClick={() => setShowNotifications(false)}
-                                className="block p-4 border-b border-white/5 hover:bg-white/5 transition-all"
+                                className={`block p-4 border-b border-white/5 hover:bg-white/5 transition-all ${!notif.read ? 'bg-white/[0.02]' : ''}`}
                               >
-                                <div className="flex gap-3">
-                                  <img
-                                    src={
-                                      notif.sender?.avatar || "/default-avatar.png"
-                                    }
-                                    className="w-8 h-8 rounded-full border border-white/10"
-                                    alt=""
-                                  />
+                                <div className="flex gap-3 items-center">
+                                  {notif.sender?.avatar && (
+                                    <img
+                                      src={notif.sender.avatar}
+                                      className="w-8 h-8 rounded-full border border-white/10"
+                                      alt=""
+                                    />
+                                  )}
                                   <div>
-                                    <p className="text-xs font-bold text-white">
+                                    <p className={`text-xs ${!notif.read ? 'font-black' : 'font-bold'} text-white`}>
                                       {title}
                                     </p>
-                                    <p className="text-[10px] text-slate-500 truncate w-48 mt-0.5">
-                                      {notif.content}
+                                    <p className="text-[10px] text-slate-500 mt-0.5">
+                                      {notif.createdAt ? getRelativeTime(notif.createdAt) : ''}
                                     </p>
                                   </div>
                                 </div>
