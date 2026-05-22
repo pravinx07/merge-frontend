@@ -1,20 +1,4 @@
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import OnboardingPage from './pages/OnboardingPage';
-import ProfilePage from './pages/ProfilePage';
-import SettingsPage from './pages/SettingsPage';
-import DiscoverPage from './pages/DiscoverPage';
-import MatchesPage from './pages/MatchesPage';
-import MessagesPage from './pages/MessagesPage';
-import ChatPage from './pages/ChatPage';
-import ProjectsPage from './pages/ProjectsPage';
-import ProjectDetailsPage from './pages/ProjectDetailsPage';
-import CommunityPage from './pages/CommunityPage';
-import HackathonsPage from './pages/HackathonsPage';
-import HackathonDetailsPage from './pages/HackathonDetailsPage';
+import React, { lazy, Suspense } from 'react';
 import MainLayout from './components/MainLayout';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
@@ -24,10 +8,34 @@ import { PWAProvider } from './context/PWAContext';
 import { PWAPrompt } from './components/PWAPrompt';
 import { PWAInstallBanner } from './components/PWAInstallBanner';
 
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const SignupPage = lazy(() => import('./pages/SignupPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const DiscoverPage = lazy(() => import('./pages/DiscoverPage'));
+const MatchesPage = lazy(() => import('./pages/MatchesPage'));
+const MessagesPage = lazy(() => import('./pages/MessagesPage'));
+const ChatPage = lazy(() => import('./pages/ChatPage'));
+const ProjectsPage = lazy(() => import('./pages/ProjectsPage'));
+const ProjectDetailsPage = lazy(() => import('./pages/ProjectDetailsPage'));
+const CommunityPage = lazy(() => import('./pages/CommunityPage'));
+const HackathonsPage = lazy(() => import('./pages/HackathonsPage'));
+const HackathonDetailsPage = lazy(() => import('./pages/HackathonDetailsPage'));
+
+const LoadingScreen = () => (
+  <div className="min-h-screen bg-dark-bg flex items-center justify-center text-white">
+    Loading...
+  </div>
+);
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
-  if (isLoading) return <div className="min-h-screen bg-dark-bg flex items-center justify-center text-white">Loading...</div>;
+  if (isLoading) return <LoadingScreen />;
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -38,7 +46,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 function AppRoutes() {
   return (
-    <Routes>
+    <Suspense fallback={<LoadingScreen />}>
+      <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
@@ -172,7 +181,8 @@ function AppRoutes() {
       />
       
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }
 
