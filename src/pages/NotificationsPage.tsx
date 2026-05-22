@@ -1,4 +1,3 @@
-import React from 'react';
 import { useSocket } from '../context/SocketContext';
 import { Link } from 'react-router-dom';
 import { Bell } from 'lucide-react';
