@@ -50,15 +50,15 @@ const MessagesPage = () => {
   return (
     <DashboardContainer>
       {/* Search Bar - Moved below title */}
-      <div className="mb-8">
+      <div className="mb-4">
         <div className="relative group max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-brand-cyan transition-colors" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-brand-cyan transition-colors" />
           <input 
             type="text" 
             placeholder="Search messages..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-11 bg-zinc-900/50 border border-zinc-800 rounded-xl pl-10 pr-4 text-sm text-white focus:outline-none focus:border-brand-cyan/50 transition-all w-full"
+            className="h-10 bg-zinc-900/50 border border-zinc-800 rounded-xl pl-9 pr-4 text-sm text-white focus:outline-none focus:border-brand-cyan/50 transition-all w-full"
           />
         </div>
       </div>
@@ -74,16 +74,16 @@ const MessagesPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
                 onClick={() => navigate(`/chat/${chat.chatId}`)}
-                className="group relative bg-zinc-900/30 hover:bg-zinc-900/60 border border-zinc-800/50 rounded-2xl p-4 flex items-center gap-4 cursor-pointer transition-all duration-300"
+                className="group relative bg-zinc-900/30 hover:bg-zinc-900/60 border border-zinc-800/50 rounded-xl p-3 flex items-center gap-3 cursor-pointer transition-all duration-300"
               >
                 <div className="relative shrink-0">
                   <img 
                     src={chat.user.avatar || '/default-avatar.png'} 
-                    className="w-12 h-12 lg:w-14 lg:h-14 rounded-xl object-cover border border-white/10" 
+                    className="w-10 h-10 lg:w-11 lg:h-11 rounded-lg object-cover border border-white/10" 
                     alt="" 
                   />
                   {isOnline && (
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-zinc-900 rounded-full" />
+                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-zinc-900 rounded-full" />
                   )}
                 </div>
 
@@ -97,17 +97,17 @@ const MessagesPage = () => {
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-zinc-400 truncate max-w-[80%]">
+                    <p className="text-xs text-zinc-400 truncate max-w-[80%]">
                         Click to continue your conversation...
                     </p>
                     {isOnline && (
-                        <span className="flex h-2 w-2 rounded-full bg-brand-cyan shadow-[0_0_8px_rgba(0,229,255,0.5)]" />
+                        <span className="flex h-1.5 w-1.5 rounded-full bg-brand-cyan shadow-[0_0_8px_rgba(0,229,255,0.5)]" />
                     )}
                   </div>
                 </div>
 
-                <div className="shrink-0 p-2 text-zinc-600 group-hover:text-white transition-colors">
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <div className="shrink-0 p-1.5 text-zinc-600 group-hover:text-white transition-colors">
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </motion.div>
             );

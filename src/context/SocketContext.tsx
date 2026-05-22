@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import axios from '../lib/axios';
 
 interface SocketContextType {
   socket: Socket | null;
@@ -34,6 +35,15 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       newSocket.emit('setup', user);
 
+      // Fetch initial notifications
+      axios.get('/notifications').then((res) => {
+        setNotifications(res.data);
+      }).catch(console.error);
+
+      newSocket.on('new_notification', (notification: any) => {
+        setNotifications(prev => [notification, ...prev]);
+      });
+
       newSocket.on('online_status', (users: string[]) => {
         setOnlineUsers(users);
       });
@@ -51,20 +61,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
       });
 
-      newSocket.on('match_created', (data: any) => {
-        setNotifications(prev => [
-          {
-            id: data.id,
-            type: 'match',
-            sender: data.user,
-            title: 'New Match! 🎉',
-            content: `You matched with ${data.user.name}`,
-            path: '/matches',
-            createdAt: data.matchedAt
-          },
-          ...prev
-        ]);
-      });
+
 
       newSocket.on('project_application_received', (data: any) => {
         setNotifications(prev => [
@@ -107,15 +104,14 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [user]);
 
-  const clearNotifications = (type?: string) => {
-    if (type) {
-      setNotifications(prev => prev.filter(notif => {
-        const isMsg = notif.type === 'message' || !notif.type;
-        if (type === 'message') return !isMsg;
-        return notif.type !== type;
-      }));
-    } else {
-      setNotifications([]);
+  const clearNotifications = async (type?: string) => {
+    try {
+      if (!type) {
+        await axios.put('/notifications/read-all');
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      }
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
     }
   };
 
