@@ -89,10 +89,10 @@ const ScorePill = ({ score }: { score: number }) => {
    Back card (ghost stack behind)
 ───────────────────────────────────────────────── */
 const BackCard = () => (
-  <>
-    <div className="absolute inset-x-3 top-2 bottom-0 bg-zinc-900/50 border border-zinc-800/40 rounded-[28px] pointer-events-none" />
-    <div className="absolute inset-x-6 top-4 bottom-0 bg-zinc-900/25 border border-zinc-800/20 rounded-[28px] pointer-events-none" />
-  </>
+  <div className="absolute inset-0 pointer-events-none">
+    <div className="absolute inset-x-3 top-2 bottom-0 bg-zinc-900/50 border border-zinc-800/40 rounded-[28px]" />
+    <div className="absolute inset-x-6 top-4 bottom-0 bg-zinc-900/25 border border-zinc-800/20 rounded-[28px]" />
+  </div>
 );
 
 /* ─────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, User, Heart, X, ChevronRight, Cpu } from 'lucide-react';
+import { Sparkles, Heart, X, ChevronRight, Cpu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../lib/axios';
 import { toast } from 'react-hot-toast';
@@ -114,7 +114,7 @@ const RecommendedSection = ({ onSwipeFromRecommended, fallback }: RecommendedSec
     );
   }
 
-  if (visible.length === 0) return <>{fallback}</> || null;
+  if (visible.length === 0) return fallback ? <>{fallback}</> : null;
 
   return (
     <div className="mb-10">
@@ -143,7 +143,7 @@ const RecommendedSection = ({ onSwipeFromRecommended, fallback }: RecommendedSec
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         <AnimatePresence mode="popLayout">
           {visible.map((dev, idx) => {
-            const { bgCls, borderCls, textCls } = scoreStyle(dev.compatibilityScore);
+            const {  textCls } = scoreStyle(dev.compatibilityScore);
             const avatarUrl = dev.avatar ||
               `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(dev.name)}`;
 

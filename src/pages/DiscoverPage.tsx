@@ -182,9 +182,8 @@ const DiscoverPage = () => {
                 {isLoading ? (
                   /* Skeleton */
                   <div key="loading" className="absolute inset-0 bg-[#111115] border border-zinc-800/70 rounded-[28px] overflow-hidden flex flex-col">
-                    {/* hero skeleton */}
-                    <div className="h-[200px] bg-zinc-800/30 animate-pulse relative">
-                      <div className="absolute bottom-[-48px] left-1/2 -translate-x-1/2 w-[100px] h-[100px] rounded-[24px] bg-zinc-800 animate-pulse border-[3px] border-zinc-700" />
+                    <div className="h-[180px] bg-zinc-800/30 animate-pulse relative">
+                      <div className="absolute bottom-[-44px] left-1/2 -translate-x-1/2 w-[100px] h-[100px] rounded-[24px] bg-zinc-800 animate-pulse border-[3px] border-zinc-700" />
                     </div>
                     <div className="flex flex-col items-center px-6 pt-16 gap-3">
                       <div className="h-6 w-44 bg-zinc-800 rounded-full animate-pulse" />
@@ -196,63 +195,15 @@ const DiscoverPage = () => {
                     </div>
                   </div>
                 ) : developers.length > 0 ? (
-                  <>
-                    {developers.slice(0, 2).reverse().map((dev, idx) => (
-                      <SwipeCard
-                        key={dev.id}
-                        developer={dev}
-                        onSwipe={handleSwipe}
-                        isTop={idx === (developers.length === 1 ? 0 : 1)}
-                      />
-                    ))}
-
-                    {/* Action buttons */}
-                    <div className="absolute -bottom-20 left-0 right-0 flex items-center justify-center gap-4 z-30">
-                      {/* Skip */}
-                      <motion.button
-                        whileTap={{ scale: 0.85 }}
-                        onClick={() => handleSwipe('left')}
-                        className="relative w-14 h-14 rounded-full bg-[#111115] border-2 border-zinc-700 flex items-center justify-center text-red-400 hover:border-red-500/50 hover:bg-red-500/8 transition-all shadow-xl"
-                      >
-                        <X className="w-6 h-6" />
-                        {swipeDir === 'left' && (
-                          <motion.div initial={{ scale: 0.5, opacity: 0.5 }} animate={{ scale: 2.5, opacity: 0 }}
-                            transition={{ duration: 0.6 }}
-                            className="absolute inset-0 rounded-full bg-red-500/25 pointer-events-none"
-                          />
-                        )}
-                      </motion.button>
-
-                      {/* Centre: count + dots */}
-                      <div className="flex flex-col items-center gap-1.5">
-                        <div className="px-4 py-1.5 rounded-2xl bg-zinc-900 border border-zinc-800">
-                          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
-                            {developers.length} left
-                          </span>
-                        </div>
-                        <div className="flex gap-1">
-                          {developers.slice(0, Math.min(5, developers.length)).map((_, i) => (
-                            <div key={i} className={`h-0.5 rounded-full transition-all duration-300 ${i === 0 ? 'w-5 bg-[#00e5ff]' : 'w-2 bg-zinc-700'}`} />
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Match */}
-                      <motion.button
-                        whileTap={{ scale: 0.85 }}
-                        onClick={() => handleSwipe('right')}
-                        className="relative w-14 h-14 rounded-full bg-[#111115] border-2 border-zinc-700 flex items-center justify-center text-emerald-400 hover:border-emerald-500/50 hover:bg-emerald-500/8 transition-all shadow-xl"
-                      >
-                        <Heart className="w-6 h-6" />
-                        {swipeDir === 'right' && (
-                          <motion.div initial={{ scale: 0.5, opacity: 0.5 }} animate={{ scale: 2.5, opacity: 0 }}
-                            transition={{ duration: 0.6 }}
-                            className="absolute inset-0 rounded-full bg-emerald-500/25 pointer-events-none"
-                          />
-                        )}
-                      </motion.button>
-                    </div>
-                  </>
+                  /* Render top 2 cards — each is a single DOM element, no Fragment */
+                  developers.slice(0, 2).reverse().map((dev, idx) => (
+                    <SwipeCard
+                      key={dev.id}
+                      developer={dev}
+                      onSwipe={handleSwipe}
+                      isTop={idx === (developers.length === 1 ? 0 : 1)}
+                    />
+                  ))
                 ) : (
                   <EmptyState
                     icon={Users}
@@ -263,6 +214,55 @@ const DiscoverPage = () => {
                   />
                 )}
               </AnimatePresence>
+
+              {/* Action buttons — outside AnimatePresence, shown only when stack has cards */}
+              {!isLoading && developers.length > 0 && (
+                <div className="absolute -bottom-20 left-0 right-0 flex items-center justify-center gap-4 z-30">
+                  {/* Skip */}
+                  <motion.button
+                    whileTap={{ scale: 0.85 }}
+                    onClick={() => handleSwipe('left')}
+                    className="relative w-14 h-14 rounded-full bg-[#111115] border-2 border-zinc-700 flex items-center justify-center text-red-400 hover:border-red-500/50 hover:bg-red-500/8 transition-all shadow-xl"
+                  >
+                    <X className="w-6 h-6" />
+                    {swipeDir === 'left' && (
+                      <motion.div initial={{ scale: 0.5, opacity: 0.5 }} animate={{ scale: 2.5, opacity: 0 }}
+                        transition={{ duration: 0.6 }}
+                        className="absolute inset-0 rounded-full bg-red-500/25 pointer-events-none"
+                      />
+                    )}
+                  </motion.button>
+
+                  {/* Centre: count + dots */}
+                  <div className="flex flex-col items-center gap-1.5">
+                    <div className="px-4 py-1.5 rounded-2xl bg-zinc-900 border border-zinc-800">
+                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                        {developers.length} left
+                      </span>
+                    </div>
+                    <div className="flex gap-1">
+                      {developers.slice(0, Math.min(5, developers.length)).map((_, i) => (
+                        <div key={i} className={`h-0.5 rounded-full transition-all duration-300 ${i === 0 ? 'w-5 bg-[#00e5ff]' : 'w-2 bg-zinc-700'}`} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Match */}
+                  <motion.button
+                    whileTap={{ scale: 0.85 }}
+                    onClick={() => handleSwipe('right')}
+                    className="relative w-14 h-14 rounded-full bg-[#111115] border-2 border-zinc-700 flex items-center justify-center text-emerald-400 hover:border-emerald-500/50 hover:bg-emerald-500/8 transition-all shadow-xl"
+                  >
+                    <Heart className="w-6 h-6" />
+                    {swipeDir === 'right' && (
+                      <motion.div initial={{ scale: 0.5, opacity: 0.5 }} animate={{ scale: 2.5, opacity: 0 }}
+                        transition={{ duration: 0.6 }}
+                        className="absolute inset-0 rounded-full bg-emerald-500/25 pointer-events-none"
+                      />
+                    )}
+                  </motion.button>
+                </div>
+              )}
             </div>
 
             {/* Keyboard hint */}
