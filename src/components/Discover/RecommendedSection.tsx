@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, User, ArrowRight, Heart, ChevronRight, Brain } from 'lucide-react';
+import { Sparkles, User, Heart, X, ChevronRight, Cpu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../lib/axios';
-import CompatibilityBadge from './CompatibilityBadge';
 import { toast } from 'react-hot-toast';
 
 interface MatchReason {
@@ -23,32 +22,61 @@ interface RecommendedDev {
   location?: string;
   compatibilityScore: number;
   matchReasons: MatchReason[];
-  compatibilityBreakdown?: Record<string, number>;
 }
 
 interface RecommendedSectionProps {
   onSwipeFromRecommended?: (direction: 'left' | 'right', devId: string) => void;
+  fallback?: React.ReactNode;
 }
 
-const RecommendedSection = ({ onSwipeFromRecommended }: RecommendedSectionProps) => {
-  const [devs, setDevs]           = useState<RecommendedDev[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+/* ── Score colour map ──────────────────────────────────────────── */
+const scoreStyle = (s: number) => {
+  if (s >= 80) return { ring: '#00e5ff', textCls: 'text-[#00e5ff]', bgCls: 'bg-[#00e5ff]/10', borderCls: 'border-[#00e5ff]/25', label: 'Elite' };
+  if (s >= 60) return { ring: '#7c3aed', textCls: 'text-violet-400', bgCls: 'bg-violet-500/10', borderCls: 'border-violet-500/25', label: 'Strong' };
+  if (s >= 35) return { ring: '#f59e0b', textCls: 'text-amber-400', bgCls: 'bg-amber-500/10', borderCls: 'border-amber-500/25', label: 'Good' };
+  return { ring: '#6b7280', textCls: 'text-zinc-400', bgCls: 'bg-zinc-800/50', borderCls: 'border-zinc-700', label: 'Match' };
+};
+
+/* ── Inline mini ring ───────────────────────────────────────────── */
+const MiniRing = ({ score }: { score: number }) => {
+  const { ring, textCls, label } = scoreStyle(score);
+  const r = 14; const c = 2 * Math.PI * r;
+  const off = c - (score / 100) * c;
+  return (
+    <div className="flex items-center gap-1.5">
+      <div className="relative w-9 h-9">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="3.5" />
+          <motion.circle cx="18" cy="18" r={r} fill="none" stroke={ring} strokeWidth="3.5"
+            strokeLinecap="round" strokeDasharray={c}
+            initial={{ strokeDashoffset: c }} animate={{ strokeDashoffset: off }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+          />
+        </svg>
+        <span className={`absolute inset-0 flex items-center justify-center text-[10px] font-black ${textCls}`}>
+          {score}
+        </span>
+      </div>
+      <div>
+        <p className={`text-[10px] font-black ${textCls}`}>{score}%</p>
+        <p className="text-[9px] text-zinc-600 font-bold">{label}</p>
+      </div>
+    </div>
+  );
+};
+
+/* ── Main Component ─────────────────────────────────────────────── */
+const RecommendedSection = ({ onSwipeFromRecommended, fallback }: RecommendedSectionProps) => {
+  const [devs, setDevs]               = useState<RecommendedDev[]>([]);
+  const [isLoading, setIsLoading]     = useState(true);
+  const [dismissed, setDismissed]     = useState<Set<string>>(new Set());
   const [connectingId, setConnectingId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchRecommended = async () => {
-      try {
-        const res = await api.get('/swipe/recommended?limit=6');
-        setDevs(res.data);
-      } catch {
-        // Silently fail — section just won't render
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchRecommended();
+    api.get('/swipe/recommended?limit=6')
+      .then(r => setDevs(r.data))
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
   }, []);
 
   const handleConnect = async (dev: RecommendedDev) => {
@@ -56,202 +84,176 @@ const RecommendedSection = ({ onSwipeFromRecommended }: RecommendedSectionProps)
     setConnectingId(dev.id);
     try {
       const res = await api.post('/swipe/right', { receiverId: dev.id });
-      setDismissed(prev => new Set([...prev, dev.id]));
-      if (res.data.isMatch) {
-        toast.success(`🎉 It's a match with ${dev.name}!`);
-      } else {
-        toast.success(`💌 Connect request sent to ${dev.name}`);
-      }
+      setDismissed(p => new Set([...p, dev.id]));
+      if (res.data.isMatch) toast.success(`🎉 It's a match with ${dev.name}!`);
+      else                  toast.success(`💌 Connect request sent to ${dev.name}`);
       onSwipeFromRecommended?.('right', dev.id);
-    } catch {
-      toast.error('Failed to send connect request');
-    } finally {
-      setConnectingId(null);
-    }
+    } catch { toast.error('Failed'); }
+    finally  { setConnectingId(null); }
   };
 
-  const handleDismiss = async (dev: RecommendedDev) => {
-    setDismissed(prev => new Set([...prev, dev.id]));
-    try {
-      await api.post('/swipe/left', { receiverId: dev.id });
-      onSwipeFromRecommended?.('left', dev.id);
-    } catch { /* ignore */ }
+  const handleSkip = async (dev: RecommendedDev) => {
+    setDismissed(p => new Set([...p, dev.id]));
+    try { await api.post('/swipe/left', { receiverId: dev.id }); } catch {}
+    onSwipeFromRecommended?.('left', dev.id);
   };
 
   const visible = devs.filter(d => !dismissed.has(d.id));
 
+  /* ── Loading skeleton ── */
   if (isLoading) {
     return (
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-6 h-6 bg-zinc-800 rounded-lg animate-pulse" />
-          <div className="h-4 w-48 bg-zinc-800 rounded-full animate-pulse" />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="mb-10">
+        <div className="h-5 w-52 bg-zinc-800 rounded-full animate-pulse mb-4" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-36 bg-zinc-900/60 border border-zinc-800/50 rounded-2xl animate-pulse" />
+            <div key={i} className="h-44 bg-zinc-900/70 border border-zinc-800/50 rounded-3xl animate-pulse" />
           ))}
         </div>
       </div>
     );
   }
 
-  if (visible.length === 0) return null;
+  if (visible.length === 0) return <>{fallback}</> || null;
 
   return (
-    <div className="mb-8">
-      {/* Section Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center">
-            <Brain className="w-3.5 h-3.5 text-brand-cyan" />
+    <div className="mb-10">
+      {/* ── Section header ── */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
+          {/* Animated icon badge */}
+          <div className="relative">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#00e5ff]/20 to-violet-600/20 border border-[#00e5ff]/20 flex items-center justify-center">
+              <Cpu className="w-4.5 h-4.5 text-[#00e5ff]" />
+            </div>
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#00e5ff] rounded-full border-2 border-[#0a0a0b] animate-pulse" />
           </div>
           <div>
-            <h3 className="text-sm font-black text-white tracking-tight">Recommended For You</h3>
-            <p className="text-[10px] text-zinc-500 font-bold">AI-powered matches · V1 Engine</p>
+            <h3 className="text-[15px] font-black text-white tracking-tight">Recommended For You</h3>
+            <p className="text-[10px] text-zinc-500 font-semibold mt-0.5">AI Compatibility Engine · V1</p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-cyan/5 border border-brand-cyan/15">
-          <Sparkles className="w-3 h-3 text-brand-cyan" />
-          <span className="text-[9px] font-black text-brand-cyan uppercase tracking-widest">{visible.length} picks</span>
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#00e5ff]/8 border border-[#00e5ff]/15">
+          <Sparkles className="w-3 h-3 text-[#00e5ff]" />
+          <span className="text-[10px] font-black text-[#00e5ff] uppercase tracking-widest">{visible.length} picks</span>
         </div>
       </div>
 
-      {/* Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {/* ── Cards ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         <AnimatePresence mode="popLayout">
-          {visible.map((dev, idx) => (
-            <motion.div
-              key={dev.id}
-              layout
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: -10 }}
-              transition={{ duration: 0.25, delay: idx * 0.06 }}
-              onMouseEnter={() => setHoveredId(dev.id)}
-              onMouseLeave={() => setHoveredId(null)}
-              className="relative group bg-zinc-900 border border-zinc-800 rounded-2xl p-4 overflow-hidden hover:border-zinc-700 transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,229,255,0.06)]"
-            >
-              {/* Glow Effect */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/[0.04] via-transparent to-brand-purple/[0.04] rounded-2xl" />
-              </div>
+          {visible.map((dev, idx) => {
+            const { bgCls, borderCls, textCls } = scoreStyle(dev.compatibilityScore);
+            const avatarUrl = dev.avatar ||
+              `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(dev.name)}`;
 
-              {/* Score Badge */}
-              <div className="absolute top-3 right-3">
-                <CompatibilityBadge score={dev.compatibilityScore} size="sm" />
-              </div>
+            return (
+              <motion.div
+                key={dev.id}
+                layout
+                initial={{ opacity: 0, y: 16, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92, y: -8 }}
+                transition={{ duration: 0.3, delay: idx * 0.07 }}
+                className="group relative bg-[#111114] border border-zinc-800/70 rounded-3xl overflow-hidden hover:border-zinc-700 transition-all duration-300"
+              >
+                {/* Subtle top gradient accent */}
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#00e5ff]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-              {/* Avatar + Name */}
-              <div className="flex items-start gap-3 mb-3">
-                <div className="relative flex-shrink-0">
-                  <div className="w-11 h-11 rounded-xl overflow-hidden bg-zinc-800 border border-zinc-700/50">
-                    {dev.avatar ? (
-                      <img src={dev.avatar} alt={dev.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-zinc-600">
-                        <User className="w-5 h-5" />
+                {/* Inner glow on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#00e5ff]/[0.03] via-transparent to-violet-600/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl" />
+
+                <div className="relative p-4">
+                  {/* ── Top row: avatar + name + score ── */}
+                  <div className="flex items-center gap-3 mb-3.5">
+                    {/* Avatar */}
+                    <div className="relative flex-shrink-0">
+                      <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-zinc-700/60 shadow-lg">
+                        <img src={avatarUrl} alt={dev.name} className="w-full h-full object-cover" />
                       </div>
-                    )}
-                  </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border border-zinc-900" />
-                </div>
-                <div className="min-w-0 flex-1 pr-16">
-                  <p className="text-sm font-bold text-white truncate">{dev.name}</p>
-                  <p className="text-[10px] text-brand-cyan font-semibold uppercase tracking-wider truncate">
-                    {dev.experienceLevel || 'Developer'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Match Reasons */}
-              {dev.matchReasons && dev.matchReasons.length > 0 && (
-                <div className="mb-3 space-y-1">
-                  {dev.matchReasons.slice(0, 2).map((reason, i) => (
-                    <div key={i} className="flex items-center gap-1.5">
-                      <span className="text-xs">{reason.icon}</span>
-                      <span className="text-[10px] text-zinc-400 font-medium truncate">{reason.label}</span>
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#111114]" />
                     </div>
-                  ))}
-                </div>
-              )}
 
-              {/* Skills */}
-              <div className="flex flex-wrap gap-1 mb-3">
-                {(dev.skills || []).slice(0, 3).map(skill => (
-                  <span key={skill} className="px-1.5 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.06] text-[9px] font-bold text-zinc-400">
-                    {skill}
-                  </span>
-                ))}
-              </div>
+                    {/* Name + Level */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] font-black text-white truncate leading-tight">{dev.name}</p>
+                      <p className={`text-[10px] font-bold uppercase tracking-wider truncate mt-0.5 ${textCls}`}>
+                        {dev.experienceLevel || 'Developer'}
+                      </p>
+                      {dev.intent && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <span className="text-[9px] text-zinc-600 font-semibold">{dev.intent}</span>
+                        </div>
+                      )}
+                    </div>
 
-              {/* Action Buttons */}
-              <AnimatePresence>
-                {hoveredId === dev.id ? (
-                  <motion.div
-                    key="actions"
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 4 }}
-                    transition={{ duration: 0.15 }}
-                    className="flex gap-2"
-                  >
+                    {/* Score ring */}
+                    <div className="flex-shrink-0">
+                      <MiniRing score={dev.compatibilityScore} />
+                    </div>
+                  </div>
+
+                  {/* ── Match Reasons ── */}
+                  {dev.matchReasons && dev.matchReasons.length > 0 && (
+                    <div className="mb-3">
+                      {dev.matchReasons.slice(0, 2).map((r, i) => (
+                        <div key={i} className="flex items-center gap-1.5 py-0.5">
+                          <span className="text-sm leading-none">{r.icon}</span>
+                          <span className="text-[10px] text-zinc-400 font-medium leading-snug truncate">{r.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* ── Skills ── */}
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {(dev.skills || []).slice(0, 3).map(skill => (
+                      <span key={skill}
+                        className="px-2 py-0.5 rounded-lg bg-white/[0.04] border border-white/[0.07] text-[9px] font-bold text-zinc-400"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* ── Action buttons (always visible) ── */}
+                  <div className="flex gap-2">
                     <button
-                      onClick={() => handleDismiss(dev)}
-                      className="flex-1 py-1.5 rounded-xl bg-zinc-800/80 border border-zinc-700/50 text-[10px] font-black text-zinc-400 hover:text-white hover:bg-zinc-700/80 transition-all uppercase tracking-widest"
+                      onClick={() => handleSkip(dev)}
+                      className="flex items-center justify-center gap-1 flex-1 py-2 rounded-2xl bg-zinc-800/80 border border-zinc-700/50 text-[10px] font-black text-zinc-400 hover:text-white hover:bg-zinc-700/80 transition-all uppercase tracking-widest"
                     >
+                      <X className="w-3 h-3" />
                       Skip
                     </button>
                     <button
                       onClick={() => handleConnect(dev)}
                       disabled={connectingId === dev.id}
-                      className="flex-[2] flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-brand-cyan text-dark-bg text-[10px] font-black hover:opacity-90 transition-all uppercase tracking-widest shadow-lg shadow-brand-cyan/20 disabled:opacity-50"
+                      className="flex items-center justify-center gap-1.5 flex-[2] py-2 rounded-2xl bg-[#00e5ff] text-[#0a0a0b] text-[10px] font-black hover:opacity-90 active:scale-95 transition-all uppercase tracking-widest shadow-lg shadow-[#00e5ff]/20 disabled:opacity-50"
                     >
                       {connectingId === dev.id ? (
                         <span className="animate-pulse">Sending…</span>
                       ) : (
                         <>
-                          <Heart className="w-3 h-3 fill-dark-bg" />
+                          <Heart className="w-3 h-3 fill-[#0a0a0b]" />
                           Connect
                         </>
                       )}
                     </button>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="footer"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center justify-between"
-                  >
-                    <Link
-                      to={`/profile/${dev.id}`}
-                      className="flex items-center gap-1 text-[10px] font-bold text-zinc-500 hover:text-white transition-colors"
-                    >
-                      View profile
-                      <ChevronRight className="w-3 h-3" />
-                    </Link>
-                    <span className="text-[9px] text-zinc-600 font-bold uppercase">
-                      {dev.intent || 'Open to connect'}
-                    </span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+                  </div>
 
-      {/* "See All" link */}
-      <div className="mt-3 flex justify-end">
-        <button
-          onClick={() => window.scrollTo({ top: 999, behavior: 'smooth' })}
-          className="flex items-center gap-1 text-[10px] font-black text-zinc-500 hover:text-brand-cyan transition-colors uppercase tracking-widest"
-        >
-          Discover more in the stack below
-          <ArrowRight className="w-3 h-3" />
-        </button>
+                  {/* Profile link */}
+                  <Link
+                    to={`/profile/${dev.id}`}
+                    className="flex items-center justify-center gap-1 mt-2.5 text-[9px] font-bold text-zinc-600 hover:text-zinc-300 transition-colors uppercase tracking-widest"
+                  >
+                    View full profile
+                    <ChevronRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </div>
     </div>
   );
