@@ -6,7 +6,7 @@ import {
   Heart, 
   Settings, MessageSquare,
   Layers, Clock, Trophy,
-  CheckCircle2, MoreVertical, Ban, AlertTriangle
+  CheckCircle2, MoreVertical, Ban, AlertTriangle, Eye
 } from 'lucide-react';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
@@ -131,7 +131,9 @@ const ProfilePage = () => {
               </button>
               
               {isMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl py-1 z-50 overflow-hidden">
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl py-1 z-50 overflow-hidden">
                   <button 
                     onClick={() => { setIsMenuOpen(false); setIsReportModalOpen(true); }}
                     className="w-full text-left px-4 py-3 text-xs font-bold text-zinc-300 hover:bg-white/5 flex items-center gap-2"
@@ -145,6 +147,7 @@ const ProfilePage = () => {
                     <Ban className="w-3.5 h-3.5" /> Block User
                   </button>
                 </div>
+                </>
               )}
             </div>
           )}
@@ -188,6 +191,9 @@ const ProfilePage = () => {
               <div className="flex flex-wrap justify-center lg:justify-start gap-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider mt-4">
                 <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-brand-cyan" /> {profile.location || 'Remote'}</div>
                 <div className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-brand-purple" /> Active Now</div>
+                {isOwner && (
+                  <div className="flex items-center gap-1.5 text-amber-500/80" title={`${profile.profileViews || 0} people viewed your profile`}><Eye className="w-3.5 h-3.5" /> {profile.profileViews || 0} Visits</div>
+                )}
               </div>
 
               <div className="flex flex-wrap justify-center lg:justify-start gap-3 pt-6">
@@ -224,6 +230,7 @@ const ProfilePage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
+
           <section className="bg-zinc-900/20 border border-zinc-800/50 rounded-[32px] p-8 space-y-4">
             <SectionTitle>About Me</SectionTitle>
             <p className="text-sm text-zinc-400 leading-relaxed font-medium">

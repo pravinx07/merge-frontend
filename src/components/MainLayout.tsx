@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   MessageSquare,
@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
-import { usePWA } from "../context/PWAContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const getRelativeTime = (dateString: string) => {
@@ -37,11 +36,26 @@ const getRelativeTime = (dateString: string) => {
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuth();
   const { notifications, clearNotifications } = useSocket();
-  const { isInstallable, installApp } = usePWA();
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (location.pathname === "/messages") {
@@ -158,22 +172,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           </button>
         </div>
 
-        {isInstallable && (
-          <div className="p-5 rounded-[24px] bg-linear-to-br from-brand-cyan/10 to-brand-purple/10 border border-white/5 relative overflow-hidden group cursor-pointer">
-            <h4 className="text-xs font-black mb-1.5 relative z-10 tracking-tight">
-              Install Merge App
-            </h4>
-            <p className="text-[10px] text-slate-500 mb-4 relative z-10 leading-tight">
-              Get the native app experience on your phone!
-            </p>
-            <button 
-              onClick={installApp}
-              className="w-full py-2 bg-brand-cyan text-dark-bg text-[9px] font-black rounded-lg transition-all relative z-10 uppercase tracking-widest shadow-lg active:scale-95 cursor-pointer animate-pulse"
-            >
-              Install
-            </button>
-          </div>
-        )}
       </div>
     </>
   );
@@ -224,7 +222,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
 
           <div className="flex items-center gap-2 md:gap-6">
-            <div className="relative">
+            <div className="relative" ref={notificationsRef}>
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 className="relative p-2 text-slate-500 hover:text-white transition-all"
@@ -239,12 +237,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
               <AnimatePresence>
                 {showNotifications && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setShowNotifications(false)}
-                    />
-                    <motion.div
+                  <motion.div
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -325,12 +318,11 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                         )}
                       </div>
                     </motion.div>
-                  </>
                 )}
               </AnimatePresence>
             </div>
 
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="flex items-center gap-2 md:gap-3 pl-2 md:pl-6 border-l border-white/10 group cursor-pointer hover:bg-white/[0.02] p-1 md:p-2 rounded-xl transition-all focus:outline-none"
@@ -357,12 +349,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
               <AnimatePresence>
                 {showDropdown && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setShowDropdown(false)}
-                    />
-                    <motion.div
+                  <motion.div
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -397,7 +384,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                         </button>
                       </div>
                     </motion.div>
-                  </>
                 )}
               </AnimatePresence>
             </div>
