@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Shield, Trash2, Camera, 
   Save, ChevronRight, ChevronDown,
-  Briefcase, Key,
+  Briefcase, Key, Ban,
   Loader2
 } from 'lucide-react';
 import api from '../lib/axios';
@@ -80,6 +80,8 @@ const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState<'profile' | 'professional' | 'security' | 'account'>('profile');
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isBlockedUsersModalOpen, setIsBlockedUsersModalOpen] = useState(false);
+  const [blockedUsers, setBlockedUsers] = useState<any[]>([]);
   
   const [formData, setFormData] = useState<any>({
     name: '', bio: '', location: '', personality: '', status: '',
@@ -230,6 +232,28 @@ const SettingsPage = () => {
       toast.error(err.response?.data?.message || 'Password change failed', { id: toastId });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchBlockedUsers = async () => {
+    try {
+      const res = await api.get('/users/blocked');
+      setBlockedUsers(res.data);
+      setIsBlockedUsersModalOpen(true);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to load blocked users');
+    }
+  };
+
+  const handleUnblock = async (userId: string) => {
+    try {
+      await api.post('/users/unblock', { userId });
+      setBlockedUsers(blockedUsers.filter(u => u.id !== userId));
+      toast.success('User unblocked successfully');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to unblock user');
     }
   };
 
@@ -429,26 +453,43 @@ const SettingsPage = () => {
               )}
 
               {activeTab === 'security' && (
-                <form onSubmit={handleChangePassword} className="space-y-6 max-w-md">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-zinc-400 ml-1">Current Password</label>
-                      <input type="password" value={passwords.current} onChange={(e) => setPasswords({...passwords, current: e.target.value})} className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none" />
+                <div className="space-y-8 max-w-xl">
+                  <form onSubmit={handleChangePassword} className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-xs font-semibold text-zinc-400 ml-1">Current Password</label>
+                        <input type="password" value={passwords.current} onChange={(e) => setPasswords({...passwords, current: e.target.value})} className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-semibold text-zinc-400 ml-1">New Password</label>
+                        <input type="password" value={passwords.new} onChange={(e) => setPasswords({...passwords, new: e.target.value})} className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-semibold text-zinc-400 ml-1">Confirm New Password</label>
+                        <input type="password" value={passwords.confirm} onChange={(e) => setPasswords({...passwords, confirm: e.target.value})} className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none" />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-zinc-400 ml-1">New Password</label>
-                      <input type="password" value={passwords.new} onChange={(e) => setPasswords({...passwords, new: e.target.value})} className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold text-zinc-400 ml-1">Confirm New Password</label>
-                      <input type="password" value={passwords.confirm} onChange={(e) => setPasswords({...passwords, confirm: e.target.value})} className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none" />
+                    <button disabled={isLoading} className="flex items-center justify-center gap-2 px-8 py-3.5 bg-brand-cyan text-dark-bg font-bold rounded-xl text-sm hover:scale-[1.02] transition-all">
+                      <Key className="w-4 h-4" />
+                      Update Password
+                    </button>
+                  </form>
+                  
+                  <div className="pt-8 border-t border-zinc-800/50">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <h3 className="text-base font-semibold text-white">Blocked Users</h3>
+                        <p className="text-sm text-zinc-500 mt-1">Manage developers you have blocked. They cannot interact with you.</p>
+                      </div>
+                      <button 
+                        onClick={fetchBlockedUsers}
+                        className="shrink-0 px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl transition-all text-xs flex items-center justify-center gap-2"
+                      >
+                        <Ban className="w-4 h-4" /> Manage Blocks
+                      </button>
                     </div>
                   </div>
-                  <button disabled={isLoading} className="flex items-center justify-center gap-2 px-8 py-3.5 bg-brand-cyan text-dark-bg font-bold rounded-xl text-sm hover:scale-[1.02] transition-all">
-                    <Key className="w-4 h-4" />
-                    Update Password
-                  </button>
-                </form>
+                </div>
               )}
 
               {activeTab === 'account' && (
@@ -512,6 +553,51 @@ const SettingsPage = () => {
                     {isConnectingGithub ? 'Connecting...' : 'Connect'}
                   </button>
                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Blocked Users Modal */}
+      <AnimatePresence>
+        {isBlockedUsersModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsBlockedUsersModalOpen(false)}></div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative bg-zinc-900 border border-zinc-800 rounded-[32px] w-full max-w-md p-8 shadow-2xl flex flex-col max-h-[80vh]"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Ban className="w-5 h-5 text-red-500" /> Blocked Users
+                </h3>
+                <button onClick={() => setIsBlockedUsersModalOpen(false)} className="text-zinc-500 hover:text-white">✕</button>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+                {blockedUsers.length === 0 ? (
+                  <div className="text-center py-10 text-zinc-500 text-sm font-medium">You haven't blocked anyone yet.</div>
+                ) : (
+                  blockedUsers.map(u => (
+                    <div key={u.id} className="flex items-center justify-between p-3 rounded-2xl bg-zinc-800/50 border border-zinc-700/50">
+                      <div className="flex items-center gap-3">
+                        <img src={u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.name}`} alt={u.name} className="w-10 h-10 rounded-full bg-zinc-800" />
+                        <div>
+                          <div className="text-sm font-bold text-white">{u.name}</div>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => handleUnblock(u.id)}
+                        className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-bold text-zinc-300 transition-all border border-white/10"
+                      >
+                        Unblock
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
             </motion.div>
           </div>
