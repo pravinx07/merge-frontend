@@ -95,9 +95,29 @@ const ProfilePage = () => {
                 <CheckCircle2 className="w-5 h-5 text-brand-cyan" />
                 {profile.githubVerified && <span className="text-xs bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full flex items-center gap-1 border border-green-500/20">✓ GitHub Verified</span>}
               </div>
-              <h2 className="text-sm font-medium text-zinc-400">Full Stack & AI Engineer</h2>
+
+              <div className="flex flex-wrap items-center gap-3 mt-2">
+                <div className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg text-xs font-bold flex items-center gap-1">
+                  Builder Score: {profile.builderScore || 0}
+                </div>
+                <div className="px-3 py-1 bg-brand-purple/10 border border-brand-purple/20 text-brand-purple rounded-lg text-xs font-bold">
+                  {profile.builderLevel || 'Beginner Builder'}
+                </div>
+              </div>
+
+              <h2 className="text-sm font-medium text-zinc-400 mt-2">{profile.bio?.slice(0, 50) || "Full Stack & AI Engineer"}...</h2>
+
+              {profile.badges && profile.badges.length > 0 && (
+                <div className="flex flex-wrap justify-center lg:justify-start gap-2 mt-3">
+                  {profile.badges.map((badge: string) => (
+                    <span key={badge} className="px-3 py-1 bg-zinc-800/80 border border-zinc-700 rounded-lg text-xs font-bold text-zinc-300 shadow-sm hover:scale-105 transition-transform cursor-pointer">
+                      {badge}
+                    </span>
+                  ))}
+                </div>
+              )}
               
-              <div className="flex flex-wrap justify-center lg:justify-start gap-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider mt-2">
+              <div className="flex flex-wrap justify-center lg:justify-start gap-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider mt-4">
                 <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-brand-cyan" /> {profile.location || 'Remote'}</div>
                 <div className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-brand-purple" /> Active Now</div>
               </div>
