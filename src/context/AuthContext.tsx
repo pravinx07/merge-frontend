@@ -22,6 +22,8 @@ interface User {
   projects: any;
   githubVerified?: boolean;
   githubData?: any;
+  builderScore?: number;
+  builderLevel?: string;
 }
 
 interface AuthContextType {
