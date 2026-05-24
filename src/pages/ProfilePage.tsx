@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { 
   MapPin, 
   Heart, 
   Settings, MessageSquare,
   Layers, Clock, Trophy,
-  CheckCircle2
+  CheckCircle2, MoreVertical, Ban, AlertTriangle
 } from 'lucide-react';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
@@ -40,6 +41,15 @@ const ProfilePage = () => {
   const { user: currentUser } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+  
+  // Moderation state
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('Spam');
+  const [reportDetails, setReportDetails] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -65,6 +75,40 @@ const ProfilePage = () => {
 
   const isOwner = currentUser?.id === profile.id;
 
+  const handleBlock = async () => {
+    try {
+      await api.post('/users/block', { userId: profile.id });
+      toast.success('User blocked successfully.');
+      setIsBlockModalOpen(false);
+      navigate('/discover');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to block user.');
+    }
+  };
+
+  const handleReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await api.post('/users/report', { 
+        userId: profile.id, 
+        reason: reportReason, 
+        details: reportDetails 
+      });
+      toast.success('Report submitted successfully.');
+      setIsReportModalOpen(false);
+      setReportDetails('');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to submit report.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  };
+
   return (
     <DashboardContainer>
       {/* Hero Header Section */}
@@ -75,10 +119,36 @@ const ProfilePage = () => {
         </div>
 
         <div className="relative p-8 pt-20">
-          {isOwner && (
+          {isOwner ? (
             <Link to="/settings" className="absolute top-6 right-8 px-4 py-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl font-bold text-xs hover:bg-white/10 transition-all flex items-center gap-2">
               <Settings className="w-3.5 h-3.5" /> Edit Profile
             </Link>
+          ) : (
+            <div className="absolute top-6 right-8">
+              <button 
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl hover:bg-white/10 transition-all text-zinc-400 hover:text-white"
+              >
+                <MoreVertical className="w-4 h-4" />
+              </button>
+              
+              {isMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl py-1 z-50 overflow-hidden">
+                  <button 
+                    onClick={() => { setIsMenuOpen(false); setIsReportModalOpen(true); }}
+                    className="w-full text-left px-4 py-3 text-xs font-bold text-zinc-300 hover:bg-white/5 flex items-center gap-2"
+                  >
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-500" /> Report User
+                  </button>
+                  <button 
+                    onClick={() => { setIsMenuOpen(false); setIsBlockModalOpen(true); }}
+                    className="w-full text-left px-4 py-3 text-xs font-bold text-red-400 hover:bg-red-500/10 flex items-center gap-2"
+                  >
+                    <Ban className="w-3.5 h-3.5" /> Block User
+                  </button>
+                </div>
+              )}
+            </div>
           )}
 
           <div className="flex flex-col lg:flex-row items-center lg:items-end gap-6 text-center lg:text-left">
@@ -252,6 +322,95 @@ const ProfilePage = () => {
           </section>
         </div>
       </div>
+
+      {/* Report Modal */}
+      {isReportModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-[32px] w-full max-w-md p-8 shadow-2xl">
+            <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-500" /> Report User
+            </h3>
+            <p className="text-xs text-zinc-400 mb-6">Your report is anonymous. We take all reports seriously to keep our community safe.</p>
+            
+            <form onSubmit={handleReport} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wider">Reason</label>
+                <select 
+                  value={reportReason}
+                  onChange={(e) => setReportReason(e.target.value)}
+                  className="w-full bg-zinc-800/50 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-cyan"
+                >
+                  <option className="bg-zinc-900 text-white" value="Spam">Spam</option>
+                  <option className="bg-zinc-900 text-white" value="Fake Profile">Fake Profile</option>
+                  <option className="bg-zinc-900 text-white" value="Inappropriate Behavior">Inappropriate Behavior</option>
+                  <option className="bg-zinc-900 text-white" value="Harassment">Harassment</option>
+                  <option className="bg-zinc-900 text-white" value="Scam">Scam</option>
+                  <option className="bg-zinc-900 text-white" value="Other">Other</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-zinc-400 mb-2 uppercase tracking-wider">Additional Details (Optional)</label>
+                <textarea 
+                  value={reportDetails}
+                  onChange={(e) => setReportDetails(e.target.value)}
+                  className="w-full bg-zinc-800/50 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-cyan min-h-[100px]"
+                  placeholder="Please provide any extra context..."
+                />
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button 
+                  type="button" 
+                  onClick={() => setIsReportModalOpen(false)}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-xs bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-600 text-dark-bg transition-all disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Report'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Block Confirmation Modal */}
+      {isBlockModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-[32px] w-full max-w-sm p-8 shadow-2xl text-center">
+            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Ban className="w-8 h-8 text-red-500" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Block User?</h3>
+            <p className="text-xs text-zinc-400 mb-8 leading-relaxed">
+              Are you sure you want to block <span className="text-white font-bold">{profile.name}</span>? They will be permanently removed from your feed and matches.
+            </p>
+            
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setIsBlockModalOpen(false)}
+                className="flex-1 py-3 px-4 rounded-xl font-bold text-xs bg-zinc-800 text-zinc-300 hover:bg-zinc-700 transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleBlock}
+                className="flex-1 py-3 px-4 rounded-xl font-bold text-xs bg-red-500 hover:bg-red-600 text-white transition-all"
+              >
+                Block User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      )}
     </DashboardContainer>
   );
 };
