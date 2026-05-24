@@ -107,8 +107,6 @@ const ProfilePage = () => {
     }
   };
 
-  };
-
   return (
     <DashboardContainer>
       {/* Hero Header Section */}
@@ -410,7 +408,7 @@ const ProfilePage = () => {
         </div>
       )}
 
-      )}
+    
     </DashboardContainer>
   );
 };
