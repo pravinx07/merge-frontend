@@ -9,7 +9,15 @@ import { Footer } from '../components/Footer';
 
 import { Pricing } from '../components/Pricing';
 
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
 const LandingPage = () => {
+  const { isAuthenticated } = useAuth();
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-dark-bg text-slate-300 selection:bg-brand-cyan/30 font-sans">
       <Navbar />

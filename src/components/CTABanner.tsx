@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export const CTABanner = () => {
   return (
     <section className="py-20">
@@ -9,9 +11,11 @@ export const CTABanner = () => {
             just <span className="text-brand-cyan">one match</span> away.
           </h2>
           <p className="text-slate-400 mb-10 text-lg">Join thousands of developers building connections that matter.</p>
-          <button className="px-10 py-4 bg-white text-dark-bg rounded-2xl font-bold hover:scale-105 transition-transform">
-            Create Developer Profile
-          </button>
+          <Link to="/signup">
+            <button className="px-10 py-4 bg-white text-dark-bg rounded-2xl font-bold hover:scale-105 transition-transform">
+              Create Developer Profile
+            </button>
+          </Link>
           <p className="mt-4 text-xs text-slate-500">It's free • Takes less than 2 minutes</p>
         </div>
       </div>
