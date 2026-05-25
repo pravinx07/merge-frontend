@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion';
 import heroUi from '../assets/hero-ui.png';
 import avatars from '../assets/avatars.png';
+import { useNavigate } from 'react-router-dom';
 
 export const Hero = () => {
+  const navigate = useNavigate();
   return (
     <section className="relative pt-32 pb-20 overflow-hidden">
       {/* Abstract background glows */}
@@ -44,7 +46,7 @@ export const Hero = () => {
             transition={{ delay: 0.3 }}
             className="flex flex-wrap justify-center lg:justify-start gap-4 mb-6"
           >
-            <button className="px-8 py-4 bg-brand-cyan text-dark-bg rounded-xl font-bold shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:-translate-y-1 transition-all flex items-center gap-2 cursor-pointer">
+            <button onClick={()=>navigate('/login')} className="px-8 py-4 bg-brand-cyan text-dark-bg rounded-xl font-bold shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:-translate-y-1 transition-all flex items-center gap-2 cursor-pointer">
               Meet Builders
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M14 5l7 7m0 0l-7 7m7-7H3" strokeLinecap="round" strokeLinejoin="round" />
