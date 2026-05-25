@@ -78,7 +78,7 @@ const MatchesPage = () => {
                   <div className="flex items-center gap-3">
                     <div className="relative">
                       <img
-                        src={match.user.avatar || '/default-avatar.png'}
+                        src={match.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(match.user.name)}&background=random`}
                         alt={match.user.name}
                         className="w-10 h-10 rounded-xl object-cover border border-white/5"
                       />
