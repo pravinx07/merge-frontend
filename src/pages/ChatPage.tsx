@@ -5,6 +5,7 @@ import { Send, ArrowLeft, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../lib/axios';
+import { BuildWorkspaceModal } from '../components/BuildWorkspaceModal';
 
 const ChatPage = () => {
   const { chatId } = useParams();
@@ -16,6 +17,7 @@ const ChatPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [otherUser, setOtherUser] = useState<any>(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -140,7 +142,7 @@ const ChatPage = () => {
           <div className="flex items-center gap-3">
             <div className="relative">
               <img 
-                src={otherUser?.avatar || '/default-avatar.png'} 
+                src={otherUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser?.name || 'User')}&background=random`} 
                 className="w-8 h-8 rounded-full object-cover border border-white/10" 
                 alt="" 
               />
@@ -156,6 +158,13 @@ const ChatPage = () => {
             </div>
           </div>
         </div>
+
+        <button 
+          onClick={() => setIsWorkspaceOpen(true)}
+          className="flex items-center gap-2 bg-zinc-800 border border-zinc-700 text-brand-cyan px-4 py-2 rounded-xl text-xs font-bold shadow-lg hover:bg-zinc-700 hover:scale-105 transition-all"
+        >
+          <span>Build Together</span>
+        </button>
       </div>
 
       {/* Messages Area */}
@@ -223,6 +232,14 @@ const ChatPage = () => {
           </button>
         </form>
       </div>
+
+      <BuildWorkspaceModal 
+        isOpen={isWorkspaceOpen} 
+        onClose={() => setIsWorkspaceOpen(false)} 
+        otherUser={otherUser} 
+        currentUser={user}
+        chatId={chatId || ''}
+      />
     </div>
   );
 };

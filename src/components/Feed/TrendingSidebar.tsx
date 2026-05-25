@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Flame, Code } from 'lucide-react';
 import api from '../../lib/axios';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 interface TrendingData {
   trendingDevelopers: Array<{
@@ -79,7 +80,7 @@ const TrendingSidebar: React.FC = () => {
                 <img 
                   src={dev.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(dev.name)}&background=random`} 
                   alt={dev.name} 
-                  className="w-10 h-10 rounded-full border border-white/10 group-hover:border-purple-500 transition-colors"
+                  className="w-10 h-10 rounded-full object-cover border border-white/10 group-hover:border-purple-500 transition-colors"
                 />
                 <div>
                   <h3 className="font-medium text-sm text-gray-200 group-hover:text-purple-400 transition-colors">{dev.name}</h3>
@@ -89,12 +90,18 @@ const TrendingSidebar: React.FC = () => {
               <button 
                 onClick={(e) => {
                   e.preventDefault();
-                  setFollowed(prev => ({...prev, [dev.id]: !prev[dev.id]}));
+                  const isFollowing = followed[dev.id];
+                  setFollowed(prev => ({...prev, [dev.id]: !isFollowing}));
+                  if (!isFollowing) {
+                    toast.success(`You are now following ${dev.name}`);
+                  } else {
+                    toast(`Unfollowed ${dev.name}`, { icon: '👋' });
+                  }
                 }}
                 className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all border ${
                   followed[dev.id] 
                     ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30' 
-                    : 'bg-white/5 hover:bg-white/10 text-white border-white/10'
+                    : 'bg-white/5 hover:bg-white/10 text-white border-white/10 cursor-pointer'
                 }`}
               >
                 {followed[dev.id] ? 'Following' : 'Follow'}

@@ -78,7 +78,7 @@ const MessagesPage = () => {
               >
                 <div className="relative shrink-0">
                   <img 
-                    src={chat.user.avatar || '/default-avatar.png'} 
+                    src={chat.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.user.name)}&background=random`} 
                     className="w-10 h-10 lg:w-11 lg:h-11 rounded-lg object-cover border border-white/10" 
                     alt="" 
                   />

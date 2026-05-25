@@ -137,7 +137,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group ${
                 isActive
                   ? "bg-white/5 text-brand-cyan"
-                  : "text-slate-500 hover:text-white hover:bg-white/[0.01]"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
               }`}
             >
               <item.icon

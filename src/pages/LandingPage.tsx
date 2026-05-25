@@ -13,7 +13,14 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const LandingPage = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div className="min-h-screen bg-dark-bg flex items-center justify-center">
+      <div className="w-8 h-8 rounded-full border-t-2 border-brand-cyan animate-spin"></div>
+    </div>;
+  }
+
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }

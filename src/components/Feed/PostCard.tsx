@@ -126,7 +126,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           <img 
             src={post.author.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.name)}&background=random`} 
             alt={post.author.name} 
-            className="w-10 h-10 rounded-full border border-white/10"
+            className="w-10 h-10 rounded-full object-cover border border-white/10"
           />
           <div>
             <h3 className="font-semibold text-white">{post.author.name}</h3>
