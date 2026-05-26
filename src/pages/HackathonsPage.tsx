@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, Calendar, MapPin, Users, Plus, X } from 'lucide-react';
+import { Trophy, Calendar, MapPin, Users, Plus, X, Trash2, Clock } from 'lucide-react';
 import api from '../lib/axios';
 import { DashboardContainer } from '../components/DashboardComponents';
 import LoadingSkeleton from '../components/LoadingSkeleton';
@@ -17,9 +17,25 @@ const HackathonsPage = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<'Online' | 'Local' | 'College'>('Online');
-  const [duration, setDuration] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [location, setLocation] = useState('');
   const [isHosting, setIsHosting] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  // Auto-calculate duration label from start/end dates
+  const calcDuration = (start: string, end: string) => {
+    if (!start || !end) return '';
+    const diffMs = new Date(end).getTime() - new Date(start).getTime();
+    if (diffMs <= 0) return '';
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+    if (diffDays >= 1) return `${diffDays} Day${diffDays > 1 ? 's' : ''}`;
+    return `${diffHours} Hour${diffHours > 1 ? 's' : ''}`;
+  };
+
+  // Today's date for min attribute
+  const todayStr = new Date().toISOString().split('T')[0];
 
   const fetchHackathons = async () => {
     try {
@@ -38,8 +54,13 @@ const HackathonsPage = () => {
 
   const handleHostHackathon = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !description.trim() || !duration.trim()) {
-      toast.error('Title, description, and duration are required.');
+    const duration = calcDuration(startDate, endDate);
+    if (!title.trim() || !description.trim() || !startDate || !endDate || !duration) {
+      toast.error('Please fill all required fields including valid start and end dates.');
+      return;
+    }
+    if (new Date(endDate) <= new Date(startDate)) {
+      toast.error('End date must be after start date.');
       return;
     }
 
@@ -50,7 +71,9 @@ const HackathonsPage = () => {
         description,
         type,
         duration,
-        location: type === 'Online' ? 'Virtual' : location
+        location: type === 'Online' ? 'Virtual' : location,
+        startDate,
+        endDate
       });
       toast.success('Hackathon hosted successfully!');
       setIsHostModalOpen(false);
@@ -59,7 +82,8 @@ const HackathonsPage = () => {
       setTitle('');
       setDescription('');
       setType('Online');
-      setDuration('');
+      setStartDate('');
+      setEndDate('');
       setLocation('');
       
       // Refresh hackathons list
@@ -82,6 +106,26 @@ const HackathonsPage = () => {
   const filteredHackathons = filterType === 'All'
     ? hackathons
     : hackathons.filter(h => h.type.toLowerCase() === filterType.toLowerCase());
+
+  const isExpired = (endDate: string) => endDate && new Date(endDate) < new Date();
+
+  const handleDeleteHackathon = async (hackathonId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setConfirmDeleteId(hackathonId);
+  };
+
+  const confirmDelete = async () => {
+    if (!confirmDeleteId) return;
+    try {
+      await api.delete(`/hackathons/${confirmDeleteId}`);
+      toast.success('Hackathon deleted successfully.');
+      setHackathons(prev => prev.filter(h => h.id !== confirmDeleteId));
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to delete hackathon');
+    } finally {
+      setConfirmDeleteId(null);
+    }
+  };
 
   return (
     <DashboardContainer>
@@ -144,27 +188,48 @@ const HackathonsPage = () => {
           {filteredHackathons.map((hackathon) => {
             const isOnline = hackathon.type === 'Online';
             const isLocal = hackathon.type === 'Local';
+            const expired = isExpired(hackathon.endDate);
             
             return (
               <div
                 key={hackathon.id}
-                className="bg-zinc-900/20 hover:bg-zinc-900/40 border border-white/5 hover:border-white/10 rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between group h-full hover:-translate-y-1"
+                className={`bg-zinc-900/20 hover:bg-zinc-900/40 border border-white/5 hover:border-white/10 rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between group h-full hover:-translate-y-1 ${expired ? 'opacity-70' : ''}`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${
-                      isOnline 
-                        ? 'bg-brand-cyan/10 border border-brand-cyan/20 text-brand-cyan' 
-                        : isLocal 
-                          ? 'bg-brand-purple/10 border border-brand-purple/20 text-brand-purple'
-                          : 'bg-amber-500/10 border border-amber-500/20 text-amber-500'
-                    }`}>
-                      {hackathon.type}
-                    </span>
-                    <span className="text-xs text-zinc-500 font-bold flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5" />
-                      {hackathon.duration}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${
+                        isOnline 
+                          ? 'bg-brand-cyan/10 border border-brand-cyan/20 text-brand-cyan' 
+                          : isLocal 
+                            ? 'bg-brand-purple/10 border border-brand-purple/20 text-brand-purple'
+                            : 'bg-amber-500/10 border border-amber-500/20 text-amber-500'
+                      }`}>
+                        {hackathon.type}
+                      </span>
+                      {expired ? (
+                        <span className="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-1">
+                          <X className="w-2.5 h-2.5" /> Expired
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-1">
+                          <Clock className="w-2.5 h-2.5" /> Live
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-zinc-500 font-bold flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {hackathon.duration}
+                      </span>
+                      <button
+                        onClick={(e) => handleDeleteHackathon(hackathon.id, e)}
+                        title="Delete hackathon"
+                        className="p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   <h3 className="text-xl font-black text-white group-hover:text-brand-cyan transition-colors mb-2">
@@ -191,9 +256,10 @@ const HackathonsPage = () => {
 
                   <button
                     onClick={() => navigate(`/hackathons/${hackathon.id}`)}
-                    className="w-full py-3 bg-white/5 hover:bg-brand-cyan group-hover:bg-brand-cyan hover:text-dark-bg group-hover:text-dark-bg border border-white/5 rounded-xl text-xs font-black transition-all shadow-md active:scale-98 cursor-pointer"
+                    disabled={expired}
+                    className="w-full py-3 bg-white/5 hover:bg-brand-cyan group-hover:bg-brand-cyan hover:text-dark-bg group-hover:text-dark-bg border border-white/5 rounded-xl text-xs font-black transition-all shadow-md active:scale-98 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:group-hover:bg-white/5 disabled:group-hover:text-white"
                   >
-                    View Hackathon
+                    {expired ? 'Hackathon Ended' : 'View Hackathon'}
                   </button>
                 </div>
               </div>
@@ -253,15 +319,45 @@ const HackathonsPage = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-zinc-400 uppercase tracking-wider mb-2">Duration</label>
+                  <label className="block text-xs font-black text-zinc-400 uppercase tracking-wider mb-2">Start Date</label>
                   <input
-                    type="text"
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    placeholder="e.g. 3 Days, 48 Hours"
-                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-cyan/50"
+                    type="date"
+                    value={startDate}
+                    min={todayStr}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-cyan/50 [color-scheme:dark]"
                     required
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-black text-zinc-400 uppercase tracking-wider mb-2">End Date</label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    min={startDate || todayStr}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-cyan/50 [color-scheme:dark]"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col justify-end">
+                  {startDate && endDate && calcDuration(startDate, endDate) ? (
+                    <div className="flex items-center gap-2 px-4 py-3 bg-brand-cyan/10 border border-brand-cyan/20 rounded-xl">
+                      <Clock className="w-4 h-4 text-brand-cyan shrink-0" />
+                      <div>
+                        <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold">Duration</p>
+                        <p className="text-sm font-black text-brand-cyan">{calcDuration(startDate, endDate)}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 px-4 py-3 bg-zinc-900 border border-white/5 rounded-xl">
+                      <Clock className="w-4 h-4 text-zinc-600" />
+                      <p className="text-xs text-zinc-600 font-bold">Select both dates</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -295,6 +391,43 @@ const HackathonsPage = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setConfirmDeleteId(null)}
+          />
+          <div className="relative bg-zinc-950 border border-red-500/20 rounded-2xl w-full max-w-sm p-6 shadow-2xl shadow-red-500/5">
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-white mb-1">Delete Hackathon?</h3>
+                <p className="text-sm text-zinc-400">
+                  This will permanently remove this hackathon and all its teams. This action cannot be undone.
+                </p>
+              </div>
+              <div className="flex gap-3 w-full mt-2">
+                <button
+                  onClick={() => setConfirmDeleteId(null)}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-zinc-300 bg-white/5 hover:bg-white/10 border border-white/5 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-black text-white bg-red-500 hover:bg-red-600 active:scale-95 transition-all cursor-pointer shadow-lg shadow-red-500/20"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -107,8 +107,12 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const clearNotifications = async (type?: string) => {
     try {
       if (!type) {
+        // Mark all as read via API then update local state
         await axios.put('/notifications/read-all');
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      } else {
+        // Route-based clear: just update local state (no API call needed for socket-only notifications)
+        setNotifications(prev => prev.map(n => n.type === type ? { ...n, read: true } : n));
       }
     } catch (error) {
       console.error('Error clearing notifications:', error);

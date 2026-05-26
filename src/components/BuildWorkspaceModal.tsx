@@ -238,14 +238,36 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
                 </div>
               </div>
 
-              {/* Auto Ship Badge */}
-              <div className="bg-zinc-800/30 border border-zinc-800 rounded-2xl p-5 flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-zinc-800/50 transition-colors">
-                <div className="w-16 h-16 rounded-full bg-zinc-800 border-2 border-dashed border-zinc-700 flex items-center justify-center mb-3 group-hover:border-brand-cyan/50 transition-colors">
-                  <Trophy className="w-6 h-6 text-zinc-600 group-hover:text-brand-cyan transition-colors" />
-                </div>
-                <h4 className="text-sm font-bold text-zinc-400 group-hover:text-white transition-colors"> Shipped Together</h4>
-                <p className="text-[10px] text-zinc-500 mt-1">Unlock this badge by completing the project</p>
-              </div>
+              {/* Ship Together Badge */}
+              {(() => {
+                const doneTasks = tasks.filter(t => t.status === 'done').length;
+                const totalTasks = tasks.length;
+                const allDone = totalTasks > 0 && doneTasks === totalTasks;
+                return (
+                  <div className={`border rounded-2xl p-5 flex flex-col items-center justify-center text-center transition-colors ${allDone ? 'bg-brand-cyan/10 border-brand-cyan/30' : 'bg-zinc-800/30 border-zinc-800'}`}>
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 transition-colors ${allDone ? 'bg-brand-cyan/20 border-2 border-brand-cyan/60' : 'bg-zinc-800 border-2 border-dashed border-zinc-700'}`}>
+                      <Trophy className={`w-6 h-6 transition-colors ${allDone ? 'text-brand-cyan' : 'text-zinc-600'}`} />
+                    </div>
+                    <h4 className={`text-sm font-bold transition-colors ${allDone ? 'text-brand-cyan' : 'text-zinc-400'}`}>Ship Together 🚀</h4>
+                    <p className="text-[10px] text-zinc-500 mt-1">
+                      {allDone
+                        ? '🎉 Badge unlocked! Project shipped!'
+                        : totalTasks === 0
+                          ? 'Add tasks to start tracking progress'
+                          : `${doneTasks}/${totalTasks} tasks done — keep going!`
+                      }
+                    </p>
+                    {totalTasks > 0 && !allDone && (
+                      <div className="w-full mt-3 bg-zinc-700 rounded-full h-1.5">
+                        <div
+                          className="bg-brand-cyan h-1.5 rounded-full transition-all duration-500"
+                          style={{ width: `${(doneTasks / totalTasks) * 100}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
             </div>
 
