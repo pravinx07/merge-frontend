@@ -1,6 +1,7 @@
 import { useSocket } from '../context/SocketContext';
 import { Link } from 'react-router-dom';
 import { Bell } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const getRelativeTime = (dateString: string) => {
   const date = new Date(dateString);
@@ -28,7 +29,10 @@ const NotificationsPage = () => {
           <p className="text-slate-400 text-sm">Stay updated with your builder network</p>
         </div>
         <button
-          onClick={() => clearNotifications()}
+          onClick={async () => {
+            await clearNotifications();
+            toast.success('All notifications marked as read!');
+          }}
           className="text-brand-cyan text-sm font-bold hover:underline"
         >
           Mark all as read

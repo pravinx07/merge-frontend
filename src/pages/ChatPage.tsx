@@ -211,7 +211,7 @@ const ChatPage = () => {
       </div>
 
       {/* Message Input */}
-      <div className="p-3 bg-dark-bg border-t border-white/5 shrink-0">
+      <div className="px-3 py-2 bg-dark-bg border-t border-white/5 shrink-0">
         <form 
           onSubmit={handleSendMessage}
           className="max-w-4xl mx-auto relative"
@@ -221,14 +221,14 @@ const ChatPage = () => {
             value={newMessage}
             onChange={handleTyping}
             placeholder="Type your message..."
-            className="w-full bg-dark-card border border-white/5 focus:border-brand-cyan/50 rounded-xl py-2.5 px-4 pr-12 text-white text-[13px] outline-none transition-all"
+            className="w-full bg-dark-card border border-white/5 focus:border-brand-cyan/50 rounded-lg py-2 px-4 pr-10 text-white text-[13px] outline-none transition-all"
           />
           <button
             type="submit"
             disabled={!newMessage.trim()}
-            className="absolute right-1.5 top-1.5 bottom-1.5 aspect-square bg-brand-cyan text-dark-bg rounded-lg flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all shadow-md"
+            className="absolute right-1 top-1 bottom-1 aspect-square bg-brand-cyan text-dark-bg rounded-md flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all shadow-md"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-3.5 h-3.5" />
           </button>
         </form>
       </div>
