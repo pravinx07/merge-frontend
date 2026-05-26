@@ -225,7 +225,7 @@ const HackathonDetailsPage = () => {
   return (
     <DashboardContainer>
       {/* Sleek, Compact Hackathon banner details */}
-      <div className="bg-zinc-900/40 border border-white/5 rounded-2xl p-5 md:p-6 mb-6 relative overflow-hidden">
+      <div className="bg-zinc-900/40 border border-white/5 rounded-xl p-4 mb-4 relative overflow-hidden">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2.5 mb-2.5">
@@ -237,8 +237,8 @@ const HackathonDetailsPage = () => {
                 {hackathon.duration}
               </span>
             </div>
-            <h1 className="text-xl md:text-2xl font-black text-white mb-1.5">{hackathon.title}</h1>
-            <p className="text-zinc-400 text-xs max-w-3xl leading-relaxed font-medium">{hackathon.description}</p>
+            <h1 className="text-lg font-black text-white mb-1">{hackathon.title}</h1>
+            <p className="text-zinc-400 text-xs max-w-3xl leading-snug font-medium">{hackathon.description}</p>
           </div>
 
           <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
@@ -271,10 +271,10 @@ const HackathonDetailsPage = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 mb-6 border-b border-white/5 pb-2">
+      <div className="flex items-center gap-1 mb-4 border-b border-white/5 pb-2">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${
+          className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
             activeTab === 'overview' ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-300'
           }`}
         >
@@ -282,7 +282,7 @@ const HackathonDetailsPage = () => {
         </button>
         <button
           onClick={() => setActiveTab('teams')}
-          className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${
+          className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
             activeTab === 'teams' ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-300'
           }`}
         >
@@ -291,11 +291,11 @@ const HackathonDetailsPage = () => {
         {userTeam && (
           <button
             onClick={() => setActiveTab('workspace')}
-            className={`px-4 py-2 text-sm font-bold rounded-lg transition-all flex items-center gap-2 ${
+            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 ${
               activeTab === 'workspace' ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-300'
             }`}
           >
-            <MessageSquare className="w-4 h-4 text-brand-cyan" />
+            <MessageSquare className="w-3.5 h-3.5 text-brand-cyan" />
             Team Workspace ({userTeam.name})
           </button>
         )}
@@ -304,49 +304,46 @@ const HackathonDetailsPage = () => {
       {/* Tab Contents */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {activeTab === 'overview' && (
-          <div className="lg:col-span-3 space-y-6">
-            <div className="bg-zinc-900/20 border border-white/5 rounded-2xl p-6">
-              <h3 className="text-white font-black text-lg mb-4">Event Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+          <div className="lg:col-span-3 space-y-3">
+            <div className="bg-zinc-900/20 border border-white/5 rounded-xl p-4">
+              <h3 className="text-white font-black text-sm mb-3">Event Details</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <h4 className="text-zinc-500 font-bold text-xs uppercase tracking-wider mb-1">Duration</h4>
-                  <p className="text-white font-semibold">{hackathon.duration}</p>
+                  <h4 className="text-zinc-500 font-bold text-[9px] uppercase tracking-wider mb-0.5">Duration</h4>
+                  <p className="text-white font-semibold text-xs">{hackathon.duration}</p>
                 </div>
                 <div>
-                  <h4 className="text-zinc-500 font-bold text-xs uppercase tracking-wider mb-1">Type</h4>
-                  <p className="text-white font-semibold">{hackathon.type} Hackathon</p>
+                  <h4 className="text-zinc-500 font-bold text-[9px] uppercase tracking-wider mb-0.5">Type</h4>
+                  <p className="text-white font-semibold text-xs">{hackathon.type} Hackathon</p>
                 </div>
                 <div>
-                  <h4 className="text-zinc-500 font-bold text-xs uppercase tracking-wider mb-1">Start Date</h4>
-                  <p className="text-white font-semibold">{new Date(hackathon.startDate).toLocaleDateString([], { dateStyle: 'long' })}</p>
+                  <h4 className="text-zinc-500 font-bold text-[9px] uppercase tracking-wider mb-0.5">Start Date</h4>
+                  <p className="text-white font-semibold text-xs">{new Date(hackathon.startDate).toLocaleDateString([], { dateStyle: 'medium' })}</p>
                 </div>
                 <div>
-                  <h4 className="text-zinc-500 font-bold text-xs uppercase tracking-wider mb-1">Venue / Platform</h4>
-                  <p className="text-white font-semibold">{hackathon.location || 'Virtual Platform'}</p>
+                  <h4 className="text-zinc-500 font-bold text-[9px] uppercase tracking-wider mb-0.5">Venue</h4>
+                  <p className="text-white font-semibold text-xs">{hackathon.location || 'Virtual'}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-zinc-900/20 border border-white/5 rounded-2xl p-6">
-              <h3 className="text-white font-black text-lg mb-2">How it works</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed mb-4">
-                Merge coordinates teams automatically. Find co-builders, establish your team workspace, unlock group chats, and submit projects directly inside the application.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                <div className="p-4 bg-zinc-950/40 rounded-xl border border-white/5">
-                  <span className="text-brand-cyan text-xs font-black uppercase tracking-widest block mb-2">Step 1</span>
-                  <h4 className="text-white font-bold text-sm mb-1">Browse and Match</h4>
-                  <p className="text-zinc-500 text-xs">Explore recommended teams matching your skills at 80% or higher.</p>
+            <div className="bg-zinc-900/20 border border-white/5 rounded-xl p-4">
+              <h3 className="text-white font-black text-sm mb-2">How it works</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="p-3 bg-zinc-950/40 rounded-lg border border-white/5">
+                  <span className="text-brand-cyan text-[9px] font-black uppercase tracking-widest block mb-1">Step 1</span>
+                  <h4 className="text-white font-bold text-xs mb-0.5">Browse and Match</h4>
+                  <p className="text-zinc-500 text-[10px]">Explore recommended teams matching your skills.</p>
                 </div>
-                <div className="p-4 bg-zinc-950/40 rounded-xl border border-white/5">
-                  <span className="text-brand-purple text-xs font-black uppercase tracking-widest block mb-2">Step 2</span>
-                  <h4 className="text-white font-bold text-sm mb-1">Apply or Create</h4>
-                  <p className="text-zinc-500 text-xs">Apply with one click or create your own team specifications.</p>
+                <div className="p-3 bg-zinc-950/40 rounded-lg border border-white/5">
+                  <span className="text-brand-purple text-[9px] font-black uppercase tracking-widest block mb-1">Step 2</span>
+                  <h4 className="text-white font-bold text-xs mb-0.5">Apply or Create</h4>
+                  <p className="text-zinc-500 text-[10px]">Apply with one click or create your own team.</p>
                 </div>
-                <div className="p-4 bg-zinc-950/40 rounded-xl border border-white/5">
-                  <span className="text-emerald-500 text-xs font-black uppercase tracking-widest block mb-2">Step 3</span>
-                  <h4 className="text-white font-bold text-sm mb-1">Unlock Collaboration</h4>
-                  <p className="text-zinc-500 text-xs">Instantly open a private real-time room for workspace chat.</p>
+                <div className="p-3 bg-zinc-950/40 rounded-lg border border-white/5">
+                  <span className="text-emerald-500 text-[9px] font-black uppercase tracking-widest block mb-1">Step 3</span>
+                  <h4 className="text-white font-bold text-xs mb-0.5">Unlock Collaboration</h4>
+                  <p className="text-zinc-500 text-[10px]">Open a private real-time workspace room.</p>
                 </div>
               </div>
             </div>
@@ -358,7 +355,7 @@ const HackathonDetailsPage = () => {
             
             {/* AI Skill-Based Recommended Team Banner */}
             {recommendedTeam && (
-              <div className="bg-gradient-to-r from-brand-cyan/20 to-brand-purple/20 border border-brand-cyan/30 rounded-3xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-[0_0_30px_rgba(0,229,255,0.05)]">
+              <div className="bg-gradient-to-r from-brand-cyan/20 to-brand-purple/20 border border-brand-cyan/30 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="px-2 py-0.5 bg-brand-cyan text-dark-bg rounded-md text-[9px] font-black uppercase tracking-widest flex items-center gap-1">
@@ -369,8 +366,8 @@ const HackathonDetailsPage = () => {
                       Match Score: {recommendedTeam.matchPercentage || 92}%
                     </span>
                   </div>
-                  <h3 className="text-2xl font-black text-white mb-1">{recommendedTeam.name}</h3>
-                  <p className="text-zinc-300 text-sm max-w-2xl">{recommendedTeam.description}</p>
+                  <h3 className="text-base font-black text-white mb-0.5">{recommendedTeam.name}</h3>
+                  <p className="text-zinc-300 text-xs max-w-2xl">{recommendedTeam.description}</p>
                   
                   <div className="flex flex-wrap gap-2 mt-4">
                     {recommendedTeam.lookingFor?.map((role: string, idx: number) => (
@@ -392,7 +389,7 @@ const HackathonDetailsPage = () => {
               </div>
             )}
 
-            <h3 className="text-white font-black text-lg mb-2">Available Teams Looking for Developers</h3>
+            <h3 className="text-white font-black text-sm mb-2">Available Teams</h3>
             
             {hackathon.teams?.length === 0 ? (
               <div className="text-center py-16 bg-zinc-900/10 border border-white/5 rounded-2xl">
@@ -414,17 +411,17 @@ const HackathonDetailsPage = () => {
                   return (
                     <div
                       key={team.id}
-                      className="bg-zinc-900/20 border border-white/5 rounded-2xl p-6 flex flex-col justify-between"
+                      className="bg-zinc-900/20 border border-white/5 rounded-xl p-4 flex flex-col justify-between"
                     >
                       <div>
-                        <div className="flex items-start justify-between mb-4">
-                          <h4 className="text-lg font-black text-white">{team.name}</h4>
-                          <span className="text-[11px] font-black text-brand-cyan bg-brand-cyan/5 px-2.5 py-0.5 rounded border border-brand-cyan/10">
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="text-sm font-black text-white">{team.name}</h4>
+                          <span className="text-[9px] font-black text-brand-cyan bg-brand-cyan/5 px-2 py-0.5 rounded border border-brand-cyan/10">
                             {team.matchPercentage || 75}% Match
                           </span>
                         </div>
 
-                        <p className="text-zinc-400 text-xs line-clamp-3 leading-relaxed mb-6 font-medium">
+                        <p className="text-zinc-400 text-xs line-clamp-2 leading-relaxed mb-3 font-medium">
                           {team.description}
                         </p>
 
@@ -447,7 +444,7 @@ const HackathonDetailsPage = () => {
                         </div>
                       </div>
 
-                      <div className="mt-6">
+                      <div className="mt-3">
                         {isUserInThisTeam ? (
                           <button
                             disabled
@@ -487,17 +484,17 @@ const HackathonDetailsPage = () => {
               <div className="lg:col-span-1 space-y-6">
                 
                 {/* Team Roster */}
-                <div className="bg-zinc-900/30 border border-white/5 rounded-2xl p-6">
-                  <h3 className="text-xs font-black text-white uppercase tracking-widest mb-4 flex items-center justify-between">
+                <div className="bg-zinc-900/30 border border-white/5 rounded-xl p-4">
+                  <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-3 flex items-center justify-between">
                     <span>Team Members</span>
-                    <span className="text-zinc-500 text-xs">{userTeam.members?.length || 0} / 5</span>
+                    <span className="text-zinc-500 text-[10px]">{userTeam.members?.length || 0}/5</span>
                   </h3>
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {userTeam.members?.map((member: any) => (
-                      <div key={member.id} className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate(`/profile/${member.user.id}`)}>
+                      <div key={member.id} className="flex items-center gap-2 cursor-pointer group" onClick={() => navigate(`/profile/${member.user.id}`)}>
                         <img 
                           src={member.user.avatar || '/default-avatar.png'} 
-                          className="w-8 h-8 rounded-lg object-cover border border-white/10 group-hover:border-brand-cyan/50 transition-colors" 
+                          className="w-7 h-7 rounded-lg object-cover border border-white/10 group-hover:border-brand-cyan/50 transition-colors" 
                           alt="" 
                         />
                         <div>
@@ -511,8 +508,8 @@ const HackathonDetailsPage = () => {
 
                 {/* Team Applications - Visible only to team creator */}
                 {isTeamCreator && (
-                  <div className="bg-zinc-900/30 border border-white/5 rounded-2xl p-6">
-                    <h3 className="text-xs font-black text-white uppercase tracking-widest mb-4">Pending Requests</h3>
+                  <div className="bg-zinc-900/30 border border-white/5 rounded-xl p-4">
+                    <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-3">Pending Requests</h3>
                     
                     {userTeam.requests?.filter((r: any) => r.status === 'Pending').length === 0 ? (
                       <p className="text-xs text-zinc-500 italic">No pending requests.</p>
@@ -550,8 +547,8 @@ const HackathonDetailsPage = () => {
 
               {/* Chat Interface */}
               <div className="lg:col-span-3">
-                <div className="bg-zinc-900/30 border border-white/5 rounded-3xl h-[600px] flex flex-col overflow-hidden">
-                  <div className="p-5 border-b border-white/5 bg-zinc-900/50 flex items-center justify-between">
+                <div className="bg-zinc-900/30 border border-white/5 rounded-2xl h-[520px] flex flex-col overflow-hidden">
+                  <div className="px-4 py-3 border-b border-white/5 bg-zinc-900/50 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                       <h3 className="text-sm font-black text-white uppercase tracking-widest">Realtime Team Room</h3>
@@ -560,7 +557,7 @@ const HackathonDetailsPage = () => {
                   </div>
 
                   {/* Messages container */}
-                  <div className="flex-1 p-6 overflow-y-auto space-y-4 flex flex-col bg-zinc-950/10">
+                  <div className="flex-1 p-4 overflow-y-auto space-y-3 flex flex-col bg-zinc-950/10">
                     {chatMessages.map((msg, idx) => {
                       const isMe = msg.senderId === user?.id;
                       return (
@@ -589,14 +586,14 @@ const HackathonDetailsPage = () => {
                   </div>
 
                   {/* Message Input */}
-                  <div className="p-4 border-t border-white/5 bg-zinc-900/50">
+                  <div className="px-3 py-2 border-t border-white/5 bg-zinc-900/50">
                     <form onSubmit={handleSendChatMessage} className="relative flex items-center gap-2">
                       <input
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Message the team..."
-                        className="flex-1 bg-black/40 border border-white/10 rounded-xl py-3.5 pl-5 pr-14 text-sm text-white focus:outline-none focus:border-brand-cyan/50"
+                        className="flex-1 bg-black/40 border border-white/10 rounded-lg py-2 pl-4 pr-10 text-xs text-white focus:outline-none focus:border-brand-cyan/50"
                       />
                       <button 
                         type="submit"
