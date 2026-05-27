@@ -17,6 +17,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 const getRelativeTime = (dateString: string) => {
   const date = new Date(dateString);
@@ -35,7 +36,7 @@ const getRelativeTime = (dateString: string) => {
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuth();
-  const { notifications, clearNotifications } = useSocket();
+  const { notifications, clearNotifications, markAsRead } = useSocket();
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -260,7 +261,10 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                             View all
                           </Link>
                           <button
-                            onClick={() => clearNotifications()}
+                            onClick={async () => {
+                              await clearNotifications();
+                              toast.success('All notifications marked as read!');
+                            }}
                             className="text-[10px] font-bold text-brand-cyan hover:underline"
                           >
                             Mark all read
@@ -285,7 +289,10 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                               <Link
                                 key={notif.id || idx}
                                 to={path}
-                                onClick={() => setShowNotifications(false)}
+                                onClick={() => {
+                                  setShowNotifications(false);
+                                  if (notif.id) markAsRead(notif.id);
+                                }}
                                 className={`block p-4 border-b border-white/5 hover:bg-white/5 transition-all ${!notif.read ? 'bg-white/[0.02]' : ''}`}
                               >
                                 <div className="flex gap-3 items-center">

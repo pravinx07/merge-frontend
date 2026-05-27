@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Rocket, Target, Users, CheckSquare, Zap, Trophy, X, Plus, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Rocket, Target, Users, CheckSquare, Zap, Trophy, X, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/axios';
 
@@ -19,7 +19,6 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
   const [weeklyProgress, setWeeklyProgress] = useState("");
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   
   const [tasks, setTasks] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
@@ -28,7 +27,6 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
     if (isOpen && chatId) {
       const fetchWorkspace = async () => {
         try {
-          setIsLoading(true);
           const response = await api.get(`/workspace/${chatId}`);
           const ws = response.data;
           setGoal(ws.goal || "");
@@ -38,8 +36,6 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
           setUpdates(ws.updates || []);
         } catch (error) {
           console.error("Error fetching workspace:", error);
-        } finally {
-          setIsLoading(false);
         }
       };
       fetchWorkspace();

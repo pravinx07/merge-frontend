@@ -81,7 +81,6 @@ const HackathonDetailsPage = () => {
     }
   }, [id, user?.id]);
 
-  // Set up socket listener for real-time team chat
   useEffect(() => {
     if (!socket || !userTeam) return;
 
@@ -89,7 +88,10 @@ const HackathonDetailsPage = () => {
 
     const handleMessageReceived = (msg: any) => {
       if (msg.teamId === userTeam.id) {
-        setChatMessages((prev) => [...prev, msg]);
+        setChatMessages((prev) => {
+          if (prev.some((m) => m.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
       }
     };
 
@@ -493,7 +495,7 @@ const HackathonDetailsPage = () => {
                     {userTeam.members?.map((member: any) => (
                       <div key={member.id} className="flex items-center gap-2 cursor-pointer group" onClick={() => navigate(`/profile/${member.user.id}`)}>
                         <img 
-                          src={member.user.avatar || '/default-avatar.png'} 
+                          src={member.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.user.name)}&background=random`} 
                           className="w-7 h-7 rounded-lg object-cover border border-white/10 group-hover:border-brand-cyan/50 transition-colors" 
                           alt="" 
                         />
@@ -518,7 +520,7 @@ const HackathonDetailsPage = () => {
                         {userTeam.requests?.filter((r: any) => r.status === 'Pending').map((req: any) => (
                           <div key={req.id} className="p-3 bg-zinc-950/40 border border-white/5 rounded-xl text-xs">
                             <div className="flex items-center gap-2 mb-2">
-                              <img src={req.applicant.avatar || '/default-avatar.png'} className="w-6 h-6 rounded-full object-cover" alt="" />
+                              <img src={req.applicant.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(req.applicant.name)}&background=random`} className="w-6 h-6 rounded-full object-cover" alt="" />
                               <span className="font-bold text-white truncate max-w-[100px]">{req.applicant.name}</span>
                             </div>
                             <p className="text-zinc-400 italic mb-3">"{req.message}"</p>
@@ -562,7 +564,7 @@ const HackathonDetailsPage = () => {
                       const isMe = msg.senderId === user?.id;
                       return (
                         <div key={idx} className={`flex gap-3 ${isMe ? 'flex-row-reverse' : ''}`}>
-                          <img src={msg.sender?.avatar || '/default-avatar.png'} className="w-8 h-8 rounded-full border border-white/10" alt="" />
+                          <img src={msg.sender?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.sender?.name || 'User')}&background=random`} className="w-8 h-8 rounded-full border border-white/10" alt="" />
                           <div className={`max-w-[70%] ${isMe ? 'items-end' : 'items-start'} flex flex-col`}>
                             <span className="text-[9px] text-zinc-500 font-bold mb-1 px-1">{isMe ? 'You' : msg.sender?.name}</span>
                             <div className={`p-3.5 rounded-2xl text-xs font-medium leading-relaxed ${

@@ -7,14 +7,16 @@ interface SocketContextType {
   socket: Socket | null;
   onlineUsers: string[];
   notifications: any[];
-  clearNotifications: (type?: string) => void;
+  clearNotifications: (type?: string) => Promise<void>;
+  markAsRead: (id: string) => Promise<void>;
 }
 
 const SocketContext = createContext<SocketContextType>({
   socket: null,
   onlineUsers: [],
   notifications: [],
-  clearNotifications: () => {},
+  clearNotifications: async () => {},
+  markAsRead: async () => {},
 });
 
 export const useSocket = () => useContext(SocketContext);
@@ -37,7 +39,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       // Fetch initial notifications
       axios.get('/notifications').then((res) => {
-        setNotifications(res.data);
+        setNotifications(res.data.filter((n: any) => !n.read));
       }).catch(console.error);
 
       newSocket.on('new_notification', (notification: any) => {
@@ -107,20 +109,29 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const clearNotifications = async (type?: string) => {
     try {
       if (!type) {
-        // Mark all as read via API then update local state
+        // Mark all as read via API then update local state to clear them
         await axios.put('/notifications/read-all');
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        setNotifications([]);
       } else {
-        // Route-based clear: just update local state (no API call needed for socket-only notifications)
-        setNotifications(prev => prev.map(n => n.type === type ? { ...n, read: true } : n));
+        // Route-based clear: just filter them out
+        setNotifications(prev => prev.filter(n => n.type !== type));
       }
     } catch (error) {
       console.error('Error clearing notifications:', error);
     }
   };
 
+  const markAsRead = async (id: string) => {
+    try {
+      await axios.put(`/notifications/${id}/read`);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
   return (
-    <SocketContext.Provider value={{ socket, onlineUsers, notifications, clearNotifications }}>
+    <SocketContext.Provider value={{ socket, onlineUsers, notifications, clearNotifications, markAsRead }}>
       {children}
     </SocketContext.Provider>
   );
