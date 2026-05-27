@@ -55,38 +55,50 @@ const CommunityPage: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4">
         {/* Community Header */}
-        <div className="mb-8">
+        <div className="sticky top-16 bg-[#0A0A0B]/90 backdrop-blur-md pt-8 pb-6 z-20 border-b border-white/5 mb-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h2 className="text-3xl font-black text-white tracking-tight mb-2">Community</h2>
               <p className="text-slate-400 text-sm">Connect with fellow builders and share your journey.</p>
             </div>
             
-            <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10 w-fit">
-              <button
-                onClick={() => setActiveTab('feed')}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                  activeTab === 'feed' 
-                    ? 'bg-brand-cyan text-dark-bg shadow-[0_0_20px_rgba(0,229,255,0.3)]' 
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Activity className="w-4 h-4" />
-                Activity
-              </button>
-              <button
-                onClick={() => setActiveTab('builders')}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                  activeTab === 'builders' 
-                    ? 'bg-brand-cyan text-dark-bg shadow-[0_0_20px_rgba(0,229,255,0.3)]' 
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Users className="w-4 h-4" />
-                Builders
-              </button>
+            <div className="flex items-center gap-3">
+              <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10 w-fit">
+                <button
+                  onClick={() => setActiveTab('feed')}
+                  className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                    activeTab === 'feed' 
+                      ? 'bg-brand-cyan text-dark-bg shadow-[0_0_20px_rgba(0,229,255,0.3)]' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Activity className="w-4 h-4" />
+                  Activity
+                </button>
+                <button
+                  onClick={() => setActiveTab('builders')}
+                  className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                    activeTab === 'builders' 
+                      ? 'bg-brand-cyan text-dark-bg shadow-[0_0_20px_rgba(0,229,255,0.3)]' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Users className="w-4 h-4" />
+                  Builders
+                </button>
+              </div>
+
+              {activeTab === 'feed' && (
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  title="Create Post"
+                  className="bg-brand-cyan text-dark-bg p-3 py-3 md:p-3.5 rounded-2xl shadow-[0_0_15px_rgba(0,229,255,0.2)] hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
+                >
+                  <PenSquare className="w-5 h-5" />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -103,21 +115,7 @@ const CommunityPage: React.FC = () => {
                   exit={{ opacity: 0, y: -10 }}
                   className="space-y-6"
                 >
-                  {/* Create Post Banner */}
-                  <div 
-                    className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6 flex items-center gap-3 cursor-pointer hover:border-white/20 hover:bg-white/[0.07] transition-all group" 
-                    onClick={() => setIsModalOpen(true)}
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-linear-to-br from-brand-purple to-brand-cyan flex items-center justify-center shrink-0 shadow-lg group-hover:scale-110 transition-transform">
-                      <PenSquare className="w-5 h-5 text-dark-bg" />
-                    </div>
-                    <div className="flex-1 text-slate-400 text-sm font-medium">
-                      What's happening in your builder journey?
-                    </div>
-                    <div className="px-4 py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 border border-white/5 group-hover:text-white transition-colors">
-                      Post Update
-                    </div>
-                  </div>
+                  {/* Sleek post creation modal triggered via header icon */}
 
                   {isLoading ? (
                     <div className="space-y-6">
@@ -140,7 +138,13 @@ const CommunityPage: React.FC = () => {
                   ) : posts.length > 0 ? (
                     <div className="space-y-6">
                       {posts.map(post => (
-                        <PostCard key={post.id} post={post} />
+                        <PostCard 
+                          key={post.id} 
+                          post={post} 
+                          onPostDeleted={(deletedId) => {
+                            setPosts(prev => prev.filter(p => p.id !== deletedId));
+                          }}
+                        />
                       ))}
                     </div>
                   ) : (
@@ -223,7 +227,7 @@ const CommunityPage: React.FC = () => {
           </div>
 
           {/* Right Sidebar - Trending */}
-          <div className="hidden lg:block shrink-0">
+          <div className="hidden lg:block shrink-0 sticky top-[200px] h-[calc(100vh-220px)] overflow-y-auto pr-2">
             <TrendingSidebar />
           </div>
         </div>

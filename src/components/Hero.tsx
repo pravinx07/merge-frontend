@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import heroUi from '../assets/hero-ui.png';
 import avatars from '../assets/avatars.png';
 import { useNavigate } from 'react-router-dom';

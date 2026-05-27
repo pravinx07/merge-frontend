@@ -28,7 +28,18 @@ interface TrendingData {
 const TrendingSidebar: React.FC = () => {
   const [data, setData] = useState<TrendingData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [followed, setFollowed] = useState<Record<string, boolean>>({});
+  const [followed, setFollowed] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem('followed_builders');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('followed_builders', JSON.stringify(followed));
+  }, [followed]);
 
   useEffect(() => {
     const fetchTrending = async () => {
@@ -118,21 +129,27 @@ const TrendingSidebar: React.FC = () => {
           Trending Projects
         </h2>
         <div className="space-y-4">
-          {data?.trendingProjects?.map((project) => (
-            <Link to={`/projects/${project.id}`} key={project.id} className="block group">
-              <div className="bg-white/5 border border-white/5 rounded-xl p-3 group-hover:bg-white/10 group-hover:border-white/10 transition-all">
-                <h3 className="font-semibold text-sm text-gray-200 mb-1 group-hover:text-blue-400 transition-colors">{project.title}</h3>
-                <p className="text-xs text-gray-400 line-clamp-2 mb-2">{project.description}</p>
-                <div className="flex gap-1 flex-wrap">
-                  {project.techStack.slice(0, 3).map((tech, idx) => (
-                    <span key={idx} className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                      {tech}
-                    </span>
-                  ))}
+          {data?.trendingProjects && data.trendingProjects.length > 0 ? (
+            data.trendingProjects.map((project) => (
+              <Link to={`/projects/${project.id}`} key={project.id} className="block group">
+                <div className="bg-white/5 border border-white/5 rounded-xl p-3 group-hover:bg-white/10 group-hover:border-white/10 transition-all">
+                  <h3 className="font-semibold text-sm text-gray-200 mb-1 group-hover:text-blue-400 transition-colors">{project.title}</h3>
+                  <p className="text-xs text-gray-400 line-clamp-2 mb-2">{project.description}</p>
+                  <div className="flex gap-1 flex-wrap">
+                    {project.techStack.slice(0, 3).map((tech, idx) => (
+                      <span key={idx} className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))
+          ) : (
+            <div className="text-center py-4 bg-white/5 border border-white/5 rounded-xl border-dashed">
+              <p className="text-xs text-gray-500 italic">No projects building currently. Launch one!</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

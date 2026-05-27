@@ -107,7 +107,7 @@ const HackathonsPage = () => {
     ? hackathons
     : hackathons.filter(h => h.type.toLowerCase() === filterType.toLowerCase());
 
-  const isExpired = (endDate: string) => endDate && new Date(endDate) < new Date();
+  const isExpired = (endDate: string) => !!(endDate && new Date(endDate) < new Date());
 
   const handleDeleteHackathon = async (hackathonId: string, e: React.MouseEvent) => {
     e.stopPropagation();
