@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
-import axios from '../lib/axios';
+import axios, { BACKEND_URL } from '../lib/axios';
 
 interface SocketContextType {
   socket: Socket | null;
@@ -29,7 +29,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   useEffect(() => {
     if (user) {
-      const newSocket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000', {
+      const newSocket = io(import.meta.env.VITE_SOCKET_URL || BACKEND_URL, {
         withCredentials: true,
       });
 
