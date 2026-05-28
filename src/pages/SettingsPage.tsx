@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Shield, Trash2, Camera, 
@@ -82,6 +83,26 @@ const SettingsPage = () => {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isBlockedUsersModalOpen, setIsBlockedUsersModalOpen] = useState(false);
   const [blockedUsers, setBlockedUsers] = useState<any[]>([]);
+  
+  const navigate = useNavigate();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    const toastId = toast.loading('Deleting account...');
+    try {
+      await api.delete('/users');
+      setUser(null);
+      toast.success('Account deleted successfully!', { id: toastId });
+      setIsDeleteModalOpen(false);
+      navigate('/');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to delete account', { id: toastId });
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
   
   const [formData, setFormData] = useState<any>({
     name: '', bio: '', location: '', personality: '', status: '',
@@ -502,7 +523,10 @@ const SettingsPage = () => {
                     <p className="text-sm text-zinc-500 leading-relaxed">
                       Once you delete your account, there is no going back. Please be certain. All your matches, messages, and profile data will be permanently removed.
                     </p>
-                    <button className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-all text-xs uppercase tracking-widest mt-4">
+                    <button 
+                      onClick={() => setIsDeleteModalOpen(true)}
+                      className="px-6 py-3 bg-red-500 hover:bg-red-650 text-white font-bold rounded-xl transition-all text-xs uppercase tracking-widest mt-4 cursor-pointer"
+                    >
                       Permanently Delete Account
                     </button>
                   </div>
@@ -598,6 +622,58 @@ const SettingsPage = () => {
                     </div>
                   ))
                 )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Account Confirmation Modal */}
+      <AnimatePresence>
+        {isDeleteModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsDeleteModalOpen(false)}></div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative bg-zinc-950 border border-red-500/20 rounded-[32px] w-full max-w-md p-8 shadow-2xl z-10 flex flex-col"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20">
+                  <Trash2 className="w-6 h-6 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-white">Delete Account?</h3>
+                  <p className="text-xs text-red-400 font-bold mt-0.5">This action is irreversible</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-zinc-400 leading-relaxed mb-8">
+                Are you absolutely sure you want to permanently delete your account? All of your profile data, projects, matches, and messages will be deleted immediately.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="flex-1 px-4 py-3.5 bg-zinc-900 border border-white/5 text-white font-bold rounded-xl hover:bg-zinc-800 transition-all cursor-pointer text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={isDeletingAccount}
+                  className="flex-1 px-4 py-3.5 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-all cursor-pointer flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-red-500/20"
+                >
+                  {isDeletingAccount ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete Account'
+                  )}
+                </button>
               </div>
             </motion.div>
           </div>
