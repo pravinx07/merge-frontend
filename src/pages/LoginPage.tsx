@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
-import api from '../lib/axios';
+import api, { BACKEND_URL } from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 
 const GitHubIcon = (props: any) => (
@@ -145,7 +145,7 @@ const LoginPage = () => {
           </div>
 
           <a 
-            href="http://localhost:5000/api/auth/github"
+            href={`${BACKEND_URL}/api/auth/github`}
             className="w-full py-3 border border-dark-border text-white rounded-xl font-bold hover:bg-white/5 transition-all flex items-center justify-center gap-3 cursor-pointer text-sm"
           >
             <GitHubIcon className="w-4 h-4" />
