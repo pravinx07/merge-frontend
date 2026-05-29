@@ -203,7 +203,16 @@ const ProfilePage = () => {
                     <button className="px-6 py-2.5 bg-white/5 border border-white/10 font-bold rounded-xl hover:bg-white/10 transition-all flex items-center gap-2 text-xs text-white"><MessageSquare className="w-4 h-4" /> Message</button>
                   </>
                 )}
-                <button className="px-6 py-2.5 bg-zinc-800 border border-zinc-700 font-bold rounded-xl hover:bg-zinc-700 transition-all flex items-center gap-2 text-xs text-zinc-300"><GitHubIcon className="w-4 h-4" /> GitHub</button>
+                {(profile.githubUrl || profile.githubVerified) && (
+                  <a 
+                    href={profile.githubUrl || `https://github.com/${profile.githubData?.username}`} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="px-6 py-2.5 bg-zinc-800 border border-zinc-700 font-bold rounded-xl hover:bg-zinc-700 transition-all flex items-center gap-2 text-xs text-zinc-300"
+                  >
+                    <GitHubIcon className="w-4 h-4" /> GitHub
+                  </a>
+                )}
               </div>
             </div>
           </div>

@@ -127,7 +127,7 @@ const SettingsPage = () => {
     try {
       const res = await api.post('/users/upload-image', formDataObj);
       const newP = [...formData.projects];
-      newP[idx].imageUrl = res.data.imageUrl;
+      newP[idx] = { ...newP[idx], imageUrl: res.data.imageUrl };
       setFormData({ ...formData, projects: newP });
       toast.success('Image uploaded!');
     } catch (err: any) {
@@ -153,7 +153,7 @@ const SettingsPage = () => {
         githubUrl: user.githubUrl || '',
         twitter: user.twitter || '',
         linkedin: user.linkedin || '',
-        projects: user.projects || [],
+        projects: user.projects ? JSON.parse(JSON.stringify(user.projects)) : [],
       });
       setAvatarPreview(user.avatar || '');
       setIsInitialLoading(false);
@@ -520,19 +520,19 @@ const SettingsPage = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
                                 <label className="text-xs font-semibold text-zinc-400 ml-1">Project Title</label>
-                                <input type="text" value={proj.title} onChange={e => { const newP = [...formData.projects]; newP[idx].title = e.target.value; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none" />
+                                <input type="text" value={proj.title} onChange={e => { const newP = [...formData.projects]; newP[idx] = {...newP[idx], title: e.target.value}; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none" />
                               </div>
                               <div className="space-y-2 md:col-span-2">
                                 <label className="text-xs font-semibold text-zinc-400 ml-1">Description</label>
-                                <textarea value={proj.description} onChange={e => { const newP = [...formData.projects]; newP[idx].description = e.target.value; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none resize-none" rows={2} />
+                                <textarea value={proj.description} onChange={e => { const newP = [...formData.projects]; newP[idx] = {...newP[idx], description: e.target.value}; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none resize-none" rows={2} />
                               </div>
                               <div className="space-y-2">
                                 <label className="text-xs font-semibold text-zinc-400 ml-1">GitHub URL (Optional)</label>
-                                <input type="text" value={proj.githubUrl} onChange={e => { const newP = [...formData.projects]; newP[idx].githubUrl = e.target.value; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none" />
+                                <input type="text" value={proj.githubUrl} onChange={e => { const newP = [...formData.projects]; newP[idx] = {...newP[idx], githubUrl: e.target.value}; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none" />
                               </div>
                               <div className="space-y-2">
                                 <label className="text-xs font-semibold text-zinc-400 ml-1">Live URL (Optional)</label>
-                                <input type="text" value={proj.liveUrl} onChange={e => { const newP = [...formData.projects]; newP[idx].liveUrl = e.target.value; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none" />
+                                <input type="text" value={proj.liveUrl} onChange={e => { const newP = [...formData.projects]; newP[idx] = {...newP[idx], liveUrl: e.target.value}; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none" />
                               </div>
                               <div className="space-y-2">
                                 <label className="text-xs font-semibold text-zinc-400 ml-1">Project Image (Optional)</label>
@@ -551,7 +551,7 @@ const SettingsPage = () => {
                               </div>
                               <div className="space-y-2">
                                 <label className="text-xs font-semibold text-zinc-400 ml-1">Video URL (Optional)</label>
-                                <input type="text" value={proj.videoUrl} onChange={e => { const newP = [...formData.projects]; newP[idx].videoUrl = e.target.value; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none" />
+                                <input type="text" value={proj.videoUrl} onChange={e => { const newP = [...formData.projects]; newP[idx] = {...newP[idx], videoUrl: e.target.value}; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none" />
                               </div>
                             </div>
                           </div>
