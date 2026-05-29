@@ -77,7 +77,7 @@ const CustomSelect = ({ value, onChange, options, label }: { value: string; onCh
 };
 
 const SettingsPage = () => {
-  const { user, setUser, isLoading: isAuthLoading } = useAuth();
+  const { user, setUser, isLoading: isAuthLoading, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'professional' | 'security' | 'account'>('profile');
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -93,10 +93,10 @@ const SettingsPage = () => {
     const toastId = toast.loading('Deleting account...');
     try {
       await api.delete('/users');
-      setUser(null);
+      await logout();
       toast.success('Account deleted successfully!', { id: toastId });
       setIsDeleteModalOpen(false);
-      navigate('/');
+      navigate('/login');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to delete account', { id: toastId });
     } finally {
@@ -108,11 +108,34 @@ const SettingsPage = () => {
     name: '', bio: '', location: '', personality: '', status: '',
     skills: '', experienceLevel: '', interests: '', intent: '',
     website: '', githubUrl: '', twitter: '', linkedin: '',
+    projects: [],
   });
 
   const [avatar, setAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState('');
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
+  const [isUploadingImage, setIsUploadingImage] = useState<{[key: number]: boolean}>({});
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(prev => ({ ...prev, [idx]: true }));
+    const formDataObj = new FormData();
+    formDataObj.append('image', file);
+
+    try {
+      const res = await api.post('/users/upload-image', formDataObj);
+      const newP = [...formData.projects];
+      newP[idx] = { ...newP[idx], imageUrl: res.data.imageUrl };
+      setFormData({ ...formData, projects: newP });
+      toast.success('Image uploaded!');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to upload image');
+    } finally {
+      setIsUploadingImage(prev => ({ ...prev, [idx]: false }));
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -130,6 +153,7 @@ const SettingsPage = () => {
         githubUrl: user.githubUrl || '',
         twitter: user.twitter || '',
         linkedin: user.linkedin || '',
+        projects: user.projects ? JSON.parse(JSON.stringify(user.projects)) : [],
       });
       setAvatarPreview(user.avatar || '');
       setIsInitialLoading(false);
@@ -195,9 +219,13 @@ const SettingsPage = () => {
       githubUrl: user.githubUrl || '',
       twitter: user.twitter || '',
       linkedin: user.linkedin || '',
+      projects: user.projects || [],
     };
     
-    return Object.keys(formData).some(key => formData[key] !== currentData[key as keyof typeof currentData]) || avatar !== null;
+    return Object.keys(formData).some(key => {
+      if (key === 'projects') return JSON.stringify(formData[key]) !== JSON.stringify(currentData[key]);
+      return formData[key] !== currentData[key as keyof typeof currentData]
+    }) || avatar !== null;
   };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -215,6 +243,8 @@ const SettingsPage = () => {
         if (key === 'skills' || key === 'interests') {
           const arr = typeof value === 'string' ? value.split(',').map((s: string) => s.trim()).filter(Boolean) : value;
           data.append(key, JSON.stringify(arr));
+        } else if (key === 'projects') {
+          data.append(key, JSON.stringify(value));
         } else if (value !== null && value !== undefined) {
           data.append(key, value);
         }
@@ -460,6 +490,76 @@ const SettingsPage = () => {
                     <div className="space-y-2">
                       <label className="text-xs font-semibold text-zinc-400 ml-1 flex items-center gap-2"><LinkedInIcon className="w-3.5 h-3.5" /> LinkedIn URL</label>
                       <input type="text" value={formData.linkedin} onChange={(e) => setFormData({...formData, linkedin: e.target.value})} className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl py-3 px-4 text-sm text-white focus:outline-none" />
+                    </div>
+
+                    <div className="md:col-span-2 space-y-4 pt-4 border-t border-zinc-800/50">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-base font-bold text-white flex items-center gap-2">Personal Projects</h3>
+                          <p className="text-xs text-zinc-400 mt-1">Showcase your personal work on your profile.</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, projects: [...formData.projects, { id: Date.now().toString(), title: '', description: '', githubUrl: '', liveUrl: '', imageUrl: '', videoUrl: '' }] })}
+                          className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl text-xs transition-all flex items-center gap-2"
+                        >
+                          + Add Project
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {formData.projects.map((proj: any, idx: number) => (
+                          <div key={proj.id} className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl space-y-4 relative">
+                            <button 
+                              type="button"
+                              onClick={() => setFormData({ ...formData, projects: formData.projects.filter((_: any, i: number) => i !== idx) })}
+                              className="absolute top-4 right-4 text-zinc-500 hover:text-red-500"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <label className="text-xs font-semibold text-zinc-400 ml-1">Project Title</label>
+                                <input type="text" value={proj.title} onChange={e => { const newP = [...formData.projects]; newP[idx] = {...newP[idx], title: e.target.value}; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none" />
+                              </div>
+                              <div className="space-y-2 md:col-span-2">
+                                <label className="text-xs font-semibold text-zinc-400 ml-1">Description</label>
+                                <textarea value={proj.description} onChange={e => { const newP = [...formData.projects]; newP[idx] = {...newP[idx], description: e.target.value}; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none resize-none" rows={2} />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-xs font-semibold text-zinc-400 ml-1">GitHub URL (Optional)</label>
+                                <input type="text" value={proj.githubUrl} onChange={e => { const newP = [...formData.projects]; newP[idx] = {...newP[idx], githubUrl: e.target.value}; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none" />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-xs font-semibold text-zinc-400 ml-1">Live URL (Optional)</label>
+                                <input type="text" value={proj.liveUrl} onChange={e => { const newP = [...formData.projects]; newP[idx] = {...newP[idx], liveUrl: e.target.value}; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none" />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-xs font-semibold text-zinc-400 ml-1">Project Image (Optional)</label>
+                                <div className="flex items-center gap-3">
+                                  {proj.imageUrl && (
+                                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-zinc-800 shrink-0">
+                                      <img src={proj.imageUrl} alt="preview" className="w-full h-full object-cover" />
+                                    </div>
+                                  )}
+                                  <label className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl py-2 px-4 text-sm text-zinc-400 hover:text-white cursor-pointer transition-all flex items-center justify-center gap-2">
+                                    {isUploadingImage[idx] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                                    {isUploadingImage[idx] ? 'Uploading...' : (proj.imageUrl ? 'Change Image' : 'Upload Image')}
+                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, idx)} />
+                                  </label>
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-xs font-semibold text-zinc-400 ml-1">Video URL (Optional)</label>
+                                <input type="text" value={proj.videoUrl} onChange={e => { const newP = [...formData.projects]; newP[idx] = {...newP[idx], videoUrl: e.target.value}; setFormData({...formData, projects: newP}); }} className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2.5 px-4 text-sm text-white focus:outline-none" />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {formData.projects.length === 0 && (
+                          <div className="text-center py-8 text-zinc-500 text-sm">No personal projects added.</div>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <button 

@@ -203,7 +203,16 @@ const ProfilePage = () => {
                     <button className="px-6 py-2.5 bg-white/5 border border-white/10 font-bold rounded-xl hover:bg-white/10 transition-all flex items-center gap-2 text-xs text-white"><MessageSquare className="w-4 h-4" /> Message</button>
                   </>
                 )}
-                <button className="px-6 py-2.5 bg-zinc-800 border border-zinc-700 font-bold rounded-xl hover:bg-zinc-700 transition-all flex items-center gap-2 text-xs text-zinc-300"><GitHubIcon className="w-4 h-4" /> GitHub</button>
+                {(profile.githubUrl || profile.githubVerified) && (
+                  <a 
+                    href={profile.githubUrl || `https://github.com/${profile.githubData?.username}`} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="px-6 py-2.5 bg-zinc-800 border border-zinc-700 font-bold rounded-xl hover:bg-zinc-700 transition-all flex items-center gap-2 text-xs text-zinc-300"
+                  >
+                    <GitHubIcon className="w-4 h-4" /> GitHub
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -213,10 +222,10 @@ const ProfilePage = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8">
         {[
-          { label: 'Compatibility', value: '92%', icon: Heart, color: 'text-brand-purple', bg: 'bg-brand-purple/10' },
+          { label: 'Compatibility', value: isOwner ? 'N/A' : `${profile.compatibilityScore || 0}%`, icon: Heart, color: 'text-brand-purple', bg: 'bg-brand-purple/10' },
           { label: 'Repositories', value: profile.githubVerified && profile.githubData?.publicRepos ? profile.githubData.publicRepos : '0', icon: GitHubIcon, color: 'text-brand-cyan', bg: 'bg-brand-cyan/10' },
           { label: 'Contributions', value: profile.githubVerified && profile.githubData?.contributionsLastYear ? profile.githubData.contributionsLastYear : '0', icon: Trophy, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-          { label: 'Projects', value: profile.projects?.length || '12', icon: Layers, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+          { label: 'Projects', value: profile.projects?.length || '0', icon: Layers, color: 'text-amber-500', bg: 'bg-amber-500/10' },
         ].map((stat) => (
           <div key={stat.label} className="bg-zinc-900/30 border border-zinc-800/50 rounded-2xl p-5 flex items-center gap-4 group">
             <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center ${stat.color}`}><stat.icon className="w-5 h-5" /></div>
@@ -241,23 +250,38 @@ const ProfilePage = () => {
           <section className="bg-zinc-900/20 border border-zinc-800/50 rounded-[32px] p-8">
             <div className="flex items-center justify-between mb-6">
               <SectionTitle className="mb-0">Featured Projects</SectionTitle>
-              <button className="text-[10px] font-black text-zinc-600 uppercase hover:text-brand-cyan">View all</button>
+              {profile.projects && profile.projects.length > 4 && (
+                <button className="text-[10px] font-black text-zinc-600 uppercase hover:text-brand-cyan">View all</button>
+              )}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                { title: 'AI SaaS Dashboard', desc: 'Analytics platform with predictive insights.', tags: ['Next.js', 'TS'], img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop' },
-                { title: 'DevConnect', desc: 'Real-time developer networking tool.', tags: ['React', 'Socket'], img: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop' },
-              ].map((proj) => (
-                <div key={proj.title} className="p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800/50 group hover:border-zinc-700 transition-all">
-                  <div className="h-32 rounded-xl overflow-hidden mb-4 border border-zinc-800"><img src={proj.img} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="P" /></div>
-                  <h3 className="text-sm font-bold text-white mb-1">{proj.title}</h3>
-                  <p className="text-[11px] text-zinc-500 line-clamp-2 leading-relaxed mb-4">{proj.desc}</p>
-                  <div className="flex gap-2">
-                    {proj.tags.map(t => <span key={t} className="px-2 py-0.5 rounded-md bg-zinc-800 text-[9px] font-bold text-zinc-400">{t}</span>)}
+            {profile.projects && profile.projects.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {profile.projects.slice(0, 4).map((proj: any) => (
+                  <div key={proj.id || proj.title} className="p-4 rounded-2xl bg-zinc-900/50 border border-zinc-800/50 group hover:border-zinc-700 transition-all flex flex-col">
+                    <div className="h-32 rounded-xl overflow-hidden mb-4 border border-zinc-800 relative bg-zinc-900">
+                      {proj.imageUrl ? (
+                        <img src={proj.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={proj.title} />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-zinc-700">
+                           <Layers className="w-10 h-10 opacity-20" />
+                        </div>
+                      )}
+                    </div>
+                    <h3 className="text-sm font-bold text-white mb-1">{proj.title}</h3>
+                    <p className="text-[11px] text-zinc-500 line-clamp-2 leading-relaxed mb-4 flex-1">{proj.description}</p>
+                    <div className="flex gap-2 mb-3 flex-wrap">
+                      {proj.techStack?.slice(0, 3).map((t: string) => <span key={t} className="px-2 py-0.5 rounded-md bg-zinc-800 text-[9px] font-bold text-zinc-400">{t}</span>)}
+                    </div>
+                    <div className="flex gap-2 mt-auto">
+                      {proj.githubUrl && <a href={proj.githubUrl} target="_blank" rel="noreferrer" className="text-[10px] bg-white/5 border border-white/10 px-2 py-1 rounded text-zinc-300 hover:text-white transition">GitHub</a>}
+                      {proj.liveUrl && <a href={proj.liveUrl} target="_blank" rel="noreferrer" className="text-[10px] bg-brand-cyan/10 border border-brand-cyan/20 px-2 py-1 rounded text-brand-cyan hover:bg-brand-cyan/20 transition">Live</a>}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-zinc-500 text-sm">No projects added yet.</div>
+            )}
           </section>
 
           {profile.githubVerified && profile.githubData?.topRepos && (
@@ -288,15 +312,17 @@ const ProfilePage = () => {
         <div className="space-y-8">
           <section className="bg-zinc-900/20 border border-zinc-800/50 rounded-[32px] p-8">
             <SectionTitle>Tech Stack</SectionTitle>
-            <div className="space-y-6 mt-6">
-              {['Frontend', 'Backend', 'Database'].map((cat, idx) => (
-                <div key={cat}>
-                  <h3 className="text-[10px] uppercase font-black text-zinc-600 tracking-widest mb-3">{cat}</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {(idx === 0 ? ['React', 'Next.js', 'TypeScript', 'Tailwind'] : idx === 1 ? ['Node.js', 'Python', 'GraphQL'] : ['PostgreSQL', 'Redis', 'Docker']).map(s => <TechIcon key={s} name={s} color={idx === 0 ? "bg-brand-cyan" : idx === 1 ? "bg-brand-purple" : "bg-amber-500"} />)}
+            <div className="mt-6 flex flex-wrap gap-3">
+              {profile.skills && profile.skills.length > 0 ? (
+                profile.skills.map((skill: string, idx: number) => (
+                  <div key={skill} className="flex flex-col items-center gap-2 group">
+                    <TechIcon name={skill} color={idx % 2 === 0 ? "bg-brand-cyan" : "bg-brand-purple"} />
+                    <span className="text-[10px] font-bold text-zinc-500 group-hover:text-zinc-300 transition-colors">{skill}</span>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="text-sm text-zinc-500">No skills added yet.</div>
+              )}
             </div>
           </section>
 
