@@ -1,22 +1,43 @@
-import { Filter, X, ChevronRight } from 'lucide-react';
+import { Filter, X, ChevronRight, Lock, Star, BadgeCheck, Trophy, Users, Clock, Briefcase, FolderKanban, Code2 } from 'lucide-react';
+import { ProBadge } from '../Premium';
 
 const SKILLS = ['React', 'TypeScript', 'Node.js', 'Python', 'Go', 'Rust', 'Next.js', 'PostgreSQL', 'Docker', 'AWS', 'Solidity', 'AI/ML'];
 const INTENTS = ['Friendship', 'Collaboration', 'Cofounder', 'Hackathon', 'Mentor/Mentee'];
 const EXPERIENCE = ['Beginner', 'Intermediate', 'Advanced', 'Senior', 'Tech Lead'];
 
+// Pro filter definitions
+const PRO_FILTERS = [
+  { id: 'builderScore', label: 'Builder Score', icon: Star, desc: 'Filter by builder level' },
+  { id: 'githubVerified', label: 'GitHub Verified', icon: BadgeCheck, desc: 'Only verified accounts' },
+  { id: 'hackathonWinner', label: 'Hackathon Winner', icon: Trophy, desc: 'Past winners only' },
+  { id: 'cofounderMode', label: 'Cofounder Mode', icon: Users, desc: 'Serious builders only' },
+  { id: 'availability', label: 'Availability', icon: Clock, desc: 'Filter by hours/week' },
+  { id: 'startupStage', label: 'Startup Stage', icon: Briefcase, desc: 'Idea to launched' },
+  { id: 'projectCount', label: 'Project Count', icon: FolderKanban, desc: 'Min projects built' },
+  { id: 'topLanguage', label: 'Top Language', icon: Code2, desc: 'Primary coding language' },
+];
+
 interface Props {
   filters: any;
   setFilters: (filters: any) => void;
   onClear: () => void;
+  isPro?: boolean;
+  onProFilterClick?: () => void;
 }
 
-const FilterSidebar = ({ filters, setFilters, onClear }: Props) => {
+const FilterSidebar = ({ filters, setFilters, onClear, isPro = false, onProFilterClick }: Props) => {
   const toggleSkill = (skill: string) => {
     const current = filters.skills || [];
     const updated = current.includes(skill) 
       ? current.filter((s: string) => s !== skill)
       : [...current, skill];
     setFilters({ ...filters, skills: updated });
+  };
+
+  const handleProFilterClick = () => {
+    if (!isPro && onProFilterClick) {
+      onProFilterClick();
+    }
   };
 
   return (
@@ -100,6 +121,49 @@ const FilterSidebar = ({ filters, setFilters, onClear }: Props) => {
             </button>
           ))}
         </div>
+      </section>
+
+      {/* Pro Filters Divider */}
+      <div className="relative py-4">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-zinc-800/60" />
+        </div>
+        <div className="relative flex justify-center">
+          <div className="px-4 bg-[#111115] flex items-center gap-2">
+            <ProBadge size="md" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Pro Filters</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Pro Filters */}
+      <section className="space-y-2">
+        {PRO_FILTERS.map(({ id, label, icon: Icon, desc }) => (
+          <button
+            key={id}
+            onClick={handleProFilterClick}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all group ${
+              isPro 
+                ? 'bg-white/5 border-dark-border text-slate-400 hover:bg-white/10 hover:border-violet-500/30'
+                : 'bg-zinc-900/50 border-zinc-800/50 cursor-pointer hover:border-violet-500/30 hover:bg-violet-500/5'
+            }`}
+          >
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+              isPro ? 'bg-violet-500/10 border border-violet-500/20' : 'bg-zinc-800/80 border border-zinc-700/50'
+            }`}>
+              <Icon className={`w-4 h-4 ${isPro ? 'text-violet-400' : 'text-zinc-500'}`} />
+            </div>
+            <div className="flex-1 text-left">
+              <p className={`text-xs font-bold ${isPro ? 'text-white' : 'text-zinc-400'}`}>{label}</p>
+              <p className="text-[10px] text-zinc-600">{desc}</p>
+            </div>
+            {!isPro && (
+              <div className="w-6 h-6 rounded-lg bg-zinc-800/80 border border-zinc-700/50 flex items-center justify-center group-hover:bg-violet-500/20 group-hover:border-violet-500/30 transition-all">
+                <Lock className="w-3 h-3 text-zinc-500 group-hover:text-violet-400 transition-colors" />
+              </div>
+            )}
+          </button>
+        ))}
       </section>
     </div>
   );
