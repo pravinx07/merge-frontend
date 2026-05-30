@@ -1,75 +1,82 @@
-# React + TypeScript + Vite
+# 🚀 Merge
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**The social network for developers. Find developers who match your vibe.**
 
-Currently, two official plugins are available:
+[**🔴 Live Demo: https://merge-frontend-six.vercel.app/**](https://merge-frontend-six.vercel.app/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📸 Screenshots
 
-## React Compiler
+<details>
+<summary>Click to expand screenshots</summary>
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+### Landing Page
+![Landing Page](./screenshots/landing.png)
 
-Note: This will impact Vite dev & build performances.
+### Features & Stats
+![Features](./screenshots/features.png)
 
-## Expanding the ESLint configuration
+### Live Community
+![Community](./screenshots/community.png)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Create Profile
+![Create Profile](./screenshots/profile.png)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+</details>
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 📖 About The Project
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Merge is a dedicated platform designed for developers to connect, collaborate, and build amazing things together. Whether you are looking for a teammate for a hackathon, a co-founder for your next big startup, or just developer friends to share ideas with, Merge connects you with the right people based on your skills, interests, and goals.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Your next great connection is just **one match** away!
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## ✨ Features
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **🧑‍💻 Create Your Developer Identity:** Connect your GitHub, showcase your technical skills, display the projects you are working on, and let others know what you are looking for.
+- **🤝 Match With Builders:** Our smart matching connects you with developers who complement your skills and share similar interests. Swipe, connect, and start building.
+- **💬 Build Something Amazing:** Once connected, use the built-in real-time chat to collaborate, plan, and build the next big thing together.
+- **🌐 Live Community:** Browse the community, discover active developers, see what others are building right now, and join existing project teams.
+
+## 🛠️ Tech Stack
+
+This frontend application is built with modern web technologies:
+
+- **Framework:** React 19 + Vite
+- **Styling:** Tailwind CSS 4
+- **Routing:** React Router v7
+- **Animations:** Framer Motion
+- **Real-time Communication:** Socket.io-client
+- **HTTP Client:** Axios
+- **Icons:** Lucide React
+- **Language:** TypeScript
+
+## 🚀 Getting Started
+
+Follow these steps to run the frontend application locally:
+
+### Prerequisites
+
+- Node.js (v18 or higher recommended)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository and navigate to the frontend directory:
+   ```bash
+   cd merge_frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open your browser and visit `http://localhost:5173` to view the application.
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
