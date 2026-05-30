@@ -5,6 +5,8 @@ import FilterSidebar from '../components/Discover/FilterSidebar';
 import SwipeCard from '../components/Discover/SwipeCard';
 import MatchPopup from '../components/Discover/MatchPopup';
 import RecommendedSection from '../components/Discover/RecommendedSection';
+import { UpgradeModal } from '../components/Premium';
+import { useAuth } from '../context/AuthContext';
 import api from '../lib/axios';
 import { toast } from 'react-hot-toast';
 import { EmptyState } from '../components/DashboardComponents';
@@ -58,12 +60,16 @@ const HowItWorks = () => (
    DISCOVER PAGE
 ═══════════════════════════════════════════════════════════════ */
 const DiscoverPage = () => {
+  const { user } = useAuth();
   const [developers, setDevelopers]   = useState<any[]>([]);
   const [isLoading, setIsLoading]     = useState(true);
   const [filters, setFilters]         = useState({ skills: [] as string[], intent: '', experienceLevel: '' });
   const [matchData, setMatchData]     = useState<any>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [swipeDir, setSwipeDir]       = useState<'left' | 'right' | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  
+  const isPro = user?.plan === 'pro';
 
   const fetchDevelopers = useCallback(async () => {
     try {
@@ -332,7 +338,13 @@ const DiscoverPage = () => {
                 </button>
               </div>
               <div className="flex-1 p-6 overflow-y-auto">
-                <FilterSidebar filters={filters as any} setFilters={setFilters as any} onClear={clearFilters} />
+                <FilterSidebar 
+                  filters={filters as any} 
+                  setFilters={setFilters as any} 
+                  onClear={clearFilters}
+                  isPro={isPro}
+                  onProFilterClick={() => setShowUpgradeModal(true)}
+                />
               </div>
               <div className="p-6 border-t border-zinc-800/60 space-y-2">
                 <button
@@ -355,6 +367,7 @@ const DiscoverPage = () => {
       </AnimatePresence>
 
       <MatchPopup match={matchData} onClose={() => setMatchData(null)} />
+      <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
     </div>
   );
 };

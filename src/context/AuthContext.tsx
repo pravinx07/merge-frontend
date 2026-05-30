@@ -24,6 +24,7 @@ interface User {
   githubData?: any;
   builderScore?: number;
   builderLevel?: string;
+  plan?: 'free' | 'pro';
 }
 
 interface AuthContextType {
