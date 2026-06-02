@@ -6,7 +6,7 @@ import {
   Heart, 
   Settings, MessageSquare,
   Layers, Clock, Trophy,
-  CheckCircle2, MoreVertical, Ban, AlertTriangle, Eye, X
+  CheckCircle2, MoreVertical, Ban, AlertTriangle, Eye, X, Lock, Star
 } from 'lucide-react';
 import { UpgradeModal } from '../components/Premium';
 import api from '../lib/axios';
@@ -58,6 +58,29 @@ const ProfilePage = () => {
   const [isBoostModalOpen, setIsBoostModalOpen] = useState(false);
   const [boostStatus, setBoostStatus] = useState<{ isBoosted: boolean; boostExpiresAt: string | null; boostCount: number } | null>(null);
   const [boostTimer, setBoostTimer] = useState<string | null>(null);
+
+  // Insights State
+  const [insights, setInsights] = useState<any>(null);
+  const [isInsightsLoading, setIsInsightsLoading] = useState(false);
+  const [showInsights, setShowInsights] = useState(false);
+
+  const fetchInsights = async () => {
+    setIsInsightsLoading(true);
+    try {
+      const res = await api.get(`/profile/insights/${id}`);
+      setInsights(res.data.data);
+      setShowInsights(true);
+    } catch (e: any) {
+      if (e.response?.status === 403) {
+        setInsights(null);
+        setShowInsights(true);
+      } else {
+        toast.error('Failed to load insights');
+      }
+    } finally {
+      setIsInsightsLoading(false);
+    }
+  };
 
   const fetchBoostStatus = async () => {
     try {
@@ -155,17 +178,17 @@ const ProfilePage = () => {
           <div className="absolute inset-0 bg-linear-to-b from-transparent to-zinc-900"></div>
         </div>
 
-        <div className="relative p-8 pt-20">
+        <div className="relative p-6 pt-32 md:p-8 md:pt-20">
           {isOwner ? (
-            <div className="absolute top-6 right-8 flex flex-col md:flex-row gap-3">
+            <div className="absolute top-4 right-4 md:top-6 md:right-8 flex flex-col sm:flex-row items-end sm:items-center gap-2 md:gap-3 z-10">
               <button 
                 onClick={() => setIsBoostModalOpen(true)} 
-                className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-bold text-xs hover:opacity-90 transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer"
+                className="px-3 py-1.5 md:px-4 md:py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-bold text-[10px] md:text-xs hover:opacity-90 transition-all flex items-center gap-1.5 md:gap-2 shadow-lg shadow-amber-500/20 cursor-pointer"
               >
-                ⚡ {boostTimer ? `Active: ${boostTimer}` : 'Boost Profile'}
+                ⚡ {boostTimer ? `Active: ${boostTimer}` : <><span className="hidden sm:inline">Boost Profile</span><span className="sm:hidden">Boost</span></>}
               </button>
-              <Link to="/settings" className="px-4 py-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl font-bold text-xs hover:bg-white/10 transition-all flex items-center gap-2">
-                <Settings className="w-3.5 h-3.5" /> Edit Profile
+              <Link to="/settings" className="px-3 py-1.5 md:px-4 md:py-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl font-bold text-[10px] md:text-xs hover:bg-white/10 transition-all flex items-center gap-1.5 md:gap-2">
+                <Settings className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit Profile</span><span className="sm:hidden">Edit</span>
               </Link>
             </div>
           ) : (
@@ -357,6 +380,66 @@ const ProfilePage = () => {
         </div>
 
         <div className="space-y-8">
+          {/* Cofounder Insights Section */}
+          <section className="bg-zinc-900/20 border border-zinc-800/50 rounded-[32px] p-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4">
+              <span className="text-[10px] font-black uppercase tracking-widest bg-gradient-to-r from-amber-500 to-orange-500 text-transparent bg-clip-text">⭐ PRO</span>
+            </div>
+            <SectionTitle className="mb-6">💼 Cofounder Insights</SectionTitle>
+            
+            {!showInsights ? (
+              <button 
+                onClick={fetchInsights}
+                disabled={isInsightsLoading}
+                className="w-full py-4 rounded-xl border border-zinc-800 bg-zinc-900/50 text-sm font-bold text-zinc-300 hover:bg-zinc-800 transition-all flex items-center justify-center gap-2"
+              >
+                {isInsightsLoading ? 'Loading...' : 'View Collaboration Insights'}
+              </button>
+            ) : insights ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-900 border border-zinc-800">
+                  <span className="text-xs font-bold text-zinc-400">Reliability Score</span>
+                  <span className="text-sm font-black text-[#00e5ff]">{insights.reliabilityScore}%</span>
+                </div>
+                <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-900 border border-zinc-800">
+                  <span className="text-xs font-bold text-zinc-400">Response Time</span>
+                  <span className="text-sm font-black text-white">~{insights.responseTime}</span>
+                </div>
+                <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-900 border border-zinc-800">
+                  <span className="text-xs font-bold text-zinc-400">Project Completion</span>
+                  <span className="text-sm font-black text-emerald-400">{insights.projectCompletionRate}</span>
+                </div>
+                <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-900 border border-zinc-800">
+                  <span className="text-xs font-bold text-zinc-400">Builder Rating</span>
+                  <span className="text-sm font-black text-amber-500 flex items-center gap-1">{insights.builderRating} <Star className="w-3.5 h-3.5 fill-amber-500" /></span>
+                </div>
+                <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-900 border border-zinc-800">
+                  <span className="text-xs font-bold text-zinc-400">GitHub Consistency</span>
+                  <span className="text-sm font-black text-violet-400">{insights.githubConsistency}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="relative rounded-2xl border border-zinc-800 bg-zinc-900 p-6 overflow-hidden">
+                <div className="space-y-4 blur-sm opacity-50 pointer-events-none select-none">
+                  <div className="h-10 bg-zinc-800 rounded-xl w-full"></div>
+                  <div className="h-10 bg-zinc-800 rounded-xl w-full"></div>
+                  <div className="h-10 bg-zinc-800 rounded-xl w-full"></div>
+                  <div className="h-10 bg-zinc-800 rounded-xl w-full"></div>
+                </div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                  <Lock className="w-8 h-8 text-amber-500 mb-3" />
+                  <p className="text-sm font-bold text-white mb-4">Unlock Cofounder Insights</p>
+                  <button 
+                    onClick={() => setIsUpgradeModalOpen(true)}
+                    className="px-6 py-2.5 bg-white text-black font-black text-xs rounded-xl hover:opacity-90 transition-all shadow-lg"
+                  >
+                    Upgrade to Pro
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
+
           <section className="bg-zinc-900/20 border border-zinc-800/50 rounded-[32px] p-8">
             <SectionTitle>Tech Stack</SectionTitle>
             <div className="mt-6 flex flex-wrap gap-3">
