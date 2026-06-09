@@ -64,6 +64,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkAuth = async () => {
     setIsLoading(true);
+    
+    // Extract token from URL query string if present (for OAuth redirects)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
+
+    if (urlToken) {
+      localStorage.setItem('token', urlToken);
+      // Clean query parameters from browser URL
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+
     try {
       const response = await api.get('/auth/me');
       setUser(response.data.user);
@@ -71,6 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       setUser(null);
       setIsAuthenticated(false);
+      localStorage.removeItem('token');
     } finally {
       setIsLoading(false);
     }
