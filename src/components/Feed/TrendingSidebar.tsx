@@ -11,6 +11,7 @@ interface TrendingData {
     avatar: string;
     skills: string[];
     bio: string;
+    builderScore?: number;
   }>;
   trendingProjects: Array<{
     id: string;
@@ -94,7 +95,14 @@ const TrendingSidebar: React.FC = () => {
                   className="w-10 h-10 rounded-full object-cover border border-white/10 group-hover:border-purple-500 transition-colors"
                 />
                 <div>
-                  <h3 className="font-medium text-sm text-gray-200 group-hover:text-purple-400 transition-colors">{dev.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-sm text-gray-200 group-hover:text-purple-400 transition-colors">{dev.name}</h3>
+                    {dev.builderScore !== undefined && (
+                      <span className="px-1.5 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[9px] font-black rounded-md flex items-center">
+                        ⭐ {dev.builderScore}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-500 line-clamp-1">{dev.bio || dev.skills.join(', ')}</p>
                 </div>
               </div>

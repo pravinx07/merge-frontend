@@ -6,6 +6,10 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../lib/axios';
 import { BuildWorkspaceModal } from '../components/BuildWorkspaceModal';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const ChatPage = () => {
   const { chatId } = useParams();
@@ -178,13 +182,42 @@ const ChatPage = () => {
               animate={{ opacity: 1, x: 0 }}
               className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-[75%] md:max-w-[50%] px-3 py-2 rounded-2xl text-[13px] font-medium ${
+              <div className={`max-w-[85%] md:max-w-[70%] px-3 py-2 rounded-2xl text-[13px] font-medium overflow-hidden ${
                 isMe 
                   ? 'bg-brand-cyan text-dark-bg rounded-tr-sm shadow-[0_0_10px_rgba(0,229,255,0.1)]' 
                   : 'bg-dark-card border border-white/5 text-white rounded-tl-sm'
               }`}>
-                {msg.content}
-                <p className={`text-[9px] mt-0.5 opacity-60 text-right ${isMe ? 'text-dark-bg' : 'text-slate-400'}`}>
+                <div className={`prose max-w-none text-[13px] leading-relaxed [&>p]:m-0 [&>pre]:my-2 [&>pre]:rounded-md [&>pre]:text-[11px] ${isMe ? 'text-dark-bg prose-p:text-dark-bg prose-headings:text-dark-bg prose-a:text-dark-bg' : 'prose-invert text-white'}`}>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      code({node, className, children, ...props}) {
+                        const match = /language-(\w+)/.exec(className || '');
+                        // Check if it's inline code or block code
+                        const isInline = !match && !String(children).includes('\n');
+                        const { ref, ...rest } = props as any;
+                        return !isInline && match ? (
+                          <SyntaxHighlighter
+                            style={vscDarkPlus as any}
+                            language={match[1]}
+                            PreTag="div"
+                            className="rounded-md !bg-black/50 border border-white/10 !m-0"
+                            {...rest}
+                          >
+                            {String(children).replace(/\n$/, '')}
+                          </SyntaxHighlighter>
+                        ) : (
+                          <code className="bg-black/20 px-1 py-0.5 rounded text-[12px] font-mono text-pink-400" {...props}>
+                            {children}
+                          </code>
+                        );
+                      }
+                    }}
+                  >
+                    {msg.content}
+                  </ReactMarkdown>
+                </div>
+                <p className={`text-[9px] mt-1 opacity-60 text-right ${isMe ? 'text-dark-bg' : 'text-slate-400'}`}>
                   {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
@@ -216,19 +249,25 @@ const ChatPage = () => {
           onSubmit={handleSendMessage}
           className="max-w-4xl mx-auto relative"
         >
-          <input
-            type="text"
+          <textarea
             value={newMessage}
-            onChange={handleTyping}
-            placeholder="Type your message..."
-            className="w-full bg-dark-card border border-white/5 focus:border-brand-cyan/50 rounded-lg py-2 px-4 pr-10 text-white text-[13px] outline-none transition-all"
+            onChange={handleTyping as any}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage(e as any);
+              }
+            }}
+            placeholder="Type a message or paste code... (Shift+Enter for new line)"
+            className="w-full bg-dark-card border border-white/5 focus:border-brand-cyan/50 rounded-lg py-3 px-4 pr-12 text-white text-[13px] outline-none transition-all resize-none min-h-[48px] max-h-[200px]"
+            rows={newMessage.split('\n').length > 1 ? Math.min(newMessage.split('\n').length, 8) : 1}
           />
           <button
             type="submit"
             disabled={!newMessage.trim()}
-            className="absolute right-1 top-1 bottom-1 aspect-square bg-brand-cyan text-dark-bg rounded-md flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all shadow-md"
+            className="absolute right-2 bottom-2 w-8 h-8 bg-brand-cyan text-dark-bg rounded-md flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all shadow-md"
           >
-            <Send className="w-3.5 h-3.5" />
+            <Send className="w-4 h-4 -ml-0.5" />
           </button>
         </form>
       </div>
