@@ -137,6 +137,15 @@ const ProfilePage = () => {
     </DashboardContainer>
   );
 
+  const getNextLevelInfo = (score: number) => {
+    if (score < 100) return { nextLevel: 'Intermediate Builder', nextScore: 100, progress: (score / 100) * 100 };
+    if (score < 500) return { nextLevel: 'Advanced Builder', nextScore: 500, progress: ((score - 100) / 400) * 100 };
+    if (score < 1000) return { nextLevel: 'Master Builder', nextScore: 1000, progress: ((score - 500) / 500) * 100 };
+    return { nextLevel: 'Max Level', nextScore: score, progress: 100 };
+  };
+
+  const levelInfo = getNextLevelInfo(profile.builderScore || 0);
+
   const handleBlock = async () => {
     try {
       await api.post('/users/block', { userId: profile.id });
@@ -246,7 +255,20 @@ const ProfilePage = () => {
                 </div>
               </div>
 
-              <h2 className="text-sm font-medium text-zinc-400 mt-2">{profile.bio?.slice(0, 50) || "Full Stack & AI Engineer"}...</h2>
+              <div className="mt-4 w-full max-w-xs mx-auto lg:mx-0">
+                <div className="flex justify-between text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">
+                  <span>Next: {levelInfo.nextLevel}</span>
+                  <span>{profile.builderScore || 0} / {levelInfo.nextScore}</span>
+                </div>
+                <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-1000" 
+                    style={{ width: `${levelInfo.progress}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              <h2 className="text-sm font-medium text-zinc-400 mt-4">{profile.bio?.slice(0, 50) || "Full Stack & AI Engineer"}...</h2>
 
               {profile.badges && profile.badges.length > 0 && (
                 <div className="flex flex-wrap justify-center lg:justify-start gap-2 mt-3">
