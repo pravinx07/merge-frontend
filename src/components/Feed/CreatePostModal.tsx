@@ -9,12 +9,15 @@ interface CreatePostModalProps {
   onPostCreated: () => void;
 }
 
-const POST_TYPES = ['Update', 'Collaboration', 'Achievement', 'GitHub'];
+const POST_TYPES = ['Update', 'Collaboration', 'Achievement', 'GitHub', 'CODE_REVIEW', 'POLL'];
 
 const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onPostCreated }) => {
   const [content, setContent] = useState('');
   const [postType, setPostType] = useState('Update');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [codeSnippet, setCodeSnippet] = useState('');
+  const [language, setLanguage] = useState('');
+  const [pollOptions, setPollOptions] = useState<string[]>(['', '']);
 
   // Image Upload States
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,18 +73,32 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onPo
       toast.error('Please wait for the image upload to complete');
       return;
     }
+
+    if (postType === 'POLL') {
+      const validOptions = pollOptions.filter(opt => opt.trim() !== '');
+      if (validOptions.length < 2) {
+        toast.error('Polls must have at least 2 options');
+        return;
+      }
+    }
     
     setIsSubmitting(true);
     try {
       await api.post('/posts', { 
         content, 
         postType, 
-        imageUrl 
+        imageUrl,
+        codeSnippet: postType === 'CODE_REVIEW' ? codeSnippet : undefined,
+        language: postType === 'CODE_REVIEW' ? language : undefined,
+        pollOptions: postType === 'POLL' ? pollOptions.filter(o => o.trim()) : undefined
       });
       setContent('');
       setPostType('Update');
       setImageUrl(null);
       setImagePreview(null);
+      setCodeSnippet('');
+      setLanguage('');
+      setPollOptions(['', '']);
       onPostCreated();
       onClose();
     } catch (error) {
@@ -105,9 +122,55 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onPo
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="What's happening in your builder journey?"
-          className="w-full h-32 bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-purple-500/50 resize-none mb-4 placeholder-gray-500"
+          placeholder={postType === 'POLL' ? "Ask a question..." : postType === 'CODE_REVIEW' ? "Describe the code you want reviewed..." : "What's happening in your builder journey?"}
+          className="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-purple-500/50 resize-none mb-4 placeholder-gray-500"
         />
+
+        {postType === 'POLL' && (
+          <div className="mb-4 space-y-2">
+            <label className="text-xs font-bold text-gray-400">Poll Options</label>
+            {pollOptions.map((opt, index) => (
+              <input
+                key={index}
+                value={opt}
+                onChange={(e) => {
+                  const newOpts = [...pollOptions];
+                  newOpts[index] = e.target.value;
+                  setPollOptions(newOpts);
+                }}
+                placeholder={`Option ${index + 1}`}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-brand-cyan/50"
+              />
+            ))}
+            {pollOptions.length < 4 && (
+              <button
+                type="button"
+                onClick={() => setPollOptions([...pollOptions, ''])}
+                className="text-xs text-brand-cyan hover:underline mt-1 inline-block"
+              >
+                + Add Option
+              </button>
+            )}
+          </div>
+        )}
+
+        {postType === 'CODE_REVIEW' && (
+          <div className="mb-4 space-y-2">
+            <input
+              type="text"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              placeholder="Language (e.g. typescript, python, rust)"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-brand-cyan/50 mb-2"
+            />
+            <textarea
+              value={codeSnippet}
+              onChange={(e) => setCodeSnippet(e.target.value)}
+              placeholder="Paste your code snippet here..."
+              className="w-full h-32 font-mono text-sm bg-[#0a0a0a] border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-brand-cyan/50 resize-none placeholder-gray-600"
+            />
+          </div>
+        )}
 
         {/* Image Preview Container */}
         {imagePreview && (

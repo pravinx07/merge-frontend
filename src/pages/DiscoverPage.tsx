@@ -62,6 +62,8 @@ const HowItWorks = () => (
 const DiscoverPage = () => {
   const { user } = useAuth();
   const [developers, setDevelopers]   = useState<any[]>([]);
+  const [myIntent, setMyIntent]       = useState(user?.intent || 'BUILDING');
+  const [isUpdatingIntent, setIsUpdatingIntent] = useState(false);
   const [isLoading, setIsLoading]     = useState(true);
   const [filters, setFilters]         = useState({ skills: [] as string[], intent: '', experienceLevel: '' });
   const [matchData, setMatchData]     = useState<any>(null);
@@ -117,6 +119,20 @@ const DiscoverPage = () => {
     setDevelopers(prev => prev.filter(d => d.id !== devId));
   };
 
+  const updateIntent = async (newIntent: string) => {
+    setIsUpdatingIntent(true);
+    try {
+      await api.put('/users/profile', { intent: newIntent });
+      setMyIntent(newIntent);
+      toast.success(`Goal updated to ${newIntent}`);
+      fetchDevelopers();
+    } catch (error) {
+      toast.error('Failed to update goal');
+    } finally {
+      setIsUpdatingIntent(false);
+    }
+  };
+
   const clearFilters  = () => setFilters({ skills: [], intent: '', experienceLevel: '' });
   const topDev        = developers[0];
   const hasFilters    = filters.intent || filters.experienceLevel || filters.skills.length > 0;
@@ -166,6 +182,30 @@ const DiscoverPage = () => {
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+        </div>
+
+        {/* ── Intent Selector ── */}
+        <div className="mb-8 p-4 sm:px-6 sm:py-5 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-center sm:text-left">
+            <h3 className="text-sm font-black text-white">What are you looking for today?</h3>
+            <p className="text-[11px] font-medium text-zinc-500 mt-1">Update your goal to find the right cofounders, mentors, or learners.</p>
+          </div>
+          <div className="flex bg-[#111115] border border-zinc-800/80 rounded-xl p-1 shadow-inner">
+            {['BUILDING', 'MENTORING', 'LEARNING'].map(intent => (
+              <button
+                key={intent}
+                onClick={() => updateIntent(intent)}
+                disabled={isUpdatingIntent}
+                className={`px-4 py-2 rounded-lg text-xs font-black tracking-wide transition-all duration-300 ${
+                  myIntent === intent
+                    ? 'bg-gradient-to-r from-violet-600 to-[#00e5ff] text-white shadow-lg shadow-[#00e5ff]/20'
+                    : 'text-zinc-500 hover:text-white hover:bg-zinc-800/50'
+                }`}
+              >
+                {intent}
+              </button>
+            ))}
           </div>
         </div>
 

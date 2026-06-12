@@ -4,6 +4,8 @@ import api from '../../lib/axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface PostCardProps {
   post: {
@@ -12,6 +14,14 @@ interface PostCardProps {
     imageUrl?: string;
     postType: string;
     createdAt: string;
+    codeSnippet?: string;
+    language?: string;
+    pollOptions?: {
+      id: string;
+      text: string;
+      votes: number;
+      hasVoted: boolean;
+    }[];
     author: {
       id: string;
       name: string;
@@ -42,6 +52,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostDeleted }) => {
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [commentsCount, setCommentsCount] = useState(post._count.comments);
+  const [pollOptions, setPollOptions] = useState(post.pollOptions || []);
 
   const handleLike = async () => {
     if (isLiking) return;
@@ -106,6 +117,26 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostDeleted }) => {
     }
   };
 
+  const handleVote = async (optionId: string) => {
+    try {
+      await api.post(`/posts/${post.id}/poll/${optionId}`);
+      
+      // Optimistically update
+      setPollOptions(prev => prev.map(opt => {
+        if (opt.id === optionId) {
+          return { ...opt, votes: opt.votes + 1, hasVoted: true };
+        }
+        if (opt.hasVoted) {
+          return { ...opt, votes: Math.max(0, opt.votes - 1), hasVoted: false };
+        }
+        return opt;
+      }));
+    } catch (error) {
+      console.error('Error voting:', error);
+      toast.error('Failed to register vote');
+    }
+  };
+
   const handleDelete = () => {
     setShowDeleteConfirm(true);
   };
@@ -131,6 +162,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostDeleted }) => {
       case 'Collaboration': return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
       case 'GitHub': return 'text-green-400 bg-green-400/10 border-green-400/20';
       case 'Auto': return 'text-purple-400 bg-purple-400/10 border-purple-400/20';
+      case 'CODE_REVIEW': return 'text-brand-cyan bg-brand-cyan/10 border-brand-cyan/20';
+      case 'POLL': return 'text-pink-400 bg-pink-400/10 border-pink-400/20';
       default: return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
     }
   };
@@ -176,9 +209,64 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostDeleted }) => {
         </div>
       </div>
 
-      <div className="mt-4 mb-5 text-gray-200 text-sm whitespace-pre-wrap">
+      <div className="mt-4 mb-4 text-gray-200 text-sm whitespace-pre-wrap">
         {post.content}
       </div>
+
+      {post.codeSnippet && (
+        <div className="mb-4">
+          <div className="flex items-center justify-between bg-[#1e1e1e] px-4 py-2 rounded-t-xl border border-white/10 border-b-0">
+            <span className="text-xs font-mono text-gray-400">{post.language || 'code'}</span>
+          </div>
+          <div className="overflow-hidden rounded-b-xl border border-white/10 bg-[#1e1e1e] text-[12px] max-h-[400px] overflow-y-auto custom-scrollbar">
+            <SyntaxHighlighter
+              language={post.language || 'javascript'}
+              style={vscDarkPlus as any}
+              customStyle={{ margin: 0, padding: '1rem', background: 'transparent' }}
+            >
+              {post.codeSnippet}
+            </SyntaxHighlighter>
+          </div>
+        </div>
+      )}
+
+      {pollOptions.length > 0 && (
+        <div className="mb-4 space-y-2">
+          {pollOptions.map((opt) => {
+            const totalVotes = pollOptions.reduce((sum, o) => sum + o.votes, 0);
+            const percentage = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
+            return (
+              <button
+                key={opt.id}
+                onClick={() => handleVote(opt.id)}
+                className={`relative w-full text-left overflow-hidden rounded-xl border transition-all ${
+                  opt.hasVoted 
+                    ? 'border-brand-cyan bg-brand-cyan/10' 
+                    : 'border-white/10 bg-white/5 hover:bg-white/10'
+                }`}
+              >
+                <div 
+                  className={`absolute top-0 left-0 bottom-0 transition-all duration-1000 ${
+                    opt.hasVoted ? 'bg-brand-cyan/20' : 'bg-white/10'
+                  }`}
+                  style={{ width: `${percentage}%` }}
+                />
+                <div className="relative px-4 py-3 flex justify-between items-center z-10">
+                  <span className={`text-sm ${opt.hasVoted ? 'text-brand-cyan font-bold' : 'text-gray-300'}`}>
+                    {opt.text}
+                  </span>
+                  <span className="text-xs text-gray-400 font-medium">
+                    {percentage}%
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+          <div className="text-[10px] text-gray-500 text-right mt-1">
+            {pollOptions.reduce((sum, o) => sum + o.votes, 0)} total votes
+          </div>
+        </div>
+      )}
 
       {post.imageUrl && (
         <div className="mb-5 rounded-xl overflow-hidden border border-white/10 max-h-[380px] bg-neutral-900">
