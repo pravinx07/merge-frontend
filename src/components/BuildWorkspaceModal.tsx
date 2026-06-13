@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Rocket, Target, Users, CheckSquare, Zap, Trophy, X, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Rocket, Target, Users, CheckSquare, Zap, Trophy, X, Plus, ChevronLeft, ChevronRight, Code2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/axios';
+import { useSocket } from '../context/SocketContext';
+import Editor from '@monaco-editor/react';
 
 interface BuildWorkspaceModalProps {
   isOpen: boolean;
@@ -22,6 +24,10 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
   
   const [tasks, setTasks] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'roadmap' | 'editor'>('roadmap');
+  const [code, setCode] = useState("");
+  const [language, setLanguage] = useState("typescript");
+  const { socket } = useSocket();
 
   useEffect(() => {
     if (isOpen && chatId) {
@@ -34,6 +40,8 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
           setTheirRole(ws.user2Role || "Backend");
           setTasks(ws.tasks || []);
           setUpdates(ws.updates || []);
+          setCode(ws.code || "");
+          setLanguage(ws.language || "typescript");
         } catch (error) {
           console.error("Error fetching workspace:", error);
         }
@@ -41,6 +49,34 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
       fetchWorkspace();
     }
   }, [isOpen, chatId]);
+
+  useEffect(() => {
+    if (!socket || !chatId || !isOpen) return;
+
+    const handleCodeUpdate = (data: { code: string; language: string }) => {
+      setCode(data.code);
+      setLanguage(data.language);
+    };
+
+    socket.on('workspace_code_updated', handleCodeUpdate);
+    return () => { socket.off('workspace_code_updated', handleCodeUpdate); };
+  }, [socket, chatId, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = setTimeout(() => {
+      api.put(`/workspace/${chatId}/code`, { code, language }).catch(console.error);
+    }, 1500);
+    return () => clearTimeout(handler);
+  }, [code, language, chatId, isOpen]);
+
+  const handleEditorChange = (value: string | undefined) => {
+    const newCode = value || "";
+    setCode(newCode);
+    if (socket) {
+      socket.emit('workspace_code_update', { roomId: chatId, code: newCode, language });
+    }
+  };
 
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -267,113 +303,175 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
 
             </div>
 
-            {/* Right Column: Kanban & Progress */}
-            <div className="lg:col-span-2 space-y-6">
+            {/* Right Column: Content Area (Tabs) */}
+            <div className="lg:col-span-2 space-y-6 flex flex-col">
               
-              {/* Shared Roadmap */}
-              <div className="bg-zinc-800/30 border border-zinc-800 rounded-2xl p-5 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-2">
-                    <CheckSquare className="w-4 h-4 text-emerald-400" />
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Shared Roadmap</h3>
-                  </div>
-                  {!isAddingTask && (
-                    <button onClick={() => setIsAddingTask(true)} className="text-[10px] font-bold bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                      <Plus className="w-3 h-3" /> Add Task
-                    </button>
-                  )}
-                </div>
+              {/* Tabs */}
+              <div className="flex items-center gap-4 border-b border-zinc-800 pb-2">
+                <button 
+                  onClick={() => setActiveTab('roadmap')}
+                  className={`flex items-center gap-2 text-sm font-bold pb-2 border-b-2 transition-all ${activeTab === 'roadmap' ? 'border-brand-cyan text-white' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
+                >
+                  <CheckSquare className="w-4 h-4" /> Roadmap & Tasks
+                </button>
+                <button 
+                  onClick={() => setActiveTab('editor')}
+                  className={`flex items-center gap-2 text-sm font-bold pb-2 border-b-2 transition-all ${activeTab === 'editor' ? 'border-brand-cyan text-white' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
+                >
+                  <Code2 className="w-4 h-4" /> Code Scratchpad
+                </button>
+              </div>
 
-                {isAddingTask && (
-                  <form onSubmit={handleAddTask} className="mb-4 flex gap-2">
-                    <input 
-                      autoFocus
-                      type="text"
-                      value={newTaskText}
-                      onChange={(e) => setNewTaskText(e.target.value)}
-                      placeholder="What needs to be done?"
-                      className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-cyan"
-                    />
-                    <button type="submit" disabled={!newTaskText.trim()} className="px-3 py-2 bg-brand-cyan text-dark-bg text-xs font-bold rounded-lg disabled:opacity-50">Add</button>
-                    <button type="button" onClick={() => {setIsAddingTask(false); setNewTaskText("")}} className="px-3 py-2 bg-zinc-800 text-zinc-300 text-xs font-bold rounded-lg hover:bg-zinc-700">Cancel</button>
-                  </form>
-                )}
-                
-                <div className="flex gap-4 overflow-x-auto pb-4 flex-1">
-                  {/* Kanban Columns */}
-                  {['todo', 'doing', 'done'].map((columnStatus) => (
-                    <div key={columnStatus} className="flex-1 min-w-[200px] bg-zinc-900/50 rounded-xl p-3 border border-zinc-800 flex flex-col">
-                      <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center justify-between">
-                        {columnStatus}
-                        <span className="bg-zinc-800 px-2 py-0.5 rounded-full text-[9px]">{tasks.filter(t => t.status === columnStatus).length}</span>
-                      </div>
-                      
-                      <div className="space-y-2 flex-1">
-                        {tasks.filter(t => t.status === columnStatus).map(task => (
-                          <div key={task.id} className="bg-zinc-800 p-3 rounded-lg border border-zinc-700 shadow-sm hover:border-zinc-500 transition-colors">
-                            <p className="text-xs font-medium text-white mb-2">{task.text}</p>
-                            <div className="flex justify-between items-center">
-                              <div className="w-5 h-5 rounded-full bg-zinc-700 flex items-center justify-center text-[8px] font-bold shrink-0">
-                                {task.id % 2 === 0 ? currentUser?.name?.[0] : otherUser?.name?.[0]}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                {columnStatus !== 'todo' && (
-                                  <button onClick={() => moveTask(task.id, 'left')} className="p-1 hover:bg-zinc-700 rounded text-zinc-400">
-                                    <ChevronLeft className="w-3 h-3" />
-                                  </button>
-                                )}
-                                <span className={`px-2 py-0.5 text-[9px] font-bold uppercase rounded-md border ${getStatusColor(task.status)}`}>
-                                  {task.status}
-                                </span>
-                                {columnStatus !== 'done' && (
-                                  <button onClick={() => moveTask(task.id, 'right')} className="p-1 hover:bg-zinc-700 rounded text-zinc-400">
-                                    <ChevronRight className="w-3 h-3" />
-                                  </button>
-                                )}
+              {activeTab === 'roadmap' ? (
+                /* Shared Roadmap */
+                <div className="bg-zinc-800/30 border border-zinc-800 rounded-2xl p-5 flex flex-col flex-1">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2">
+                      <CheckSquare className="w-4 h-4 text-emerald-400" />
+                      <h3 className="text-sm font-bold text-white uppercase tracking-wider">Shared Roadmap</h3>
+                    </div>
+                    {!isAddingTask && (
+                      <button onClick={() => setIsAddingTask(true)} className="text-[10px] font-bold bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                        <Plus className="w-3 h-3" /> Add Task
+                      </button>
+                    )}
+                  </div>
+
+                  {isAddingTask && (
+                    <form onSubmit={handleAddTask} className="mb-4 flex gap-2">
+                      <input 
+                        autoFocus
+                        type="text"
+                        value={newTaskText}
+                        onChange={(e) => setNewTaskText(e.target.value)}
+                        placeholder="What needs to be done?"
+                        className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-cyan"
+                      />
+                      <button type="submit" disabled={!newTaskText.trim()} className="px-3 py-2 bg-brand-cyan text-dark-bg text-xs font-bold rounded-lg disabled:opacity-50">Add</button>
+                      <button type="button" onClick={() => {setIsAddingTask(false); setNewTaskText("")}} className="px-3 py-2 bg-zinc-800 text-zinc-300 text-xs font-bold rounded-lg hover:bg-zinc-700">Cancel</button>
+                    </form>
+                  )}
+                  
+                  <div className="flex gap-4 overflow-x-auto pb-4 flex-1 min-h-[250px]">
+                    {/* Kanban Columns */}
+                    {['todo', 'doing', 'done'].map((columnStatus) => (
+                      <div key={columnStatus} className="flex-1 min-w-[200px] bg-zinc-900/50 rounded-xl p-3 border border-zinc-800 flex flex-col">
+                        <div className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 flex items-center justify-between">
+                          {columnStatus}
+                          <span className="bg-zinc-800 px-2 py-0.5 rounded-full text-[9px]">{tasks.filter(t => t.status === columnStatus).length}</span>
+                        </div>
+                        
+                        <div className="space-y-2 flex-1">
+                          {tasks.filter(t => t.status === columnStatus).map(task => (
+                            <div key={task.id} className="bg-zinc-800 p-3 rounded-lg border border-zinc-700 shadow-sm hover:border-zinc-500 transition-colors">
+                              <p className="text-xs font-medium text-white mb-2">{task.text}</p>
+                              <div className="flex justify-between items-center">
+                                <div className="w-5 h-5 rounded-full bg-zinc-700 flex items-center justify-center text-[8px] font-bold shrink-0">
+                                  {task.id % 2 === 0 ? currentUser?.name?.[0] : otherUser?.name?.[0]}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  {columnStatus !== 'todo' && (
+                                    <button onClick={() => moveTask(task.id, 'left')} className="p-1 hover:bg-zinc-700 rounded text-zinc-400">
+                                      <ChevronLeft className="w-3 h-3" />
+                                    </button>
+                                  )}
+                                  <span className={`px-2 py-0.5 text-[9px] font-bold uppercase rounded-md border ${getStatusColor(task.status)}`}>
+                                    {task.status}
+                                  </span>
+                                  {columnStatus !== 'done' && (
+                                    <button onClick={() => moveTask(task.id, 'right')} className="p-1 hover:bg-zinc-700 rounded text-zinc-400">
+                                      <ChevronRight className="w-3 h-3" />
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Updates Timeline */}
-                {updates.length > 0 && (
-                  <div className="mt-4 space-y-3 max-h-32 overflow-y-auto pr-2 custom-scrollbar border-t border-zinc-800 pt-4">
-                    <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-3">Project History</h4>
-                    {updates.map(update => (
-                      <div key={update.id} className="bg-zinc-800/40 rounded-xl p-3 border border-zinc-700/50">
-                        <div className="flex items-center gap-2 mb-2">
-                          <img src={update.author?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(update.author?.name || 'User')}&background=random`} className="w-5 h-5 rounded-full object-cover" alt="Avatar"/>
-                          <span className="text-[10px] font-bold text-zinc-300">{update.author?.name}</span>
-                          <span className="text-[9px] text-zinc-500">{new Date(update.createdAt).toLocaleDateString()}</span>
+                          ))}
                         </div>
-                        <p className="text-xs text-zinc-300">{update.content}</p>
                       </div>
                     ))}
                   </div>
-                )}
 
-                {/* Weekly Progress Prompt */}
-                <div className="mt-4 bg-brand-cyan/5 border border-brand-cyan/20 rounded-xl p-4">
-                  <h4 className="text-xs font-bold text-brand-cyan uppercase tracking-wider mb-2">Weekly Check-in</h4>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <input 
-                      type="text" 
-                      value={weeklyProgress}
-                      onChange={(e) => setWeeklyProgress(e.target.value)}
-                      placeholder="What did you build this week?"
-                      className="flex-1 min-w-0 bg-zinc-900/80 border border-zinc-700 rounded-lg px-4 py-3 sm:py-2 text-sm text-white focus:outline-none focus:border-brand-cyan transition-colors"
+                  {/* Updates Timeline */}
+                  {updates.length > 0 && (
+                    <div className="mt-4 space-y-3 max-h-32 overflow-y-auto pr-2 custom-scrollbar border-t border-zinc-800 pt-4">
+                      <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-3">Project History</h4>
+                      {updates.map(update => (
+                        <div key={update.id} className="bg-zinc-800/40 rounded-xl p-3 border border-zinc-700/50">
+                          <div className="flex items-center gap-2 mb-2">
+                            <img src={update.author?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(update.author?.name || 'User')}&background=random`} className="w-5 h-5 rounded-full object-cover" alt="Avatar"/>
+                            <span className="text-[10px] font-bold text-zinc-300">{update.author?.name}</span>
+                            <span className="text-[9px] text-zinc-500">{new Date(update.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          <p className="text-xs text-zinc-300">{update.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Weekly Progress Prompt */}
+                  <div className="mt-4 bg-brand-cyan/5 border border-brand-cyan/20 rounded-xl p-4">
+                    <h4 className="text-xs font-bold text-brand-cyan uppercase tracking-wider mb-2">Weekly Check-in</h4>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <input 
+                        type="text" 
+                        value={weeklyProgress}
+                        onChange={(e) => setWeeklyProgress(e.target.value)}
+                        placeholder="What did you build this week?"
+                        className="flex-1 min-w-0 bg-zinc-900/80 border border-zinc-700 rounded-lg px-4 py-3 sm:py-2 text-sm text-white focus:outline-none focus:border-brand-cyan transition-colors"
+                      />
+                      <button onClick={handlePostUpdate} className="w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2 bg-brand-cyan text-dark-bg font-bold text-xs rounded-lg hover:bg-brand-cyan/90 transition-colors shrink-0">
+                        Post Update
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              ) : (
+                /* Code Editor Tab */
+                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl flex flex-col flex-1 h-[600px] overflow-hidden">
+                  <div className="flex items-center justify-between p-3 border-b border-zinc-800 bg-zinc-950">
+                    <div className="flex items-center gap-2 text-zinc-400">
+                      <Code2 className="w-4 h-4 text-[#00e5ff]" />
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-300">Live Code Sync</span>
+                    </div>
+                    <select 
+                      value={language}
+                      onChange={(e) => {
+                        setLanguage(e.target.value);
+                        if (socket) socket.emit('workspace_code_update', { roomId: chatId, code, language: e.target.value });
+                      }}
+                      className="bg-zinc-800 border border-zinc-700 text-white text-xs px-3 py-1.5 rounded-lg outline-none cursor-pointer hover:border-zinc-600"
+                    >
+                      <option value="typescript">TypeScript</option>
+                      <option value="javascript">JavaScript</option>
+                      <option value="python">Python</option>
+                      <option value="html">HTML</option>
+                      <option value="css">CSS</option>
+                      <option value="json">JSON</option>
+                    </select>
+                  </div>
+                  <div className="flex-1 w-full bg-[#1e1e1e]">
+                    <Editor
+                      height="100%"
+                      language={language}
+                      theme="vs-dark"
+                      value={code}
+                      onChange={handleEditorChange}
+                      options={{
+                        minimap: { enabled: false },
+                        fontSize: 13,
+                        wordWrap: 'on',
+                        padding: { top: 16 },
+                        scrollBeyondLastLine: false,
+                        smoothScrolling: true,
+                        cursorBlinking: 'smooth',
+                        cursorSmoothCaretAnimation: 'on'
+                      }}
                     />
-                    <button onClick={handlePostUpdate} className="w-full sm:w-auto px-4 sm:px-6 py-3 sm:py-2 bg-brand-cyan text-dark-bg font-bold text-xs rounded-lg hover:bg-brand-cyan/90 transition-colors shrink-0">
-                      Post Update
-                    </button>
                   </div>
                 </div>
-
-              </div>
+              )}
 
             </div>
           </div>
