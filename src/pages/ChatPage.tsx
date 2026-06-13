@@ -10,6 +10,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { UpgradeModal } from '../components/Premium';
 
 const ChatPage = () => {
   const { chatId } = useParams();
@@ -22,7 +23,16 @@ const ChatPage = () => {
   const [otherUser, setOtherUser] = useState<any>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const handleOpenWorkspace = () => {
+    if (user?.plan !== 'pro' && otherUser?.plan !== 'pro') {
+      setIsUpgradeModalOpen(true);
+    } else {
+      setIsWorkspaceOpen(true);
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -164,7 +174,7 @@ const ChatPage = () => {
         </div>
 
         <button 
-          onClick={() => setIsWorkspaceOpen(true)}
+          onClick={handleOpenWorkspace}
           className="flex items-center gap-2 bg-zinc-800 border border-zinc-700 text-brand-cyan px-4 py-2 rounded-xl text-xs font-bold shadow-lg hover:bg-zinc-700 hover:scale-105 transition-all"
         >
           <span>Build Together</span>
@@ -278,6 +288,11 @@ const ChatPage = () => {
         otherUser={otherUser} 
         currentUser={user}
         chatId={chatId || ''}
+      />
+      
+      <UpgradeModal 
+        isOpen={isUpgradeModalOpen} 
+        onClose={() => setIsUpgradeModalOpen(false)} 
       />
     </div>
   );
