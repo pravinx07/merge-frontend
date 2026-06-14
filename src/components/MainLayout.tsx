@@ -13,6 +13,7 @@ import {
   User,
   LogOut,
   Trophy,
+  DollarSign,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
@@ -84,6 +85,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     { name: "Messages", icon: MessageSquare, path: "/messages" },
     { name: "Projects", icon: LayoutGrid, path: "/projects" },
     { name: "Hackathons", icon: Trophy, path: "/hackathons" },
+    { name: "Gigs", icon: DollarSign, path: "/bounties" },
     { name: "Settings", icon: SettingsIcon, path: "/settings" },
   ];
 
