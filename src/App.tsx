@@ -27,6 +27,7 @@ const HackathonsPage = lazy(() => import('./pages/HackathonsPage'));
 const HackathonDetailsPage = lazy(() => import('./pages/HackathonDetailsPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const ProfileVisitorsPage = lazy(() => import('./pages/ProfileVisitorsPage'));
+const BountiesPage = lazy(() => import('./pages/BountiesPage'));
 
 const LoadingScreen = () => (
   <div className="min-h-screen bg-dark-bg flex items-center justify-center text-white">
@@ -197,6 +198,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <MainLayout>
               <ProfileVisitorsPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/bounties" 
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <BountiesPage />
             </MainLayout>
           </ProtectedRoute>
         } 
