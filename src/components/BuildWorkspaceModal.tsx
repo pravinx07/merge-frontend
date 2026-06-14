@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Rocket, Target, Users, CheckSquare, Zap, Trophy, X, Plus, ChevronLeft, ChevronRight, Code2 } from 'lucide-react';
+import { Rocket, Target, Users, CheckSquare, Zap, Trophy, X, Plus, ChevronLeft, ChevronRight, Code2, Sparkles, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/axios';
 import { useSocket } from '../context/SocketContext';
 import Editor from '@monaco-editor/react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface BuildWorkspaceModalProps {
   isOpen: boolean;
@@ -27,6 +29,9 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
   const [activeTab, setActiveTab] = useState<'roadmap' | 'editor'>('roadmap');
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("typescript");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
+  const [isAskingAI, setIsAskingAI] = useState(false);
   const { socket } = useSocket();
 
   useEffect(() => {
@@ -148,6 +153,31 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
       toast.success("Weekly update posted!");
     } catch (error) {
       toast.error("Failed to post update");
+    }
+  };
+
+  const handleAskAI = async () => {
+    if (!aiPrompt.trim()) return;
+    setIsAskingAI(true);
+    setAiResponse("");
+    try {
+      const res = await api.post(`/workspace/${chatId}/ai`, {
+        prompt: aiPrompt,
+        codeContext: code,
+        language
+      });
+      setAiResponse(res.data.text);
+      setAiPrompt("");
+      // Post update to project history as well
+      const updateRes = await api.post(`/workspace/${chatId}/updates`, { 
+        content: `MergeAI Action: ${aiPrompt}` 
+      });
+      setUpdates([updateRes.data, ...updates]);
+      toast.success("MergeAI generated a response!");
+    } catch (error) {
+      toast.error("Failed to get AI response");
+    } finally {
+      setIsAskingAI(false);
     }
   };
 
@@ -470,6 +500,35 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
                       }}
                     />
                   </div>
+
+                  {/* MergeAI Input */}
+                  <div className="p-3 border-t border-zinc-800 bg-zinc-950 flex flex-col gap-2">
+                     <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-brand-purple" />
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-brand-purple">Ask MergeAI</span>
+                     </div>
+                     <div className="flex gap-2">
+                        <input
+                           type="text"
+                           value={aiPrompt}
+                           onChange={e => setAiPrompt(e.target.value)}
+                           onKeyDown={e => e.key === 'Enter' && handleAskAI()}
+                           placeholder="Ask AI to review, debug, or write code..."
+                           className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-brand-purple transition-colors"
+                           disabled={isAskingAI}
+                        />
+                        <button onClick={handleAskAI} disabled={isAskingAI || !aiPrompt.trim()} className="bg-brand-purple text-white px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-50 flex items-center gap-2 hover:bg-brand-purple/90 transition-colors">
+                           {isAskingAI ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Ask'}
+                        </button>
+                     </div>
+                     {aiResponse && (
+                       <div className="mt-2 p-3 bg-brand-purple/10 border border-brand-purple/20 rounded-lg max-h-40 overflow-y-auto text-[13px] text-zinc-300 relative group prose prose-invert prose-p:my-1 prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-700 prose-pre:p-2 prose-pre:rounded-md max-w-none">
+                          <button onClick={() => setAiResponse('')} className="absolute top-2 right-2 p-1.5 bg-zinc-800/80 hover:bg-zinc-700 rounded-md text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3"/></button>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{aiResponse}</ReactMarkdown>
+                       </div>
+                     )}
+                  </div>
+
                 </div>
               )}
 
