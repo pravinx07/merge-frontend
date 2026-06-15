@@ -464,14 +464,24 @@ const ProfilePage = () => {
 
           <section className="bg-zinc-900/20 border border-zinc-800/50 rounded-[32px] p-8">
             <SectionTitle>Tech Stack</SectionTitle>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-4">
               {profile.skills && profile.skills.length > 0 ? (
-                profile.skills.map((skill: string, idx: number) => (
-                  <div key={skill} className="flex flex-col items-center gap-2 group">
-                    <TechIcon name={skill} color={idx % 2 === 0 ? "bg-brand-cyan" : "bg-brand-purple"} />
-                    <span className="text-[10px] font-bold text-zinc-500 group-hover:text-zinc-300 transition-colors">{skill}</span>
-                  </div>
-                ))
+                profile.skills.map((skill: string, idx: number) => {
+                  const isVerified = profile.verifiedSkills?.includes(skill);
+                  return (
+                    <div key={skill} className="flex flex-col items-center gap-2 group relative">
+                      <TechIcon name={skill} color={idx % 2 === 0 ? "bg-brand-cyan" : "bg-brand-purple"} />
+                      {isVerified && (
+                        <div className="absolute -top-2 -right-2 bg-amber-500 text-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-zinc-900 shadow-sm" title="Verified Skill">
+                          <CheckCircle2 className="w-2.5 h-2.5" />
+                        </div>
+                      )}
+                      <span className={`text-[10px] font-bold transition-colors ${isVerified ? 'text-amber-400 group-hover:text-amber-300' : 'text-zinc-500 group-hover:text-zinc-300'}`}>
+                        {skill}
+                      </span>
+                    </div>
+                  );
+                })
               ) : (
                 <div className="text-sm text-zinc-500">No skills added yet.</div>
               )}

@@ -25,6 +25,7 @@ interface User {
   builderScore?: number;
   builderLevel?: string;
   plan?: 'free' | 'pro';
+  verifiedSkills?: string[];
 }
 
 interface AuthContextType {
