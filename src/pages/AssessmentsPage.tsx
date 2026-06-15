@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, Code2, Clock, CheckCircle, XCircle, Loader2, Play } from 'lucide-react';
+import { ShieldCheck, Code2, Clock, CheckCircle,  Loader2, Play } from 'lucide-react';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -16,7 +16,7 @@ interface Assessment {
 }
 
 const AssessmentsPage = () => {
-  const { user, refetchUser } = useAuth();
+  const { user, checkAuth } = useAuth();
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeAssessment, setActiveAssessment] = useState<Assessment | null>(null);
@@ -86,7 +86,7 @@ const AssessmentsPage = () => {
       const res = await api.post(`/assessments/${activeAssessment.id}/submit`, { code });
       if (res.data.passed) {
         toast.success(`Congratulations! You passed the ${activeAssessment.skill} assessment!`);
-        await refetchUser(); // Refresh user state to get new verifiedSkills
+        await checkAuth(); // Refresh user state to get new verifiedSkills
       } else {
         toast.error(`Assessment Failed: ${res.data.feedback}`);
       }
