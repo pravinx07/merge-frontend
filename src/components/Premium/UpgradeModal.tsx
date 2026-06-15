@@ -1,5 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Rocket, Check, Sparkles, Zap, Eye, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
+import api from '../../lib/axios';
+import { toast } from 'react-hot-toast';
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -14,6 +17,58 @@ const FEATURES = [
 ];
 
 export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleUpgrade = async () => {
+    try {
+      setIsProcessing(true);
+      const { data: order } = await api.post('/payments/create-order', { amount: 1500 });
+      
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YourKeyIdHere',
+        amount: order.amount,
+        currency: order.currency,
+        name: 'Merge App',
+        description: 'Upgrade to Merge Pro',
+        order_id: order.id,
+        handler: async function (response: any) {
+          try {
+            await api.post('/payments/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
+            toast.success('Successfully upgraded to Pro!');
+            onClose();
+            // Reload window to update the user context, or ideally refetch user context
+            setTimeout(() => window.location.reload(), 1500);
+          } catch (e) {
+            toast.error('Payment verification failed.');
+          }
+        },
+        prefill: {
+          name: '',
+          email: '',
+          contact: ''
+        },
+        theme: {
+          color: '#8b5cf6'
+        }
+      };
+      
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (response: any) {
+        toast.error('Payment failed: ' + response.error.description);
+      });
+      rzp.open();
+    } catch (error) {
+      toast.error('Could not initialize payment. Please try again.');
+      console.error(error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -79,14 +134,15 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
 
                 {/* CTA */}
                 <button
-                  className="w-full py-4 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-black rounded-2xl text-sm uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-violet-500/25 cursor-not-allowed opacity-80"
-                  disabled
+                  onClick={handleUpgrade}
+                  disabled={isProcessing}
+                  className="w-full py-4 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-black rounded-2xl text-sm uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-violet-500/25"
                 >
-                  Coming Soon
+                  {isProcessing ? 'Processing...' : 'Upgrade to Pro - ₹1500'}
                 </button>
 
                 <p className="text-center text-[10px] text-zinc-600 mt-4">
-                  We're working hard to bring you these features
+                  Secure payment via Razorpay
                 </p>
               </div>
             </div>
