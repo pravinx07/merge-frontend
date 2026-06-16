@@ -47,6 +47,7 @@ interface SmartDev {
 interface RecommendedSectionProps {
   onSwipeFromRecommended?: (direction: 'left' | 'right', devId: string) => void;
   fallback?: React.ReactNode;
+  onUpgrade?: () => void;
 }
 
 // ─── Score style helpers ──────────────────────────────────────────────────────
@@ -335,7 +336,7 @@ const FreeTeaser = ({ onUpgrade }: { onUpgrade: () => void }) => (
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-const RecommendedSection = ({ onSwipeFromRecommended, fallback }: RecommendedSectionProps) => {
+const RecommendedSection = ({ onSwipeFromRecommended, fallback, onUpgrade }: RecommendedSectionProps) => {
   const { user } = useAuth();
   const isPro = user?.plan === 'pro';
 
@@ -484,7 +485,11 @@ const RecommendedSection = ({ onSwipeFromRecommended, fallback }: RecommendedSec
       )}
 
       {/* AI Smart Matches Modal */}
-      <SmartMatchesModal isOpen={showModal} onClose={() => setShowModal(false)} />
+      <SmartMatchesModal 
+        isOpen={showModal} 
+        onClose={() => setShowModal(false)} 
+        onUpgradeClick={onUpgrade}
+      />
     </div>
   );
 };

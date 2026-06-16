@@ -291,8 +291,19 @@ const ProfilePage = () => {
               <div className="flex flex-wrap justify-center lg:justify-start gap-3 pt-6">
                 {!isOwner && (
                   <>
-                    <button className="px-6 py-2.5 bg-brand-purple text-dark-bg font-bold rounded-xl flex items-center gap-2 shadow-lg hover:scale-105 transition-all text-xs"><Heart className="w-4 h-4" /> Match</button>
-                    <button className="px-6 py-2.5 bg-white/5 border border-white/10 font-bold rounded-xl hover:bg-white/10 transition-all flex items-center gap-2 text-xs text-white"><MessageSquare className="w-4 h-4" /> Message</button>
+                    <button onClick={async () => {
+                      try {
+                        const res = await api.post('/swipe/right', { receiverId: profile.id });
+                        if (res.data.isMatch) {
+                          toast.success("It's a Match! 🎉");
+                        } else {
+                          toast.success("Match request sent!");
+                        }
+                      } catch (err) {
+                        toast.error('Failed to send match request.');
+                      }
+                    }} className="px-6 py-2.5 bg-brand-purple text-dark-bg font-bold rounded-xl flex items-center gap-2 shadow-lg hover:scale-105 transition-all text-xs"><Heart className="w-4 h-4" /> Match</button>
+                    <button onClick={() => navigate('/messages')} className="px-6 py-2.5 bg-white/5 border border-white/10 font-bold rounded-xl hover:bg-white/10 transition-all flex items-center gap-2 text-xs text-white"><MessageSquare className="w-4 h-4" /> Message</button>
                   </>
                 )}
                 {(profile.githubUrl || profile.githubVerified) && (

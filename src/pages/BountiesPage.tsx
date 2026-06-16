@@ -23,6 +23,8 @@ const BountiesPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState<'explore' | 'my_gigs'>('explore');
+  const [solutionLink, setSolutionLink] = useState('');
+  const [completingId, setCompletingId] = useState<string | null>(null);
 
   // Form State
   const [title, setTitle] = useState('');
@@ -81,10 +83,16 @@ const BountiesPage = () => {
   };
 
   const handleComplete = async (id: string) => {
+    if (!solutionLink.trim()) {
+      toast.error('Please provide a solution link');
+      return;
+    }
     try {
-      const res = await api.put(`/bounties/${id}/complete`);
+      const res = await api.put(`/bounties/${id}/complete`, { solutionLink });
       setBounties(bounties.map(b => b.id === id ? res.data : b));
       toast.success('Bounty marked as completed!');
+      setCompletingId(null);
+      setSolutionLink('');
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to complete bounty');
     }
@@ -241,9 +249,29 @@ const BountiesPage = () => {
                       </button>
                     )}
                     {bounty.status === 'In Progress' && bounty.owner.id === user?.id && (
-                      <button onClick={() => handleComplete(bounty.id)} className="bg-brand-cyan text-dark-bg px-4 py-1.5 rounded-lg text-xs font-bold hover:brightness-110">
-                        Mark Completed
-                      </button>
+                      <div className="flex gap-2">
+                        {completingId === bounty.id ? (
+                          <>
+                            <input 
+                              type="url" 
+                              placeholder="GitHub PR or Demo link..." 
+                              value={solutionLink}
+                              onChange={e => setSolutionLink(e.target.value)}
+                              className="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none focus:border-brand-cyan"
+                            />
+                            <button onClick={() => handleComplete(bounty.id)} className="bg-brand-cyan text-dark-bg px-4 py-1.5 rounded-lg text-xs font-bold hover:brightness-110">
+                              Submit
+                            </button>
+                            <button onClick={() => { setCompletingId(null); setSolutionLink(''); }} className="bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-zinc-700">
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <button onClick={() => setCompletingId(bounty.id)} className="bg-brand-cyan text-dark-bg px-4 py-1.5 rounded-lg text-xs font-bold hover:brightness-110">
+                            Mark Completed
+                          </button>
+                        )}
+                      </div>
                     )}
                     {bounty.assignee && (
                       <div className="flex items-center gap-2 ml-2">

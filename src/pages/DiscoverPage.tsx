@@ -345,6 +345,7 @@ const DiscoverPage = () => {
             <RecommendedSection
               onSwipeFromRecommended={handleRecommendedAction}
               fallback={<HowItWorks />}
+              onUpgrade={() => setShowUpgradeModal(true)}
             />
           </div>
         </div>

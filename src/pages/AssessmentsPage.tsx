@@ -5,6 +5,7 @@ import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import Editor from '@monaco-editor/react';
+import { DashboardContainer } from '../components/DashboardComponents';
 
 interface Assessment {
   id: string;
@@ -20,6 +21,8 @@ const AssessmentsPage = () => {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeAssessment, setActiveAssessment] = useState<Assessment | null>(null);
+  const [customSkill, setCustomSkill] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
   const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -55,21 +58,27 @@ const AssessmentsPage = () => {
     }
   };
 
-  const startAssessment = (assessment: Assessment) => {
-    if (user?.verifiedSkills?.includes(assessment.skill)) {
+  const generateNewAssessment = async () => {
+    if (!customSkill.trim()) {
+      toast.error("Please enter a skill");
+      return;
+    }
+    if (user?.verifiedSkills?.includes(customSkill)) {
       toast.error('You are already verified for this skill!');
       return;
     }
-    
-    // In a real app, we'd check if they have attempts left or are Pro
-    if (user?.plan !== 'pro') {
-      // Free users get 1 per month logic could go here
-      // Let's assume they have it for MVP
+    setIsGenerating(true);
+    try {
+      const res = await api.post('/assessments/generate', { skill: customSkill });
+      setActiveAssessment(res.data);
+      setCode(`// Write your ${res.data.language} code here to solve the problem.\n\n`);
+      setTimeLeft(res.data.timeLimitMinutes * 60);
+      setCustomSkill("");
+    } catch (error) {
+      toast.error("Failed to generate assessment");
+    } finally {
+      setIsGenerating(false);
     }
-
-    setActiveAssessment(assessment);
-    setCode(`// Write your ${assessment.language} code here to solve the problem.\n\n`);
-    setTimeLeft(assessment.timeLimitMinutes * 60);
   };
 
   const handleAutoSubmit = () => {
@@ -83,7 +92,12 @@ const AssessmentsPage = () => {
     if (!activeAssessment) return;
     setIsSubmitting(true);
     try {
-      const res = await api.post(`/assessments/${activeAssessment.id}/submit`, { code });
+      const res = await api.post(`/assessments/submit`, { 
+        skill: activeAssessment.skill,
+        description: activeAssessment.description,
+        language: activeAssessment.language,
+        code 
+      });
       if (res.data.passed) {
         toast.success(`Congratulations! You passed the ${activeAssessment.skill} assessment!`);
         await checkAuth(); // Refresh user state to get new verifiedSkills
@@ -105,7 +119,7 @@ const AssessmentsPage = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-[#0A0A0B] p-4 md:p-8">
+    <DashboardContainer>
       <div className="max-w-5xl mx-auto space-y-8">
         
         {/* Header section */}
@@ -128,45 +142,49 @@ const AssessmentsPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              className="space-y-6"
             >
-              {isLoading ? (
-                <div className="col-span-full text-center text-zinc-500 py-10">Loading assessments...</div>
-              ) : (
-                assessments.map(assessment => {
-                  const isVerified = user?.verifiedSkills?.includes(assessment.skill);
+              <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-cyan to-brand-purple" />
+                <div className="flex-1">
+                  <h2 className="text-xl font-black text-white mb-2">Generate Custom Assessment</h2>
+                  <p className="text-sm text-zinc-400 mb-6">Type any skill, framework, or language. MergeAI will generate a custom 15-minute challenge to verify your expertise.</p>
                   
-                  return (
-                    <div key={assessment.id} className={`bg-zinc-900/80 border ${isVerified ? 'border-amber-500/50' : 'border-zinc-800'} rounded-2xl p-6 flex flex-col relative overflow-hidden`}>
-                      {isVerified && (
-                        <div className="absolute top-0 right-0 bg-amber-500 text-black text-[10px] font-black px-3 py-1 rounded-bl-xl flex items-center gap-1">
-                          <CheckCircle className="w-3 h-3" /> VERIFIED
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center gap-3 mb-4">
-                        <Code2 className={`w-6 h-6 ${isVerified ? 'text-amber-400' : 'text-zinc-400'}`} />
-                        <h3 className="text-lg font-bold text-white">{assessment.title}</h3>
+                  <div className="flex items-center gap-3 w-full max-w-lg">
+                    <input 
+                      type="text" 
+                      placeholder="e.g. React, Python, PostgreSQL, AWS..." 
+                      value={customSkill}
+                      onChange={e => setCustomSkill(e.target.value)}
+                      className="flex-1 bg-zinc-950 border border-zinc-800 focus:border-brand-cyan rounded-xl px-4 py-3 text-sm text-white outline-none transition-colors"
+                    />
+                    <button 
+                      onClick={generateNewAssessment}
+                      disabled={isGenerating || !customSkill.trim()}
+                      className="bg-brand-cyan text-dark-bg px-6 py-3 rounded-xl font-bold text-sm hover:brightness-110 disabled:opacity-50 flex items-center gap-2 whitespace-nowrap transition-all"
+                    >
+                      {isGenerating ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</> : <><Play className="w-4 h-4" /> Start</>}
+                    </button>
+                  </div>
+                </div>
+                <div className="hidden md:flex w-32 h-32 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 items-center justify-center">
+                  <Code2 className="w-12 h-12 text-zinc-500" />
+                </div>
+              </div>
+
+              {user?.verifiedSkills && user.verifiedSkills.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-emerald-400" /> Your Verified Badges
+                  </h3>
+                  <div className="flex flex-wrap gap-3">
+                    {user.verifiedSkills.map((skill: string) => (
+                      <div key={skill} className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-sm flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4" /> {skill}
                       </div>
-                      
-                      <p className="text-sm text-zinc-400 mb-6 flex-1">{assessment.description}</p>
-                      
-                      <div className="flex items-center justify-between mt-auto">
-                        <div className="flex items-center gap-2 text-xs font-bold text-zinc-500">
-                          <Clock className="w-4 h-4" /> {assessment.timeLimitMinutes} mins
-                        </div>
-                        
-                        <button 
-                          onClick={() => startAssessment(assessment)}
-                          disabled={isVerified}
-                          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-transform ${isVerified ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'bg-brand-cyan text-dark-bg hover:scale-105'}`}
-                        >
-                          {isVerified ? 'Completed' : <><Play className="w-3 h-3" /> Start Test</>}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })
+                    ))}
+                  </div>
+                </div>
               )}
             </motion.div>
           ) : (
@@ -239,7 +257,7 @@ const AssessmentsPage = () => {
         </AnimatePresence>
 
       </div>
-    </div>
+    </DashboardContainer>
   );
 };
 

@@ -5,6 +5,7 @@ import { X, Brain, Sparkles, Zap, Target, GitBranch, Trophy, Clock, Check } from
 interface SmartMatchesModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onUpgradeClick?: () => void;
 }
 
 const MATCH_FACTORS = [
@@ -24,7 +25,7 @@ const PRO_BENEFITS = [
   'Builder Score comparisons',
 ];
 
-export const SmartMatchesModal = ({ isOpen, onClose }: SmartMatchesModalProps) => {
+export const SmartMatchesModal = ({ isOpen, onClose, onUpgradeClick }: SmartMatchesModalProps) => {
   return ReactDOM.createPortal(
     <AnimatePresence>
       {isOpen && (
@@ -143,13 +144,16 @@ export const SmartMatchesModal = ({ isOpen, onClose }: SmartMatchesModalProps) =
 
                     {/* CTA */}
                     <button
-                      disabled
-                      className="w-full py-4 bg-gradient-to-r from-[#00e5ff] to-violet-500 text-[#0a0a0b] font-black rounded-2xl text-sm uppercase tracking-widest opacity-60 cursor-not-allowed shadow-lg shadow-[#00e5ff]/10"
+                      onClick={() => {
+                        onClose();
+                        if (onUpgradeClick) onUpgradeClick();
+                      }}
+                      className="w-full py-4 bg-gradient-to-r from-[#00e5ff] to-violet-500 text-[#0a0a0b] font-black rounded-2xl text-sm uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[#00e5ff]/20"
                     >
-                      Coming Soon — Merge Pro
+                      Upgrade to Pro - ₹599
                     </button>
                     <p className="text-center text-[10px] text-zinc-600 mt-3">
-                      We're building something premium for serious builders.
+                      Secure payment via Razorpay. Instantly unlocks all Pro features.
                     </p>
 
                   </div>
