@@ -14,6 +14,7 @@ interface Bounty {
   skills: string[];
   owner: { id: string; name: string; avatar: string; plan: string };
   assignee?: { id: string; name: string; avatar: string };
+  solutionLink?: string;
   createdAt: string;
 }
 
@@ -82,17 +83,27 @@ const BountiesPage = () => {
     }
   };
 
-  const handleComplete = async (id: string) => {
+  const handleSubmitSolution = async (id: string) => {
     if (!solutionLink.trim()) {
       toast.error('Please provide a solution link');
       return;
     }
     try {
-      const res = await api.put(`/bounties/${id}/complete`, { solutionLink });
+      const res = await api.put(`/bounties/${id}/submit`, { solutionLink });
       setBounties(bounties.map(b => b.id === id ? res.data : b));
-      toast.success('Bounty marked as completed!');
+      toast.success('Solution submitted! Waiting for owner to review.');
       setCompletingId(null);
       setSolutionLink('');
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to submit solution');
+    }
+  };
+
+  const handleComplete = async (id: string) => {
+    try {
+      const res = await api.put(`/bounties/${id}/complete`);
+      setBounties(bounties.map(b => b.id === id ? res.data : b));
+      toast.success('Bounty marked as completed and paid!');
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to complete bounty');
     }
@@ -235,6 +246,10 @@ const BountiesPage = () => {
                       <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-500">
                         <CheckCircle className="w-3.5 h-3.5" /> Completed
                       </span>
+                    ) : bounty.status === 'In Review' ? (
+                      <span className="flex items-center gap-1.5 text-xs font-bold text-purple-400">
+                        <Search className="w-3.5 h-3.5" /> In Review
+                      </span>
                     ) : (
                       <span className="flex items-center gap-1.5 text-xs font-bold text-amber-500">
                         <Code2 className="w-3.5 h-3.5" /> In Progress
@@ -248,7 +263,8 @@ const BountiesPage = () => {
                         Take Gig
                       </button>
                     )}
-                    {bounty.status === 'In Progress' && bounty.owner.id === user?.id && (
+                    {/* Assignee Submits Solution */}
+                    {bounty.status === 'In Progress' && bounty.assignee?.id === user?.id && (
                       <div className="flex gap-2">
                         {completingId === bounty.id ? (
                           <>
@@ -259,7 +275,7 @@ const BountiesPage = () => {
                               onChange={e => setSolutionLink(e.target.value)}
                               className="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none focus:border-brand-cyan"
                             />
-                            <button onClick={() => handleComplete(bounty.id)} className="bg-brand-cyan text-dark-bg px-4 py-1.5 rounded-lg text-xs font-bold hover:brightness-110">
+                            <button onClick={() => handleSubmitSolution(bounty.id)} className="bg-brand-cyan text-dark-bg px-4 py-1.5 rounded-lg text-xs font-bold hover:brightness-110">
                               Submit
                             </button>
                             <button onClick={() => { setCompletingId(null); setSolutionLink(''); }} className="bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-zinc-700">
@@ -268,10 +284,26 @@ const BountiesPage = () => {
                           </>
                         ) : (
                           <button onClick={() => setCompletingId(bounty.id)} className="bg-brand-cyan text-dark-bg px-4 py-1.5 rounded-lg text-xs font-bold hover:brightness-110">
-                            Mark Completed
+                            Submit Solution
                           </button>
                         )}
                       </div>
+                    )}
+
+                    {/* Owner Approves Solution */}
+                    {bounty.status === 'In Review' && bounty.owner.id === user?.id && (
+                      <div className="flex items-center gap-3">
+                        <a href={bounty.solutionLink} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-cyan hover:underline">
+                          View Solution
+                        </a>
+                        <button onClick={() => handleComplete(bounty.id)} className="bg-emerald-500 text-black px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-400">
+                          Approve & Pay
+                        </button>
+                      </div>
+                    )}
+
+                    {bounty.status === 'In Review' && bounty.assignee?.id === user?.id && (
+                       <span className="text-xs text-zinc-400 font-medium">Waiting for owner approval...</span>
                     )}
                     {bounty.assignee && (
                       <div className="flex items-center gap-2 ml-2">

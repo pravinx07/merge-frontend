@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Rocket, Target, Users, CheckSquare, Zap, Trophy, X, Plus, ChevronLeft, ChevronRight, Code2, Sparkles, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/axios';
@@ -76,7 +75,7 @@ const WorkspacePage = () => {
 
     socket.on('workspace_code_updated', handleCodeUpdate);
     return () => { socket.off('workspace_code_updated', handleCodeUpdate); };
-  }, [socket, chatId, isOpen]);
+  }, [socket, chatId]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -541,6 +540,7 @@ const WorkspacePage = () => {
               )}
 
             </div>
+        </div>
       </div>
       <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
     </DashboardContainer>
