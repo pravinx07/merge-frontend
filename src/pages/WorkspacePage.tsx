@@ -541,6 +541,7 @@ const WorkspacePage = () => {
               )}
 
             </div>
+        </div>
       </div>
       <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
     </DashboardContainer>
