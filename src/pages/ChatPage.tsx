@@ -5,7 +5,6 @@ import { Send, ArrowLeft, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../lib/axios';
-import { BuildWorkspaceModal } from '../components/BuildWorkspaceModal';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -22,7 +21,6 @@ const ChatPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [otherUser, setOtherUser] = useState<any>(null);
   const [isTyping, setIsTyping] = useState(false);
-  const [isWorkspaceOpen, setIsWorkspaceOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -30,7 +28,7 @@ const ChatPage = () => {
     if (user?.plan !== 'pro' && otherUser?.plan !== 'pro') {
       setIsUpgradeModalOpen(true);
     } else {
-      setIsWorkspaceOpen(true);
+      navigate(`/workspace/${chatId}`);
     }
   };
 
@@ -281,14 +279,6 @@ const ChatPage = () => {
           </button>
         </form>
       </div>
-
-      <BuildWorkspaceModal 
-        isOpen={isWorkspaceOpen} 
-        onClose={() => setIsWorkspaceOpen(false)} 
-        otherUser={otherUser} 
-        currentUser={user}
-        chatId={chatId || ''}
-      />
       
       <UpgradeModal 
         isOpen={isUpgradeModalOpen} 

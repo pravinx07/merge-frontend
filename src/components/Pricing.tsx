@@ -1,27 +1,50 @@
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import UpgradeModal from './Premium/UpgradeModal';
+
 export const Pricing = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+
+  const handleProClick = () => {
+    if (!user) {
+      navigate('/signup');
+      return;
+    }
+    if (user.plan === 'pro') {
+      navigate('/profile/' + user.id);
+      return;
+    }
+    setIsUpgradeModalOpen(true);
+  };
   const plans = [
     {
       name: "Free",
-      price: "$0",
+      price: "₹0",
       desc: "For individual developers exploring connections.",
-      features: ["5 Matches per month", "Basic Profile", "Community Access", "Public Projects"],
+      features: ["20 Matches per day", "Basic Profile", "Join up to 2 Workspaces", "Public Projects"],
       cta: "Get Started",
+      action: () => navigate(user ? '/discover' : '/signup'),
       featured: false
     },
     {
-      name: "Pro",
-      price: "$19",
-      desc: "For serious builders and career growth.",
-      features: ["Unlimited Matches", "Verified Badge", "Priority in Search", "Private Project Collaboration", "Advanced Filters"],
-      cta: "Go Pro",
+      name: "Merge Pro",
+      price: "₹599",
+      desc: "Lifetime deal. For serious builders and career growth.",
+      features: ["Unlimited Matches", "Verified Pro Badge", "Unlimited Workspaces", "0% Gig Platform Fee", "AI Cofounder Insights"],
+      cta: user?.plan === 'pro' ? "You are Pro" : "Go Pro",
+      action: handleProClick,
       featured: true
     },
     {
       name: "Team",
-      price: "$49",
+      price: "Custom",
       desc: "For startups and small hackathon teams.",
       features: ["Everything in Pro", "Team Dashboard", "Custom Branding", "Bulk Match Requests", "Dedicated Support"],
       cta: "Contact Sales",
+      action: () => window.location.href = 'mailto:adminmerge@gmail.com',
       featured: false
     }
   ];
@@ -70,7 +93,9 @@ export const Pricing = () => {
                 ))}
               </ul>
 
-              <button className={`w-full py-4 rounded-2xl font-bold transition-all ${
+              <button 
+                onClick={plan.action}
+                className={`w-full py-4 rounded-2xl font-bold transition-all ${
                 plan.featured 
                 ? 'bg-brand-cyan text-dark-bg shadow-[0_0_20px_rgba(0,229,255,0.3)] hover:scale-[1.02]' 
                 : 'bg-white/5 text-white hover:bg-white/10'
@@ -81,6 +106,7 @@ export const Pricing = () => {
           ))}
         </div>
       </div>
+      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
     </section>
   );
 };

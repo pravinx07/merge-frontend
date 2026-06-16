@@ -20,6 +20,7 @@ import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import { UpgradeModal } from "./Premium/UpgradeModal";
 
 const getRelativeTime = (dateString: string) => {
   const date = new Date(dateString);
@@ -43,6 +44,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
@@ -165,18 +167,22 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       </nav>
 
       <div className="p-6 flex flex-col gap-4">
-        <div className="p-5 rounded-[24px] bg-linear-to-br from-brand-purple/10 to-brand-cyan/10 border border-white/5 relative overflow-hidden group cursor-pointer">
-          <h4 className="text-xs font-black mb-1.5 relative z-10 tracking-tight">
-            Upgrade to Pro
-          </h4>
-          <p className="text-[10px] text-slate-500 mb-4 relative z-10 leading-tight">
-            Advanced filters & more.
-          </p>
-          <button className="w-full py-2 bg-brand-purple text-dark-bg text-[9px] font-black rounded-lg transition-all relative z-10 uppercase tracking-widest shadow-lg active:scale-95">
-            Upgrade
-          </button>
-        </div>
-
+        {user?.plan !== 'pro' && (
+          <div 
+            onClick={() => setIsUpgradeModalOpen(true)}
+            className="p-5 rounded-[24px] bg-linear-to-br from-brand-purple/10 to-brand-cyan/10 border border-white/5 relative overflow-hidden group cursor-pointer"
+          >
+            <h4 className="text-xs font-black mb-1.5 relative z-10 tracking-tight">
+              Upgrade to Pro
+            </h4>
+            <p className="text-[10px] text-slate-500 mb-4 relative z-10 leading-tight">
+              Advanced filters & more.
+            </p>
+            <button className="w-full py-2 bg-brand-purple text-dark-bg text-[9px] font-black rounded-lg transition-all relative z-10 uppercase tracking-widest shadow-lg active:scale-95">
+              Upgrade
+            </button>
+          </div>
+        )}
       </div>
     </>
   );
@@ -342,8 +348,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                   <span className="text-[13px] font-black tracking-tight group-hover:text-brand-cyan transition-colors">
                     {user?.name}
                   </span>
-                  <span className="text-[9px] text-brand-purple font-black uppercase tracking-widest">
-                    Pro
+                  <span className={`text-[9px] font-black uppercase tracking-widest ${user?.plan === 'pro' ? 'text-brand-purple' : 'text-slate-500'}`}>
+                    {user?.plan === 'pro' ? 'Pro' : 'Free'}
                   </span>
                 </div>
                 <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl border border-white/10 p-0.5 bg-white/5 overflow-hidden group-hover:border-brand-cyan/50 transition-all">
@@ -404,6 +410,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         {/* Page Content */}
         <main className="flex-1 relative bg-[#0A0A0B]">{children}</main>
       </div>
+      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
     </div>
   );
 };
