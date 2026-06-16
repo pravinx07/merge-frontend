@@ -25,8 +25,6 @@ interface Assessment {
 
 const AssessmentsPage = () => {
   const { user, checkAuth } = useAuth();
-  const [assessments, setAssessments] = useState<Assessment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [activeAssessment, setActiveAssessment] = useState<Assessment | null>(
     null,
   );
@@ -35,10 +33,6 @@ const AssessmentsPage = () => {
   const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
-
-  useEffect(() => {
-    fetchAssessments();
-  }, []);
 
   useEffect(() => {
     let timer: any;
@@ -55,17 +49,6 @@ const AssessmentsPage = () => {
     }
     return () => clearInterval(timer);
   }, [activeAssessment, timeLeft, isSubmitting]);
-
-  const fetchAssessments = async () => {
-    try {
-      const res = await api.get("/assessments");
-      setAssessments(res.data);
-    } catch (error) {
-      toast.error("Failed to load assessments");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const generateNewAssessment = async () => {
     if (!customSkill.trim()) {
