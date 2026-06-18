@@ -45,6 +45,7 @@ interface SmartDev {
 }
 
 interface RecommendedSectionProps {
+  intent?: string;
   onSwipeFromRecommended?: (direction: 'left' | 'right', devId: string) => void;
   fallback?: React.ReactNode;
   onUpgrade?: () => void;
@@ -167,8 +168,8 @@ const SmartCard = ({ dev, idx, isPro, isBlurred, connectingId, onConnect, onSkip
       initial={{ opacity: 0, y: 16, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.92, y: -8 }}
-      transition={{ duration: 0.3, delay: idx * 0.07 }}
-      className="group relative bg-[#111114] border border-zinc-800/70 rounded-3xl overflow-hidden hover:border-zinc-700 transition-all duration-300"
+      transition={{ duration: 0.3, delay: idx * 0.05 }}
+      className="group relative bg-[#111114] border border-zinc-800/70 rounded-2xl overflow-hidden hover:border-zinc-700 transition-all duration-300 flex flex-col sm:flex-row items-center p-3 gap-4"
     >
       {/* PRO blur overlay for non-pro slots */}
       {isBlurred && <ProBlurOverlay onUpgrade={onUpgrade} />}
@@ -177,132 +178,70 @@ const SmartCard = ({ dev, idx, isPro, isBlurred, connectingId, onConnect, onSkip
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#00e5ff]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
       {/* Hover glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#00e5ff]/[0.03] via-transparent to-violet-600/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#00e5ff]/[0.03] via-transparent to-violet-600/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl" />
 
-      <div className="relative p-4">
-        {/* Top row: avatar + name + score ring */}
-        <div className="flex items-center gap-3 mb-3.5">
+        {/* Avatar & Basic Info */}
+        <div className="flex items-center gap-3 flex-shrink-0 w-full sm:w-[200px] z-10">
           <div className="relative flex-shrink-0">
-            <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-zinc-700/60 shadow-lg">
+            <div className="w-12 h-12 rounded-xl overflow-hidden border border-zinc-700/60 shadow-lg">
               <img src={avatarUrl} alt={dev.name} className="w-full h-full object-cover" />
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#111114]" />
+            <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#111114]" />
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-black text-white truncate leading-tight">{dev.name}</p>
+            <Link to={`/profile/${dev.id}`} className="text-sm font-black text-white hover:text-brand-cyan transition-colors truncate block leading-tight">{dev.name}</Link>
             <p className={`text-[10px] font-bold uppercase tracking-wider truncate mt-0.5 ${textCls}`}>
               {dev.experienceLevel || 'Developer'}
             </p>
             {dev.intent && (
-              <p className="text-[9px] text-zinc-600 font-semibold mt-0.5 truncate">{dev.intent}</p>
+              <p className="text-[9px] text-zinc-500 font-semibold mt-0.5 truncate">{dev.intent}</p>
             )}
-          </div>
-
-          <div className="flex-shrink-0">
-            <MiniRing score={dev.compatibilityScore} />
           </div>
         </div>
 
-        {/* Why Matched reasons */}
-        {dev.matchReasons && dev.matchReasons.length > 0 && (
-          <div className="mb-3 p-3 bg-zinc-900/60 rounded-2xl border border-zinc-800/50">
-            <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-2">Why you match</p>
-            <div className="space-y-1.5">
-              {dev.matchReasons.slice(0, 4).map((r, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <span className="text-sm leading-none">{r.icon}</span>
-                  <span className="text-[10px] text-zinc-300 font-semibold leading-snug">{r.label}</span>
-                </div>
+        {/* Skills and Match Ring */}
+        <div className="flex-1 flex items-center justify-between gap-4 w-full sm:w-auto z-10">
+          <div className="flex flex-col gap-1.5 flex-1 min-w-0 hidden md:flex">
+             <div className="flex flex-wrap gap-1.5">
+              {(dev.skills || []).slice(0, 3).map(skill => (
+                <span key={skill} className="px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/[0.07] text-[9px] font-bold text-zinc-400 truncate max-w-[80px]">
+                  {skill}
+                </span>
               ))}
+              {(dev.skills || []).length > 3 && (
+                <span className="px-2 py-0.5 rounded-md bg-white/[0.03] text-[9px] font-bold text-zinc-600">
+                  +{dev.skills.length - 3}
+                </span>
+              )}
             </div>
           </div>
-        )}
-
-        {/* Compatibility breakdown toggle (PRO only) */}
-        {isPro && Object.keys(breakdown).length > 0 && (
-          <div className="mb-3">
-            <button
-              onClick={() => setShowBreakdown(p => !p)}
-              className="flex items-center gap-1.5 text-[9px] font-black text-zinc-600 hover:text-zinc-400 transition-colors uppercase tracking-widest"
-            >
-              {showBreakdown ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-              {showBreakdown ? 'Hide' : 'Show'} breakdown
-            </button>
-            <AnimatePresence>
-              {showBreakdown && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.25 }}
-                  className="overflow-hidden"
+          
+          <div className="flex items-center gap-4 flex-shrink-0">
+             <MiniRing score={dev.compatibilityScore} />
+             
+             <div className="flex gap-2">
+                <button
+                  onClick={() => onConnect(dev)}
+                  disabled={connectingId === dev.id}
+                  className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#00e5ff] text-[#0a0a0b] text-[10px] font-black hover:opacity-90 active:scale-95 transition-all uppercase tracking-widest shadow-lg shadow-[#00e5ff]/20 disabled:opacity-50"
                 >
-                  <div className="mt-2 space-y-1.5 p-3 bg-zinc-900/40 rounded-xl border border-zinc-800/40">
-                    {(Object.keys(BREAKDOWN_META) as (keyof CompatibilityBreakdown)[])
-                      .filter(k => typeof breakdown[k] === 'number')
-                      .map(k => (
-                        <BreakdownBar
-                          key={k}
-                          label={BREAKDOWN_META[k].label}
-                          value={breakdown[k]}
-                          max={BREAKDOWN_META[k].max}
-                          color={BREAKDOWN_META[k].color}
-                        />
-                      ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  {connectingId === dev.id ? (
+                    <span className="animate-pulse">...</span>
+                  ) : (
+                    <><Heart className="w-3 h-3 fill-[#0a0a0b]" /> Connect</>
+                  )}
+                </button>
+                <button
+                  onClick={() => onSkip(dev)}
+                  className="flex items-center justify-center w-8 h-8 rounded-xl bg-zinc-800/80 border border-zinc-700/50 text-[10px] font-black text-zinc-400 hover:text-white hover:bg-zinc-700/80 transition-all shadow-sm"
+                  title="Remove from list"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+             </div>
           </div>
-        )}
-
-        {/* Skills */}
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {(dev.skills || []).slice(0, 3).map(skill => (
-            <span
-              key={skill}
-              className="px-2 py-0.5 rounded-lg bg-white/[0.04] border border-white/[0.07] text-[9px] font-bold text-zinc-400"
-            >
-              {skill}
-            </span>
-          ))}
-          {(dev.skills || []).length > 3 && (
-            <span className="px-2 py-0.5 rounded-lg bg-white/[0.03] text-[9px] font-bold text-zinc-600">
-              +{dev.skills.length - 3}
-            </span>
-          )}
         </div>
-
-        {/* Actions */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => onSkip(dev)}
-            className="flex items-center justify-center gap-1 flex-1 py-2 rounded-2xl bg-zinc-800/80 border border-zinc-700/50 text-[10px] font-black text-zinc-400 hover:text-white hover:bg-zinc-700/80 transition-all uppercase tracking-widest"
-          >
-            <X className="w-3 h-3" /> Skip
-          </button>
-          <button
-            onClick={() => onConnect(dev)}
-            disabled={connectingId === dev.id}
-            className="flex items-center justify-center gap-1.5 flex-[2] py-2 rounded-2xl bg-[#00e5ff] text-[#0a0a0b] text-[10px] font-black hover:opacity-90 active:scale-95 transition-all uppercase tracking-widest shadow-lg shadow-[#00e5ff]/20 disabled:opacity-50"
-          >
-            {connectingId === dev.id ? (
-              <span className="animate-pulse">Sending…</span>
-            ) : (
-              <><Heart className="w-3 h-3 fill-[#0a0a0b]" />Connect</>
-            )}
-          </button>
-        </div>
-
-        {/* Profile link */}
-        <Link
-          to={`/profile/${dev.id}`}
-          className="flex items-center justify-center gap-1 mt-2.5 text-[9px] font-bold text-zinc-600 hover:text-zinc-300 transition-colors uppercase tracking-widest"
-        >
-          View full profile <ChevronRight className="w-3 h-3" />
-        </Link>
-      </div>
     </motion.div>
   );
 };
@@ -336,7 +275,7 @@ const FreeTeaser = ({ onUpgrade }: { onUpgrade: () => void }) => (
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-const RecommendedSection = ({ onSwipeFromRecommended, fallback, onUpgrade }: RecommendedSectionProps) => {
+const RecommendedSection = ({ intent, onSwipeFromRecommended, fallback, onUpgrade }: RecommendedSectionProps) => {
   const { user } = useAuth();
   const isPro = user?.plan === 'pro';
 
@@ -367,7 +306,7 @@ const RecommendedSection = ({ onSwipeFromRecommended, fallback, onUpgrade }: Rec
     }
   }, []);
 
-  useEffect(() => { fetchRecommended(); }, [fetchRecommended]);
+  useEffect(() => { fetchRecommended(); }, [fetchRecommended, intent]);
 
   const handleConnect = async (dev: SmartDev) => {
     if (connectingId) return;
@@ -399,9 +338,9 @@ const RecommendedSection = ({ onSwipeFromRecommended, fallback, onUpgrade }: Rec
     return (
       <div className="mb-10">
         <div className="h-5 w-52 bg-zinc-800 rounded-full animate-pulse mb-4" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="flex flex-col gap-3">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-52 bg-zinc-900/70 border border-zinc-800/50 rounded-3xl animate-pulse" />
+            <div key={i} className="h-20 bg-zinc-900/70 border border-zinc-800/50 rounded-2xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -460,8 +399,8 @@ const RecommendedSection = ({ onSwipeFromRecommended, fallback, onUpgrade }: Rec
         </div>
       </div>
 
-      {/* Cards grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+      {/* Cards list */}
+      <div className="flex flex-col gap-3">
         <AnimatePresence mode="popLayout">
           {displayDevs.map((dev, idx) => (
             <SmartCard

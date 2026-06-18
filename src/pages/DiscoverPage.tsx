@@ -76,8 +76,15 @@ const DiscoverPage = () => {
   const fetchDevelopers = useCallback(async () => {
     try {
       setIsLoading(true);
+      let targetIntent = filters.intent;
+      if (!targetIntent) {
+        if (myIntent === 'LEARNING') targetIntent = 'MENTORING';
+        else if (myIntent === 'MENTORING') targetIntent = 'LEARNING';
+        else if (myIntent === 'BUILDING') targetIntent = 'BUILDING';
+      }
+
       const q = new URLSearchParams({
-        ...(filters.intent            && { intent: filters.intent }),
+        ...(targetIntent              && { intent: targetIntent }),
         ...(filters.experienceLevel   && { experienceLevel: filters.experienceLevel }),
         ...(filters.skills.length > 0 && { skills: filters.skills.join(',') }),
       });
@@ -343,6 +350,7 @@ const DiscoverPage = () => {
 
             {/* Recommended Section */}
             <RecommendedSection
+              intent={myIntent}
               onSwipeFromRecommended={handleRecommendedAction}
               fallback={<HowItWorks />}
               onUpgrade={() => setShowUpgradeModal(true)}

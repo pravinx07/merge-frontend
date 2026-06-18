@@ -5,8 +5,10 @@ import api from '../lib/axios';
 import { DashboardContainer } from '../components/DashboardComponents';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const HackathonsPage = () => {
+  const { user } = useAuth();
   const [hackathons, setHackathons] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterType, setFilterType] = useState<'All' | 'Online' | 'Local' | 'College'>('All');
@@ -222,13 +224,15 @@ const HackathonsPage = () => {
                         <Calendar className="w-3.5 h-3.5" />
                         {hackathon.duration}
                       </span>
-                      <button
-                        onClick={(e) => handleDeleteHackathon(hackathon.id, e)}
-                        title="Delete hackathon"
-                        className="p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      {user?.id === hackathon.hostId && (
+                        <button
+                          onClick={(e) => handleDeleteHackathon(hackathon.id, e)}
+                          title="Delete hackathon"
+                          className="p-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
 
