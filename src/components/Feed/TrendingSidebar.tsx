@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Flame, Code } from 'lucide-react';
 import api from '../../lib/axios';
 import { Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
+
 
 interface TrendingData {
   trendingDevelopers: Array<{
@@ -29,7 +29,7 @@ interface TrendingData {
 const TrendingSidebar: React.FC = () => {
   const [data, setData] = useState<TrendingData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [followed, setFollowed] = useState<Record<string, boolean>>(() => {
+  const [followed] = useState<Record<string, boolean>>(() => {
     try {
       const saved = localStorage.getItem('followed_builders');
       return saved ? JSON.parse(saved) : {};

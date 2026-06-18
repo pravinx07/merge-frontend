@@ -4,7 +4,7 @@ import { DashboardContainer } from '../components/DashboardComponents';
 import PostCard from '../components/Feed/PostCard';
 import CreatePostModal from '../components/Feed/CreatePostModal';
 import TrendingSidebar from '../components/Feed/TrendingSidebar';
-import { PenSquare, Activity, Users, Search, Globe } from 'lucide-react';
+import { PenSquare, Activity, Users, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
