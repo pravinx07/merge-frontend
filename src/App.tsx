@@ -80,7 +80,9 @@ function AppRoutes() {
         path="/community" 
         element={
           <ProtectedRoute>
-            <CommunityPage />
+            <MainLayout>
+              <CommunityPage />
+            </MainLayout>
           </ProtectedRoute>
         } 
       />
