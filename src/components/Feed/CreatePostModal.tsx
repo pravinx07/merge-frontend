@@ -193,9 +193,9 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onPo
           </div>
         )}
 
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex gap-1.5 overflow-x-auto pb-1 max-w-[280px] custom-scrollbar">
+        <div className="flex items-center mt-4">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="flex gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
               {POST_TYPES.map(type => (
                 <button
                   key={type}
@@ -232,7 +232,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ isOpen, onClose, onPo
           <button
             onClick={handleSubmit}
             disabled={!content.trim() || isSubmitting || isUploadingImage}
-            className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full font-medium hover:opacity-90 transition disabled:opacity-50"
+            className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full font-medium hover:opacity-90 transition disabled:opacity-50 shrink-0 ml-4"
           >
             {isSubmitting ? 'Posting...' : (
               <>

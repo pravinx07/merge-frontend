@@ -12,7 +12,7 @@ export const Hero = () => {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-cyan/10 blur-[120px] rounded-full"></div>
       
       <div className="container mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
-        <div className="z-10 text-center lg:text-left">
+        <div className="z-10 text-center lg:text-left lg:pl-12 xl:pl-20">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

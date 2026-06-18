@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Share2, Bookmark, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, Trash2, X, Edit2 } from 'lucide-react';
 import api from '../../lib/axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
@@ -53,6 +53,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostDeleted }) => {
   const [newComment, setNewComment] = useState('');
   const [commentsCount, setCommentsCount] = useState(post._count.comments);
   const [pollOptions, setPollOptions] = useState(post.pollOptions || []);
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [editCodeSnippet, setEditCodeSnippet] = useState(post.codeSnippet || '');
+  const [editLanguage, setEditLanguage] = useState(post.language || '');
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleLike = async () => {
     if (isLiking) return;
@@ -156,6 +162,30 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostDeleted }) => {
     }
   };
 
+  const handleUpdate = async () => {
+    if (!editContent.trim()) return;
+    setIsUpdating(true);
+    try {
+      await api.put(`/posts/${post.id}`, { 
+        content: editContent,
+        codeSnippet: post.postType === 'CODE_REVIEW' ? editCodeSnippet : undefined,
+        language: post.postType === 'CODE_REVIEW' ? editLanguage : undefined
+      });
+      post.content = editContent; // Optimistic update
+      if (post.postType === 'CODE_REVIEW') {
+        post.codeSnippet = editCodeSnippet;
+        post.language = editLanguage;
+      }
+      setIsEditing(false);
+      toast.success('Post updated');
+    } catch (error) {
+      console.error('Error updating post:', error);
+      toast.error('Failed to update post');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const getTypeColor = (type: string) => {
     switch(type) {
       case 'Achievement': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
@@ -180,17 +210,22 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostDeleted }) => {
   };
 
   return (
-    <div className="bg-[#111] border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-colors">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-zinc-700 transition-shadow relative overflow-hidden group">
+      {/* Subtle top gradient based on post type */}
+      <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-${getTypeColor(post.postType).split(' ')[0].replace('text-', '')} to-transparent opacity-20`} />
+      
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center gap-3">
-          <img 
-            src={post.author.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.name)}&background=random`} 
-            alt={post.author.name} 
-            className="w-10 h-10 rounded-full object-cover border border-white/10"
-          />
+          <div className="relative">
+            <img 
+              src={post.author.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.name)}&background=random`} 
+              alt={post.author.name} 
+              className="w-10 h-10 rounded-xl object-cover border border-zinc-800 group-hover:border-brand-cyan/50 transition-colors"
+            />
+          </div>
           <div>
-            <h3 className="font-semibold text-white">{post.author.name}</h3>
-            <p className="text-xs text-gray-500">{post.author.bio?.slice(0, 40) || 'Developer'} • {getRelativeTime(post.createdAt)}</p>
+            <h3 className="font-black text-white text-sm hover:text-brand-cyan transition-colors cursor-pointer">{post.author.name}</h3>
+            <p className="text-[11px] font-medium text-zinc-500">{post.author.bio?.slice(0, 40) || 'Developer'} • {getRelativeTime(post.createdAt)}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -198,27 +233,88 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostDeleted }) => {
             {post.postType}
           </span>
           {user?.id === post.author.id && (
-            <button
-              onClick={handleDelete}
-              title="Delete post"
-              className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                title="Edit post"
+                className="p-1.5 rounded-lg text-gray-500 hover:text-brand-cyan hover:bg-brand-cyan/10 transition-all cursor-pointer"
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleDelete}
+                title="Delete post"
+                className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           )}
         </div>
       </div>
 
-      <div className="mt-4 mb-4 text-gray-200 text-sm whitespace-pre-wrap">
-        {post.content}
-      </div>
-
-      {post.codeSnippet && (
-        <div className="mb-4">
-          <div className="flex items-center justify-between bg-[#1e1e1e] px-4 py-2 rounded-t-xl border border-white/10 border-b-0">
-            <span className="text-xs font-mono text-gray-400">{post.language || 'code'}</span>
+      {isEditing ? (
+        <div className="mt-3 mb-3 space-y-3">
+          <textarea
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm text-zinc-300 focus:outline-none focus:border-brand-cyan/50 resize-y min-h-[100px]"
+          />
+          {post.postType === 'CODE_REVIEW' && (
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={editLanguage}
+                onChange={(e) => setEditLanguage(e.target.value)}
+                placeholder="Language (e.g. typescript, python)"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-brand-cyan/50 mb-2"
+              />
+              <textarea
+                value={editCodeSnippet}
+                onChange={(e) => setEditCodeSnippet(e.target.value)}
+                placeholder="Paste your code snippet here..."
+                className="w-full h-32 font-mono text-sm bg-[#0a0a0a] border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-brand-cyan/50 resize-y placeholder-zinc-600"
+              />
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <button 
+              onClick={() => { 
+                setIsEditing(false); 
+                setEditContent(post.content); 
+                setEditCodeSnippet(post.codeSnippet || ''); 
+                setEditLanguage(post.language || ''); 
+              }}
+              className="px-4 py-1.5 rounded-lg text-xs font-bold text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-700 transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handleUpdate}
+              disabled={isUpdating || !editContent.trim()}
+              className="px-4 py-1.5 rounded-lg text-xs font-bold text-dark-bg bg-brand-cyan disabled:opacity-50 hover:opacity-90 transition-opacity"
+            >
+              {isUpdating ? 'Saving...' : 'Save'}
+            </button>
           </div>
-          <div className="overflow-hidden rounded-b-xl border border-white/10 bg-[#1e1e1e] text-[12px] max-h-[400px] overflow-y-auto custom-scrollbar">
+        </div>
+      ) : (
+        <div className="mt-3 mb-3 text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap">
+          {post.content}
+        </div>
+      )}
+
+      {post.codeSnippet && !isEditing && (
+        <div className="mb-4 rounded-2xl overflow-hidden border border-zinc-800 shadow-lg">
+          <div className="flex items-center justify-between bg-zinc-950 px-4 py-2 border-b border-zinc-800">
+            <div className="flex gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+            </div>
+            <span className="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-wider">{post.language || 'code'}</span>
+          </div>
+          <div className="bg-zinc-950 text-[12px] max-h-[300px] overflow-y-auto custom-scrollbar">
             <SyntaxHighlighter
               language={post.language || 'javascript'}
               style={vscDarkPlus as any}
@@ -269,19 +365,19 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostDeleted }) => {
       )}
 
       {post.imageUrl && (
-        <div className="mb-5 rounded-xl overflow-hidden border border-white/10 max-h-[380px] bg-neutral-900">
+        <div className="mb-4 rounded-2xl overflow-hidden border border-zinc-800 max-h-[300px] bg-zinc-950 shadow-inner">
           <img 
             src={post.imageUrl} 
             alt="Post attachment" 
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
           />
         </div>
       )}
 
-      <div className="flex items-center gap-6 pt-4 border-t border-white/5">
+      <div className="flex items-center gap-1.5 pt-3 border-t border-zinc-800">
         <button 
           onClick={handleLike}
-          className={`flex items-center gap-1.5 text-sm transition-colors ${hasLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium transition-all ${hasLiked ? 'text-red-400 bg-red-400/10' : 'text-zinc-400 hover:text-red-400 hover:bg-zinc-800'}`}
         >
           <Heart className={`w-5 h-5 ${hasLiked ? 'fill-current' : ''}`} />
           <span>{likesCount}</span>
@@ -289,62 +385,80 @@ const PostCard: React.FC<PostCardProps> = ({ post, onPostDeleted }) => {
         
         <button 
           onClick={toggleComments}
-          className={`flex items-center gap-1.5 text-sm transition-colors ${showComments ? 'text-blue-400' : 'text-gray-400 hover:text-blue-400'}`}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium transition-all ${showComments ? 'text-brand-cyan bg-brand-cyan/10' : 'text-zinc-400 hover:text-brand-cyan hover:bg-zinc-800'}`}
         >
-          <MessageCircle className={`w-5 h-5 ${showComments ? 'fill-blue-400/20' : ''}`} />
+          <MessageCircle className={`w-5 h-5 ${showComments ? 'fill-brand-cyan/20' : ''}`} />
           <span>{commentsCount}</span>
         </button>
 
-        <button onClick={handleShare} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-green-400 transition-colors">
+        <button onClick={handleShare} className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium text-zinc-400 hover:text-emerald-400 hover:bg-zinc-800 transition-all">
           <Share2 className="w-5 h-5" />
         </button>
 
         <button 
           onClick={handleBookmark}
-          className={`flex items-center gap-1.5 text-sm transition-colors ml-auto ${isBookmarked ? 'text-yellow-400' : 'text-gray-400 hover:text-yellow-400'}`}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium transition-all ml-auto ${isBookmarked ? 'text-amber-400 bg-amber-400/10' : 'text-zinc-400 hover:text-amber-400 hover:bg-zinc-800'}`}
         >
           <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
         </button>
       </div>
 
-      {showComments && (
-        <div className="mt-4 pt-4 border-t border-white/5 space-y-4">
-          <form onSubmit={handleAddComment} className="flex gap-2">
-            <input 
-              type="text"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Add a comment..."
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-brand-cyan/50"
-            />
-            <button 
-              type="submit"
-              disabled={!newComment.trim()}
-              className="px-4 py-2 bg-brand-cyan text-dark-bg text-sm font-bold rounded-xl disabled:opacity-50 transition-colors"
-            >
-              Post
-            </button>
-          </form>
+      <AnimatePresence>
+        {showComments && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-3 pt-3 border-t border-zinc-800 space-y-3">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Comments</span>
+                <button 
+                  onClick={() => setShowComments(false)}
+                  className="p-1 rounded-full bg-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-all cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <form onSubmit={handleAddComment} className="flex gap-2">
+                <input 
+                  type="text"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Add a comment..."
+                  className="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 transition-all shadow-inner"
+                />
+                <button 
+                  type="submit"
+                  disabled={!newComment.trim()}
+                  className="px-4 py-2 bg-brand-cyan text-dark-bg text-xs font-black rounded-xl disabled:opacity-50 hover:scale-105 active:scale-95 transition-all shadow-lg"
+                >
+                  Post
+                </button>
+              </form>
 
-          <div className="space-y-3 mt-4">
-            {isLoadingComments ? (
-              <div className="text-center text-zinc-500 text-xs py-2 animate-pulse">Loading comments...</div>
-            ) : comments.length > 0 ? (
-              comments.map(comment => (
-                <div key={comment.id} className="flex gap-3">
-                  <img src={comment.author.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.author.name)}&background=random`} className="w-8 h-8 rounded-full border border-white/10" alt={comment.author.name} />
-                  <div className="flex-1 bg-white/5 rounded-2xl px-4 py-2.5 text-sm">
-                    <div className="font-semibold text-white text-xs mb-0.5">{comment.author.name}</div>
-                    <div className="text-gray-300">{comment.content}</div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center text-zinc-500 text-xs py-2">No comments yet. Be the first to share your thoughts!</div>
-            )}
-          </div>
-        </div>
-      )}
+              <div className="space-y-3 mt-4 max-h-[250px] overflow-y-auto custom-scrollbar pr-2">
+                {isLoadingComments ? (
+                  <div className="text-center text-zinc-500 text-xs py-2 font-medium animate-pulse">Loading comments...</div>
+                ) : comments.length > 0 ? (
+                  comments.map(comment => (
+                    <div key={comment.id} className="flex gap-3 group/comment">
+                      <img src={comment.author.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.author.name)}&background=random`} className="w-8 h-8 rounded-lg object-cover border border-zinc-800" alt={comment.author.name} />
+                      <div className="flex-1 bg-zinc-800/30 rounded-xl rounded-tl-sm px-4 py-2.5 text-[13px] border border-zinc-800/50">
+                        <div className="font-black text-white text-[10px] mb-0.5 group-hover/comment:text-brand-cyan transition-colors">{comment.author.name}</div>
+                        <div className="text-zinc-300 leading-relaxed">{comment.content}</div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-zinc-500 text-xs py-2 font-medium">No comments yet.</div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showDeleteConfirm && (

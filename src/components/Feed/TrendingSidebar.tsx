@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Flame, Code } from 'lucide-react';
 import api from '../../lib/axios';
 import { Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
+
 
 interface TrendingData {
   trendingDevelopers: Array<{
@@ -29,7 +29,7 @@ interface TrendingData {
 const TrendingSidebar: React.FC = () => {
   const [data, setData] = useState<TrendingData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [followed, setFollowed] = useState<Record<string, boolean>>(() => {
+  const [followed] = useState<Record<string, boolean>>(() => {
     try {
       const saved = localStorage.getItem('followed_builders');
       return saved ? JSON.parse(saved) : {};
@@ -80,7 +80,7 @@ const TrendingSidebar: React.FC = () => {
   return (
     <div className="w-80 space-y-6">
       {/* Trending Developers */}
-      <div className="bg-[#111] border border-white/10 rounded-2xl p-5 sticky top-24">
+      <div className="bg-[#111] border border-white/10 rounded-2xl p-5">
         <h2 className="flex items-center gap-2 text-lg font-bold text-white mb-4">
           <Flame className="text-orange-500 w-5 h-5" />
           Trending Builders
@@ -106,25 +106,6 @@ const TrendingSidebar: React.FC = () => {
                   <p className="text-xs text-gray-500 line-clamp-1">{dev.bio || dev.skills.join(', ')}</p>
                 </div>
               </div>
-              <button 
-                onClick={(e) => {
-                  e.preventDefault();
-                  const isFollowing = followed[dev.id];
-                  setFollowed(prev => ({...prev, [dev.id]: !isFollowing}));
-                  if (!isFollowing) {
-                    toast.success(`You are now following ${dev.name}`);
-                  } else {
-                    toast(`Unfollowed ${dev.name}`, { icon: '👋' });
-                  }
-                }}
-                className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all border ${
-                  followed[dev.id] 
-                    ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30' 
-                    : 'bg-white/5 hover:bg-white/10 text-white border-white/10 cursor-pointer'
-                }`}
-              >
-                {followed[dev.id] ? 'Following' : 'Follow'}
-              </button>
             </div>
           ))}
         </div>
