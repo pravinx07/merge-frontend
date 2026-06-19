@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DollarSign, Code2, Clock, Plus, CheckCircle, Search, ShieldCheck } from 'lucide-react';
+import { DollarSign, Code2, Clock, Plus, CheckCircle, Search, ShieldCheck, X } from 'lucide-react';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -131,56 +131,63 @@ const BountiesPage = () => {
           </div>
           
           <button
-            onClick={() => setIsCreating(!isCreating)}
+            onClick={() => setIsCreating(true)}
             className="flex items-center gap-2 bg-brand-cyan text-dark-bg px-5 py-2.5 rounded-xl font-bold text-sm hover:scale-105 transition-transform"
           >
-            {isCreating ? 'Cancel' : <><Plus className="w-4 h-4" /> Post a Gig</>}
+            <Plus className="w-4 h-4" /> Post a Gig
           </button>
         </div>
 
-        {/* Create Bounty Form */}
+        {/* Create Bounty Modal */}
         <AnimatePresence>
           {isCreating && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
-            >
-              <form onSubmit={handleCreateBounty} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
-                <h3 className="text-lg font-bold text-white mb-4">Post a new Gig</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 w-full max-w-lg shadow-2xl"
+              >
+                <form onSubmit={handleCreateBounty} className="space-y-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-black text-white">Post a new Gig</h3>
+                    <button type="button" onClick={() => setIsCreating(false)} className="text-zinc-400 hover:text-white p-1">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-400 uppercase">Title</label>
+                      <input value={title} onChange={e => setTitle(e.target.value)} type="text" placeholder="e.g. Build a landing page" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-400 uppercase">Amount ($)</label>
+                      <input value={amount} onChange={e => setAmount(e.target.value)} type="number" placeholder="500" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm" />
+                    </div>
+                  </div>
+
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-zinc-400 uppercase">Title</label>
-                    <input value={title} onChange={e => setTitle(e.target.value)} type="text" placeholder="e.g. Build a landing page" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm" />
+                    <label className="text-xs font-bold text-zinc-400 uppercase">Description</label>
+                    <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Describe the task..." className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm resize-none"></textarea>
                   </div>
+
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-zinc-400 uppercase">Amount ($)</label>
-                    <input value={amount} onChange={e => setAmount(e.target.value)} type="number" placeholder="500" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm" />
+                    <label className="text-xs font-bold text-zinc-400 uppercase">Skills Needed (comma separated)</label>
+                    <input value={skillsStr} onChange={e => setSkillsStr(e.target.value)} type="text" placeholder="React, Node.js, Tailwind" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm" />
                   </div>
-                </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-zinc-400 uppercase">Description</label>
-                  <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Describe the task..." className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm resize-none"></textarea>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-zinc-400 uppercase">Skills Needed (comma separated)</label>
-                  <input value={skillsStr} onChange={e => setSkillsStr(e.target.value)} type="text" placeholder="React, Node.js, Tailwind" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm" />
-                </div>
-
-                <div className="flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-2 text-xs text-emerald-400">
-                    <ShieldCheck className="w-4 h-4" /> Secure Escrow
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="flex items-center gap-2 text-xs text-emerald-400">
+                      <ShieldCheck className="w-4 h-4" /> Secure Escrow
+                    </div>
+                    <button type="submit" className="bg-white text-black px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-zinc-200">
+                      Post Bounty
+                    </button>
                   </div>
-                  <button type="submit" className="bg-white text-black px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-zinc-200">
-                    Post Bounty
-                  </button>
-                </div>
-              </form>
-            </motion.div>
+                </form>
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>
 

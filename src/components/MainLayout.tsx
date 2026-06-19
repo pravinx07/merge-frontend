@@ -219,7 +219,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       </AnimatePresence>
 
       <div className="flex-1 lg:ml-[260px] flex flex-col min-w-0">
-        <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 md:px-8 sticky top-0 bg-[#0A0A0B]/80 backdrop-blur-xl z-40">
+        <header className="h-20 border-b border-white/5 flex items-center justify-between px-4 md:px-8 sticky top-0 bg-[#0A0A0B]/80 backdrop-blur-xl z-40">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsSidebarOpen(true)}
@@ -227,7 +227,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             >
               <Menu className="w-6 h-6" />
             </button>
-            <h1 className="text-sm md:text-lg font-bold text-white tracking-tight truncate max-w-[150px] md:max-w-none">
+            <h1 className="text-xl md:text-2xl font-black text-white tracking-tight truncate max-w-[150px] md:max-w-none">
               {pageTitle}
             </h1>
           </div>
@@ -352,7 +352,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                     {user?.plan === 'pro' ? 'Pro' : 'Free'}
                   </span>
                 </div>
-                <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl border border-white/10 p-0.5 bg-white/5 overflow-hidden group-hover:border-brand-cyan/50 transition-all">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl border border-white/10 p-0.5 bg-white/5 overflow-hidden group-hover:border-brand-cyan/50 transition-all">
                   <img
                     src={
                       user?.avatar ||
