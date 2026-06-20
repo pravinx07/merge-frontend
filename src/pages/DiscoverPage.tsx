@@ -192,30 +192,6 @@ const DiscoverPage = () => {
           </div>
         </div>
 
-        {/* ── Intent Selector ── */}
-        <div className="mb-8 p-4 sm:px-6 sm:py-5 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-center sm:text-left">
-            <h3 className="text-sm font-black text-white">What are you looking for today?</h3>
-            <p className="text-[11px] font-medium text-zinc-500 mt-1">Update your goal to find the right cofounders, mentors, or learners.</p>
-          </div>
-          <div className="flex bg-[#111115] border border-zinc-800/80 rounded-xl p-1 shadow-inner">
-            {['BUILDING', 'MENTORING', 'LEARNING'].map(intent => (
-              <button
-                key={intent}
-                onClick={() => updateIntent(intent)}
-                disabled={isUpdatingIntent}
-                className={`px-4 py-2 rounded-lg text-xs font-black tracking-wide transition-all duration-300 ${
-                  myIntent === intent
-                    ? 'bg-gradient-to-r from-violet-600 to-[#00e5ff] text-white shadow-lg shadow-[#00e5ff]/20'
-                    : 'text-zinc-500 hover:text-white hover:bg-zinc-800/50'
-                }`}
-              >
-                {intent}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* ═══════════════════════════════════════════════════
             MAIN SPLIT: Left = swipe, Right = recommended
         ═══════════════════════════════════════════════════ */}
@@ -230,15 +206,15 @@ const DiscoverPage = () => {
             </div>
 
             {/* ── Card container ── */}
-            <div className="relative h-[580px]">
+            <div className="relative h-[500px]">
               <AnimatePresence mode="popLayout">
                 {isLoading ? (
                   /* Skeleton */
                   <div key="loading" className="absolute inset-0 bg-[#111115] border border-zinc-800/70 rounded-[28px] overflow-hidden flex flex-col">
-                    <div className="h-[180px] bg-zinc-800/30 animate-pulse relative">
+                    <div className="h-[140px] bg-zinc-800/30 animate-pulse relative">
                       <div className="absolute bottom-[-44px] left-1/2 -translate-x-1/2 w-[100px] h-[100px] rounded-[24px] bg-zinc-800 animate-pulse border-[3px] border-zinc-700" />
                     </div>
-                    <div className="flex flex-col items-center px-6 pt-16 gap-3">
+                    <div className="flex flex-col items-center px-6 pt-12 gap-3">
                       <div className="h-6 w-44 bg-zinc-800 rounded-full animate-pulse" />
                       <div className="h-3 w-28 bg-zinc-800/80 rounded-full animate-pulse" />
                       <div className="h-3 w-20 bg-zinc-800/60 rounded-full animate-pulse" />
@@ -328,6 +304,31 @@ const DiscoverPage = () => {
 
           {/* ── RIGHT COLUMN: Recommended + Stats ── */}
           <div className="flex-1 min-w-0">
+            {/* ── Intent Selector ── */}
+            <div className="mb-6 p-4 sm:px-5 sm:py-4 rounded-3xl bg-zinc-900/40 border border-zinc-800/60 flex flex-col 2xl:flex-row items-center justify-between gap-4">
+              <div className="text-center 2xl:text-left">
+                <h3 className="text-sm font-black text-white">What are you looking for today?</h3>
+                <p className="text-[11px] font-medium text-zinc-500 mt-1">Update your goal to find the right cofounders, mentors, or learners.</p>
+              </div>
+              <div className="flex bg-[#111115] border border-zinc-800/80 rounded-xl p-1 shadow-inner">
+                {['BUILDING', 'MENTORING', 'LEARNING'].map(intent => (
+                  <button
+                    key={intent}
+                    onClick={() => updateIntent(intent)}
+                    disabled={isUpdatingIntent}
+                    className={`px-4 py-2 rounded-lg text-xs font-black tracking-wide transition-all duration-300 ${
+                      myIntent === intent
+                        ? 'bg-gradient-to-r from-violet-600 to-[#00e5ff] text-white shadow-lg shadow-[#00e5ff]/20'
+                        : 'text-zinc-500 hover:text-white hover:bg-zinc-800/50'
+                    }`}
+                  >
+                    {intent}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+
             {/* Stats row (always visible) */}
             {!isLoading && (
               <motion.div
@@ -354,6 +355,7 @@ const DiscoverPage = () => {
               onSwipeFromRecommended={handleRecommendedAction}
               fallback={<HowItWorks />}
               onUpgrade={() => setShowUpgradeModal(true)}
+              activeSwipeId={topDev?.id}
             />
           </div>
         </div>

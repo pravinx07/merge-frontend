@@ -1,6 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactDOM from 'react-dom';
-import { X, Brain, Sparkles, Zap, Target, GitBranch, Trophy, Clock, Check } from 'lucide-react';
+import { X, Brain, Zap, Target, GitBranch, Trophy, Clock, Check } from 'lucide-react';
+
+import { useState } from 'react';
+import api from '../../lib/axios';
+import { toast } from 'react-hot-toast';
 
 interface SmartMatchesModalProps {
   isOpen: boolean;
@@ -25,7 +29,51 @@ const PRO_BENEFITS = [
   'Builder Score comparisons',
 ];
 
-export const SmartMatchesModal = ({ isOpen, onClose, onUpgradeClick }: SmartMatchesModalProps) => {
+export const SmartMatchesModal = ({ isOpen, onClose }: SmartMatchesModalProps) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleUpgrade = async () => {
+    try {
+      setIsProcessing(true);
+      const { data: order } = await api.post('/payments/create-order', { amount: 599 });
+      
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YourKeyIdHere',
+        amount: order.amount,
+        currency: order.currency,
+        name: 'Merge App',
+        description: 'Upgrade to Merge Pro',
+        order_id: order.id,
+        handler: async function (response: any) {
+          try {
+            await api.post('/payments/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
+            toast.success('Successfully upgraded to Pro!');
+            onClose();
+            setTimeout(() => window.location.reload(), 1500);
+          } catch (e) {
+            toast.error('Payment verification failed.');
+          }
+        },
+        prefill: { name: '', email: '', contact: '' },
+        theme: { color: '#8b5cf6' }
+      };
+      
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (response: any) {
+        toast.error('Payment failed: ' + response.error.description);
+      });
+      rzp.open();
+    } catch (error) {
+      toast.error('Could not initialize payment. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return ReactDOM.createPortal(
     <AnimatePresence>
       {isOpen && (
@@ -68,59 +116,31 @@ export const SmartMatchesModal = ({ isOpen, onClose, onUpgradeClick }: SmartMatc
                     <X className="w-5 h-5" />
                   </button>
 
-                  <div className="relative p-6 sm:p-8">
+                  <div className="relative p-5 sm:p-6">
 
                     {/* Header */}
-                    <div className="text-center mb-6">
-                      <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#00e5ff]/20 to-violet-600/20 border border-[#00e5ff]/30 mb-4 shadow-lg shadow-[#00e5ff]/10">
-                        <Brain className="w-7 h-7 text-[#00e5ff]" />
+                    <div className="text-center mb-4">
+                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-[#00e5ff]/20 to-violet-600/20 border border-[#00e5ff]/30 mb-3 shadow-lg shadow-[#00e5ff]/10">
+                        <Brain className="w-6 h-6 text-[#00e5ff]" />
                       </div>
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00e5ff]/8 border border-[#00e5ff]/20 mb-3">
-                        <Sparkles className="w-3 h-3 text-[#00e5ff]" />
-                        <span className="text-[10px] font-black text-[#00e5ff] uppercase tracking-widest">Merge Pro Feature</span>
-                      </div>
-                      <h2 className="text-2xl font-black text-white mb-2">AI Smart Matches</h2>
-                      <p className="text-sm text-zinc-400 leading-relaxed">
+                      <h2 className="text-xl font-black text-white mb-1.5">AI Smart Matches</h2>
+                      <p className="text-xs text-zinc-400 leading-relaxed">
                         Stop scrolling. Let our compatibility engine surface your best builder matches automatically.
                       </p>
                     </div>
 
-                    {/* Example match preview */}
-                    <div className="relative mb-5 bg-[#0a0a0e] border border-zinc-800/60 rounded-2xl p-4 overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#00e5ff]/5 to-violet-600/5 pointer-events-none" />
-                      <div className="relative flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xl">👤</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-black text-white">Example Match</p>
-                          <p className="text-xs text-zinc-500">Full Stack + AI Engineer</p>
-                        </div>
-                        <div className="flex flex-col items-end flex-shrink-0">
-                          <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#00e5ff]/10 border border-[#00e5ff]/25">
-                            <Sparkles className="w-3 h-3 text-[#00e5ff]" />
-                            <span className="text-sm font-black text-[#00e5ff]">94%</span>
-                          </div>
-                          <span className="text-[9px] text-zinc-600 font-bold mt-1 uppercase tracking-widest">Elite Match</span>
-                        </div>
-                      </div>
-                      <div className="relative mt-3 pt-3 border-t border-zinc-800/50 space-y-1.5">
-                        {['⚡ Both use React + AI', '🎯 Same cofounder goal', '🐙 Similar GitHub activity'].map(r => (
-                          <p key={r} className="text-[11px] text-zinc-400 font-medium">{r}</p>
-                        ))}
-                      </div>
-                    </div>
+
 
                     {/* Matching factors */}
-                    <div className="mb-5">
-                      <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-3">Matching Factors</p>
-                      <div className="grid grid-cols-2 gap-2">
+                    <div className="mb-4">
+                      <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-2">Matching Factors</p>
+                      <div className="grid grid-cols-2 gap-1.5">
                         {MATCH_FACTORS.map(({ icon: Icon, label, desc, color, bg, border }) => (
-                          <div key={label} className={`flex items-center gap-2.5 p-2.5 rounded-xl ${bg} border ${border}`}>
-                            <Icon className={`w-4 h-4 ${color} flex-shrink-0`} />
+                          <div key={label} className={`flex items-center gap-2 p-2 rounded-xl ${bg} border ${border}`}>
+                            <Icon className={`w-3.5 h-3.5 ${color} flex-shrink-0`} />
                             <div className="min-w-0">
-                              <p className={`text-[11px] font-black ${color} leading-tight`}>{label}</p>
-                              <p className="text-[9px] text-zinc-600 font-semibold leading-tight truncate">{desc}</p>
+                              <p className={`text-[10px] font-black ${color} leading-tight`}>{label}</p>
+                              <p className="text-[8px] text-zinc-600 font-semibold leading-tight truncate">{desc}</p>
                             </div>
                           </div>
                         ))}
@@ -128,15 +148,15 @@ export const SmartMatchesModal = ({ isOpen, onClose, onUpgradeClick }: SmartMatc
                     </div>
 
                     {/* Pro benefits */}
-                    <div className="mb-5 p-4 bg-gradient-to-r from-violet-500/8 to-purple-600/8 border border-violet-500/20 rounded-2xl">
-                      <p className="text-[10px] font-black text-violet-400 uppercase tracking-widest mb-3">🚀 What Pro unlocks</p>
-                      <div className="space-y-2">
+                    <div className="mb-5 p-3 bg-gradient-to-r from-violet-500/8 to-purple-600/8 border border-violet-500/20 rounded-2xl">
+                      <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-2">🚀 What Pro unlocks</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                         {PRO_BENEFITS.map(b => (
-                          <div key={b} className="flex items-center gap-2.5">
-                            <div className="w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
-                              <Check className="w-2.5 h-2.5 text-emerald-400" />
+                          <div key={b} className="flex items-center gap-2">
+                            <div className="w-3.5 h-3.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                              <Check className="w-2 h-2 text-emerald-400" />
                             </div>
-                            <span className="text-xs text-zinc-300 font-medium">{b}</span>
+                            <span className="text-[11px] text-zinc-300 font-medium truncate">{b}</span>
                           </div>
                         ))}
                       </div>
@@ -144,13 +164,11 @@ export const SmartMatchesModal = ({ isOpen, onClose, onUpgradeClick }: SmartMatc
 
                     {/* CTA */}
                     <button
-                      onClick={() => {
-                        onClose();
-                        if (onUpgradeClick) onUpgradeClick();
-                      }}
-                      className="w-full py-4 bg-gradient-to-r from-[#00e5ff] to-violet-500 text-[#0a0a0b] font-black rounded-2xl text-sm uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[#00e5ff]/20"
+                      onClick={handleUpgrade}
+                      disabled={isProcessing}
+                      className="w-full py-3.5 bg-gradient-to-r from-[#00e5ff] to-violet-500 text-[#0a0a0b] font-black rounded-2xl text-sm uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[#00e5ff]/20 disabled:opacity-50"
                     >
-                      Upgrade to Pro - ₹599
+                      {isProcessing ? 'Processing...' : 'Upgrade to Pro - ₹599'}
                     </button>
                     <p className="text-center text-[10px] text-zinc-600 mt-3">
                       Secure payment via Razorpay. Instantly unlocks all Pro features.
