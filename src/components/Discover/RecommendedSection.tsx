@@ -6,10 +6,6 @@ import {
   X,
   Brain,
   Lock,
-  Zap,
-  Target,
-  GitBranch,
-  Trophy,
   RefreshCw,
 } from "lucide-react";
 import { Link } from "react-router-dom";

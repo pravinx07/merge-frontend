@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactDOM from 'react-dom';
-import { X, Brain, Sparkles, Zap, Target, GitBranch, Trophy, Clock, Check } from 'lucide-react';
+import { X, Brain, Zap, Target, GitBranch, Trophy, Clock, Check } from 'lucide-react';
 
 import { useState } from 'react';
 import api from '../../lib/axios';
