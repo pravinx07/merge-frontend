@@ -148,7 +148,7 @@ const SwipeCard = ({ developer, onSwipe, isTop }: SwipeCardProps) => {
       {/* ═══════════════════════════════════════
           HERO — full-width gradient with avatar
       ═══════════════════════════════════════ */}
-      <div className={`relative flex-shrink-0 h-[180px] bg-gradient-to-b ${meta.heroGrad} to-[#111115]`}>
+      <div className={`relative flex-shrink-0 h-[140px] bg-gradient-to-b ${meta.heroGrad} to-[#111115]`}>
         {/* decorative orb */}
         {hasScore && (
           <div
@@ -205,7 +205,7 @@ const SwipeCard = ({ developer, onSwipe, isTop }: SwipeCardProps) => {
       {/* ═══════════════════════════════════════
           BODY
       ═══════════════════════════════════════ */}
-      <div className="flex-1 flex flex-col px-5 pt-14 pb-4">
+      <div className="flex-1 flex flex-col px-5 pt-12 pb-4">
 
         {/* Name + Role + Location */}
         <div className="text-center mb-4">

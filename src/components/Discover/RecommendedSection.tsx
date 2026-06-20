@@ -56,6 +56,7 @@ interface RecommendedSectionProps {
   onSwipeFromRecommended?: (direction: "left" | "right", devId: string) => void;
   fallback?: React.ReactNode;
   onUpgrade?: () => void;
+  activeSwipeId?: string;
 }
 
 // ─── Score style helpers ──────────────────────────────────────────────────────
@@ -146,9 +147,9 @@ const MiniRing = ({ score }: { score: number }) => {
 // ─── Pro Blur Overlay (for free users) ────────────────────────────────────────
 
 const ProBlurOverlay = ({ onUpgrade }: { onUpgrade: () => void }) => (
-  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-3xl overflow-hidden">
+  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-2xl overflow-hidden">
     {/* Frosted glass */}
-    <div className="absolute inset-0 backdrop-blur-md bg-[#0a0a0b]/70 rounded-3xl" />
+    <div className="absolute inset-0 backdrop-blur-md bg-[#0a0a0b]/80 rounded-2xl" />
     <div className="relative z-10 flex flex-col items-center gap-3 px-4 text-center">
       <div className="w-10 h-10 rounded-2xl bg-[#00e5ff]/10 border border-[#00e5ff]/30 flex items-center justify-center">
         <Lock className="w-5 h-5 text-[#00e5ff]" />
@@ -203,7 +204,7 @@ const SmartCard = ({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.92, y: -8 }}
       transition={{ duration: 0.3, delay: idx * 0.05 }}
-      className="group relative bg-[#111114] border border-zinc-800/70 rounded-2xl overflow-hidden hover:border-zinc-700 transition-all duration-300 flex flex-col sm:flex-row items-center p-3 gap-4"
+      className={`group relative bg-[#111114] border border-zinc-800/70 rounded-2xl overflow-hidden hover:border-zinc-700 transition-all duration-300 flex flex-col sm:flex-row items-center p-3 gap-4 ${isBlurred ? 'min-h-[110px] justify-center' : ''}`}
     >
       {/* PRO blur overlay for non-pro slots */}
       {isBlurred && <ProBlurOverlay onUpgrade={onUpgrade} />}
@@ -214,6 +215,7 @@ const SmartCard = ({
       {/* Hover glow */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#00e5ff]/[0.03] via-transparent to-violet-600/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl" />
 
+      <div className={`flex flex-col sm:flex-row items-center gap-4 w-full ${isBlurred ? 'opacity-10 pointer-events-none select-none' : ''}`}>
       {/* Avatar & Basic Info */}
       <div className="flex items-center gap-3 flex-shrink-0 w-full sm:w-[200px] z-10">
         <div className="relative flex-shrink-0">
@@ -294,6 +296,7 @@ const SmartCard = ({
           </div>
         </div>
       </div>
+      </div>
     </motion.div>
   );
 };
@@ -336,6 +339,7 @@ const RecommendedSection = ({
   onSwipeFromRecommended,
   fallback,
   onUpgrade,
+  activeSwipeId,
 }: RecommendedSectionProps) => {
   const { user } = useAuth();
   const isPro = user?.plan === "pro";
@@ -395,11 +399,10 @@ const RecommendedSection = ({
     onSwipeFromRecommended?.("left", dev.id);
   };
 
-  const visible = devs.filter((d) => !dismissed.has(d.id));
+  const visible = devs.filter((d) => !dismissed.has(d.id) && d.id !== activeSwipeId);
 
-  // For free users: show top 3 (first 1 real, rest blurred)
-  const displayDevs = isPro ? visible : visible.slice(0, 3);
-  const blurredIndices = isPro ? new Set<number>() : new Set([1, 2]);
+  // For free users: show only the first match, remove blurred cards entirely
+  const displayDevs = isPro ? visible : visible.filter(d => d.id === devs[0]?.id).slice(0, 1);
 
   // Loading skeleton
   if (isLoading) {
@@ -482,7 +485,7 @@ const RecommendedSection = ({
               key={dev.id}
               dev={dev}
               idx={idx}
-              isBlurred={blurredIndices.has(idx)}
+              isBlurred={!isPro && dev.id !== devs[0]?.id}
               connectingId={connectingId}
               onConnect={handleConnect}
               onSkip={handleSkip}

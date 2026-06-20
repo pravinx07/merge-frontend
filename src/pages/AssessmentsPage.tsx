@@ -35,6 +35,20 @@ const AssessmentsPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const [evaluationResult, setEvaluationResult] = useState<{passed: boolean, feedback: string} | null>(null);
+  const [popularAssessments, setPopularAssessments] = useState<Assessment[]>([]);
+
+  useEffect(() => {
+    fetchPopularAssessments();
+  }, []);
+
+  const fetchPopularAssessments = async () => {
+    try {
+      const res = await api.get('/assessments');
+      setPopularAssessments(res.data);
+    } catch (error) {
+      console.error('Failed to load popular assessments');
+    }
+  };
 
   useEffect(() => {
     let timer: any;
@@ -78,6 +92,20 @@ const AssessmentsPage = () => {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const startPredefined = (assessment: Assessment) => {
+    if (user?.verifiedSkills?.includes(assessment.skill)) {
+      toast.error("You are already verified for this skill!");
+      return;
+    }
+    setActiveAssessment({
+      ...assessment,
+      id: Date.now().toString()
+    });
+    setCode(`// Write your ${assessment.language} code here to solve the problem.\n\n`);
+    setTimeLeft(assessment.timeLimitMinutes * 60);
+    setEvaluationResult(null);
   };
 
   const handleAutoSubmit = () => {
@@ -156,69 +184,114 @@ const AssessmentsPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="space-y-6"
+              className="flex flex-col md:flex-row gap-6 md:gap-8"
             >
-              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 md:p-6 flex flex-col md:flex-row items-center gap-6 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-cyan to-brand-purple" />
-                <div className="flex-1">
-                  <h2 className="text-lg font-black text-white mb-1.5">
-                    Generate Custom Assessment
-                  </h2>
-                  <p className="text-xs text-zinc-400 mb-4">
-                    Type any skill, framework, or language. MergeAI will
-                    generate a custom 15-minute challenge to verify your
-                    expertise.
-                  </p>
+              {/* Left: Generator & Popular Challenges */}
+              <div className="flex-1 flex flex-col gap-6">
+                {/* Generator Card */}
+                <div className="bg-[#111114] border border-white/5 rounded-2xl p-6 relative overflow-hidden shadow-2xl flex flex-col justify-center">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-cyan to-brand-purple" />
+                  
+                  <div className="relative z-10">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-brand-cyan/10 border border-brand-cyan/20 rounded-xl flex items-center justify-center shrink-0">
+                          <Code2 className="w-5 h-5 text-brand-cyan" />
+                        </div>
+                        <div>
+                          <h2 className="text-lg font-black text-white">Custom Assessment</h2>
+                          <p className="text-xs text-zinc-400">Generate AI challenge to test any skill</p>
+                        </div>
+                      </div>
+                    </div>
 
-                  <div className="flex items-center gap-3 w-full max-w-lg">
-                    <input
-                      type="text"
-                      placeholder="e.g. React, Python, PostgreSQL, AWS..."
-                      value={customSkill}
-                      onChange={(e) => setCustomSkill(e.target.value)}
-                      className="flex-1 bg-zinc-950 border border-zinc-800 focus:border-brand-cyan rounded-xl px-4 py-2.5 text-sm text-white outline-none transition-colors"
-                    />
-                    <button
-                      onClick={generateNewAssessment}
-                      disabled={isGenerating || !customSkill.trim()}
-                      className="bg-brand-cyan text-dark-bg px-6 py-2.5 rounded-xl font-bold text-sm hover:brightness-110 disabled:opacity-50 flex items-center gap-2 whitespace-nowrap transition-all"
-                    >
-                      {isGenerating ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />{" "}
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-4 h-4" /> Start
-                        </>
-                      )}
-                    </button>
+                    <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+                      <div className="relative flex-1 w-full">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                          <Code2 className="w-4 h-4 text-zinc-500" />
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="e.g. React, Python, AWS..."
+                          value={customSkill}
+                          onChange={(e) => setCustomSkill(e.target.value)}
+                          className="w-full bg-zinc-950/50 border border-white/10 focus:border-brand-cyan rounded-xl pl-10 pr-4 py-3 text-sm text-white outline-none transition-colors shadow-inner"
+                        />
+                      </div>
+                      <button
+                        onClick={generateNewAssessment}
+                        disabled={isGenerating || !customSkill.trim()}
+                        className="w-full sm:w-auto bg-brand-cyan text-dark-bg px-6 py-3 rounded-xl font-black text-sm hover:brightness-110 disabled:opacity-50 flex items-center justify-center gap-2 transition-all shrink-0"
+                      >
+                        {isGenerating ? (
+                          <><Loader2 className="w-4 h-4 animate-spin" /> ...</>
+                        ) : (
+                          <><Play className="w-4 h-4 fill-current" /> Start</>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="hidden md:flex w-20 h-20 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 items-center justify-center">
-                  <Code2 className="w-8 h-8 text-zinc-500" />
+
+                {/* Popular Challenges */}
+                <div className="bg-[#111114] border border-white/5 rounded-2xl p-6 flex-1 shadow-2xl flex flex-col">
+                  <h3 className="text-xs font-black text-white mb-4 flex items-center gap-2 uppercase tracking-widest pb-4 border-b border-white/5">
+                    🔥 Popular Challenges
+                  </h3>
+                  
+                  {popularAssessments.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center py-8">
+                      <Loader2 className="w-5 h-5 text-zinc-500 animate-spin" />
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {popularAssessments.map(a => (
+                        <div 
+                          key={a.id} 
+                          onClick={() => startPredefined(a)}
+                          className="bg-zinc-950/80 border border-white/5 p-4 rounded-xl hover:border-brand-purple/50 hover:bg-brand-purple/5 transition-all cursor-pointer group"
+                        >
+                          <h4 className="text-sm font-bold text-white mb-1 group-hover:text-brand-purple transition-colors line-clamp-1">{a.title}</h4>
+                          <div className="flex justify-between items-center mt-2">
+                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{a.skill}</span>
+                            <span className="text-[10px] font-bold bg-white/5 px-2 py-0.5 rounded text-zinc-400">{a.timeLimitMinutes}m</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {user?.verifiedSkills && user.verifiedSkills.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-emerald-400" /> Your
-                    Verified Badges
+              {/* Right: Badges */}
+              <div className="md:w-80 flex flex-col gap-4">
+                <div className="bg-[#111114] border border-white/5 rounded-2xl p-6 flex-1 flex flex-col shadow-2xl">
+                  <h3 className="text-xs font-black text-zinc-400 mb-6 flex items-center gap-2 uppercase tracking-widest pb-4 border-b border-white/5">
+                    <CheckCircle className="w-4 h-4 text-emerald-400" /> Your Verified Badges
                   </h3>
-                  <div className="flex flex-wrap gap-3">
-                    {user.verifiedSkills.map((skill: string) => (
-                      <div
-                        key={skill}
-                        className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-sm flex items-center gap-2"
-                      >
-                        <ShieldCheck className="w-4 h-4" /> {skill}
+                  
+                  {user?.verifiedSkills && user.verifiedSkills.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {user.verifiedSkills.map((skill: string) => (
+                        <div
+                          key={skill}
+                          className="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center gap-1.5"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" /> {skill}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
+                      <div className="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center mb-4 border border-white/5">
+                        <ShieldCheck className="w-6 h-6 text-zinc-600" />
                       </div>
-                    ))}
-                  </div>
+                      <p className="text-sm font-bold text-zinc-300 mb-1">No Badges Yet</p>
+                      <p className="text-xs text-zinc-500 max-w-[200px]">Pass an assessment to earn your first verified expert badge.</p>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </motion.div>
           ) : (
             <motion.div

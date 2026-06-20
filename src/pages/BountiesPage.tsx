@@ -158,17 +158,17 @@ const BountiesPage = () => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-400 uppercase">Title</label>
+                      <label className="text-xs font-bold text-zinc-400 uppercase">Title <span className="text-red-500">*</span></label>
                       <input value={title} onChange={e => setTitle(e.target.value)} type="text" placeholder="e.g. Build a landing page" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm" />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-zinc-400 uppercase">Amount ($)</label>
+                      <label className="text-xs font-bold text-zinc-400 uppercase">Amount ($) <span className="text-red-500">*</span></label>
                       <input value={amount} onChange={e => setAmount(e.target.value)} type="number" placeholder="500" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm" />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-zinc-400 uppercase">Description</label>
+                    <label className="text-xs font-bold text-zinc-400 uppercase">Description <span className="text-red-500">*</span></label>
                     <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Describe the task..." className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm resize-none"></textarea>
                   </div>
 
@@ -181,7 +181,11 @@ const BountiesPage = () => {
                     <div className="flex items-center gap-2 text-xs text-emerald-400">
                       <ShieldCheck className="w-4 h-4" /> Secure Escrow
                     </div>
-                    <button type="submit" className="bg-white text-black px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-zinc-200">
+                    <button 
+                      type="submit" 
+                      disabled={!title || !description || !amount}
+                      className="bg-white text-black px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
                       Post Bounty
                     </button>
                   </div>
@@ -243,7 +247,7 @@ const BountiesPage = () => {
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-zinc-800">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between mt-auto pt-4 border-t border-zinc-800 gap-4">
                   <div className="flex items-center gap-2">
                     {bounty.status === 'Open' ? (
                       <span className="flex items-center gap-1.5 text-xs font-bold text-brand-cyan">
@@ -264,7 +268,7 @@ const BountiesPage = () => {
                     )}
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {bounty.status === 'Open' && bounty.owner.id !== user?.id && (
                       <button onClick={() => handleApply(bounty.id)} className="bg-white text-black px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-zinc-200">
                         Take Gig
@@ -272,7 +276,7 @@ const BountiesPage = () => {
                     )}
                     {/* Assignee Submits Solution */}
                     {bounty.status === 'In Progress' && bounty.assignee?.id === user?.id && (
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         {completingId === bounty.id ? (
                           <>
                             <input 
@@ -280,12 +284,12 @@ const BountiesPage = () => {
                               placeholder="GitHub PR or Demo link..." 
                               value={solutionLink}
                               onChange={e => setSolutionLink(e.target.value)}
-                              className="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none focus:border-brand-cyan"
+                              className="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none focus:border-brand-cyan flex-1 min-w-[140px]"
                             />
-                            <button onClick={() => handleSubmitSolution(bounty.id)} className="bg-brand-cyan text-dark-bg px-4 py-1.5 rounded-lg text-xs font-bold hover:brightness-110">
+                            <button onClick={() => handleSubmitSolution(bounty.id)} className="bg-brand-cyan text-dark-bg px-4 py-1.5 rounded-lg text-xs font-bold hover:brightness-110 whitespace-nowrap">
                               Submit
                             </button>
-                            <button onClick={() => { setCompletingId(null); setSolutionLink(''); }} className="bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-zinc-700">
+                            <button onClick={() => { setCompletingId(null); setSolutionLink(''); }} className="bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-zinc-700 whitespace-nowrap">
                               Cancel
                             </button>
                           </>
