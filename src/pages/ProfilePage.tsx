@@ -291,9 +291,12 @@ const ProfilePage = () => {
               <div className="flex flex-wrap justify-center lg:justify-start gap-3 pt-6">
                 {!isOwner && (
                   <>
-                    <button onClick={async () => {
+                    <button 
+                      disabled={profile.matchStatus === 'pending' || profile.matchStatus === 'matched'}
+                      onClick={async () => {
                       try {
                         const res = await api.post('/swipe/right', { receiverId: profile.id });
+                        setProfile(prev => ({ ...prev, matchStatus: res.data.isMatch ? 'matched' : 'pending' }));
                         if (res.data.isMatch) {
                           toast.success("It's a Match! 🎉");
                         } else {
@@ -302,8 +305,16 @@ const ProfilePage = () => {
                       } catch (err) {
                         toast.error('Failed to send match request.');
                       }
-                    }} className="px-6 py-2.5 bg-brand-purple text-dark-bg font-bold rounded-xl flex items-center gap-2 shadow-lg hover:scale-105 transition-all text-xs"><Heart className="w-4 h-4" /> Match</button>
-                    <button onClick={() => navigate('/messages')} className="px-6 py-2.5 bg-white/5 border border-white/10 font-bold rounded-xl hover:bg-white/10 transition-all flex items-center gap-2 text-xs text-white"><MessageSquare className="w-4 h-4" /> Message</button>
+                    }} className={`px-6 py-2.5 font-bold rounded-xl flex items-center gap-2 shadow-lg transition-all text-xs ${profile.matchStatus === 'matched' ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : profile.matchStatus === 'pending' ? 'bg-amber-500/20 text-amber-500 cursor-not-allowed' : 'bg-brand-purple text-dark-bg hover:scale-105'}`}>
+                      <Heart className={`w-4 h-4 ${profile.matchStatus === 'matched' ? 'fill-zinc-500' : profile.matchStatus === 'pending' ? 'fill-amber-500' : ''}`} /> 
+                      {profile.matchStatus === 'matched' ? 'Matched' : profile.matchStatus === 'pending' ? 'Requested' : 'Match'}
+                    </button>
+                    
+                    {profile.matchStatus === 'matched' && (
+                      <button onClick={() => navigate('/messages')} className="px-6 py-2.5 bg-white/5 border border-white/10 font-bold rounded-xl hover:bg-white/10 transition-all flex items-center gap-2 text-xs text-white">
+                        <MessageSquare className="w-4 h-4" /> Message
+                      </button>
+                    )}
                   </>
                 )}
                 {(profile.githubUrl || profile.githubVerified) && (

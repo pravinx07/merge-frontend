@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign, Code2, Clock, Plus, CheckCircle, Search, ShieldCheck, X } from 'lucide-react';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import useSWR from 'swr';
 
 interface Bounty {
   id: string;
@@ -18,10 +19,16 @@ interface Bounty {
   createdAt: string;
 }
 
+const fetcher = (url: string) => api.get(url).then(res => res.data);
+
 const BountiesPage = () => {
   const { user } = useAuth();
-  const [bounties, setBounties] = useState<Bounty[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // Use SWR for smart caching & automatic revalidation
+  const { data: bounties = [], error, mutate, isLoading } = useSWR<Bounty[]>('/bounties', fetcher, {
+    revalidateOnFocus: false // Don't spam API on every window focus
+  });
+  
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState<'explore' | 'my_gigs'>('explore');
   const [solutionLink, setSolutionLink] = useState('');
@@ -33,20 +40,7 @@ const BountiesPage = () => {
   const [amount, setAmount] = useState('');
   const [skillsStr, setSkillsStr] = useState('');
 
-  useEffect(() => {
-    fetchBounties();
-  }, []);
-
-  const fetchBounties = async () => {
-    try {
-      const res = await api.get('/bounties');
-      setBounties(res.data);
-    } catch (error) {
-      toast.error('Failed to load bounties');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Replaced manual useEffect fetch with SWR
 
   const handleCreateBounty = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,31 +48,53 @@ const BountiesPage = () => {
       toast.error('Please fill all required fields');
       return;
     }
+
+    const newBountyPayload = {
+      title,
+      description,
+      amount: parseFloat(amount),
+      skills: skillsStr.split(',').map(s => s.trim()).filter(Boolean)
+    };
+
+    // Optimistic Update
+    const optimisticBounty = {
+      id: Math.random().toString(),
+      ...newBountyPayload,
+      status: 'Open',
+      owner: { id: user?.id || '', name: user?.name || '', avatar: user?.avatar || '', plan: user?.plan || 'free' },
+      createdAt: new Date().toISOString()
+    } as Bounty;
+
+    mutate([optimisticBounty, ...bounties], false);
+    setIsCreating(false);
+    setTitle('');
+    setDescription('');
+    setAmount('');
+    setSkillsStr('');
+
     try {
-      const res = await api.post('/bounties', {
-        title,
-        description,
-        amount: parseFloat(amount),
-        skills: skillsStr.split(',').map(s => s.trim()).filter(Boolean)
-      });
-      setBounties([res.data, ...bounties]);
-      setIsCreating(false);
-      setTitle('');
-      setDescription('');
-      setAmount('');
-      setSkillsStr('');
+      await api.post('/bounties', newBountyPayload);
+      mutate(); // Re-fetch to get real ID
       toast.success('Bounty created successfully!');
     } catch (error) {
+      mutate(); // Rollback on error
       toast.error('Failed to create bounty');
     }
   };
 
   const handleApply = async (id: string) => {
+    // Optimistic Update
+    const updatedBounties = bounties.map(b => 
+      b.id === id ? { ...b, status: 'In Progress', assignee: { id: user?.id || '', name: user?.name || '', avatar: user?.avatar || '' } } : b
+    );
+    mutate(updatedBounties, false);
+
     try {
-      const res = await api.post(`/bounties/${id}/apply`);
-      setBounties(bounties.map(b => b.id === id ? res.data : b));
+      await api.post(`/bounties/${id}/apply`);
+      mutate(); // Sync
       toast.success('Applied to bounty!');
     } catch (error: any) {
+      mutate(); // Rollback
       toast.error(error.response?.data?.error || 'Failed to apply');
     }
   };
@@ -88,23 +104,38 @@ const BountiesPage = () => {
       toast.error('Please provide a solution link');
       return;
     }
+
+    // Optimistic Update
+    const updatedBounties = bounties.map(b => 
+      b.id === id ? { ...b, status: 'In Review', solutionLink } : b
+    );
+    mutate(updatedBounties, false);
+    setCompletingId(null);
+
     try {
-      const res = await api.put(`/bounties/${id}/submit`, { solutionLink });
-      setBounties(bounties.map(b => b.id === id ? res.data : b));
-      toast.success('Solution submitted! Waiting for owner to review.');
-      setCompletingId(null);
+      await api.put(`/bounties/${id}/submit`, { solutionLink });
       setSolutionLink('');
+      mutate();
+      toast.success('Solution submitted! Waiting for owner to review.');
     } catch (error: any) {
+      mutate();
       toast.error(error.response?.data?.error || 'Failed to submit solution');
     }
   };
 
   const handleComplete = async (id: string) => {
+    // Optimistic Update
+    const updatedBounties = bounties.map(b => 
+      b.id === id ? { ...b, status: 'Completed' } : b
+    );
+    mutate(updatedBounties, false);
+
     try {
-      const res = await api.put(`/bounties/${id}/complete`);
-      setBounties(bounties.map(b => b.id === id ? res.data : b));
+      await api.put(`/bounties/${id}/complete`);
+      mutate();
       toast.success('Bounty marked as completed and paid!');
     } catch (error: any) {
+      mutate();
       toast.error(error.response?.data?.error || 'Failed to complete bounty');
     }
   };
@@ -118,18 +149,8 @@ const BountiesPage = () => {
     <div className="min-h-[calc(100vh-64px)] bg-[#0A0A0B] p-4 md:p-8">
       <div className="max-w-5xl mx-auto space-y-8">
         
-        {/* Header section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-500/20">
-                <DollarSign className="w-5 h-5 text-emerald-400" />
-              </div>
-              Bounty Board
-            </h1>
-            <p className="text-zinc-400 mt-2 text-sm">Pick up gigs, build things, get paid.</p>
-          </div>
-          
+        {/* Action Bar */}
+        <div className="flex justify-end mb-4">
           <button
             onClick={() => setIsCreating(true)}
             className="flex items-center gap-2 bg-brand-cyan text-dark-bg px-5 py-2.5 rounded-xl font-bold text-sm hover:scale-105 transition-transform"

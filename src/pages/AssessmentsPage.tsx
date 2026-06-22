@@ -159,23 +159,6 @@ const AssessmentsPage = () => {
   return (
     <DashboardContainer>
       <div className={`mx-auto ${!activeAssessment ? 'max-w-5xl space-y-8' : ''}`}>
-        {/* Header section (only for generated state) */}
-        {!activeAssessment && (
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-3">
-                <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20">
-                  <ShieldCheck className="w-5 h-5 text-amber-400" />
-                </div>
-                Verified Skill Assessments
-              </h1>
-              <p className="text-zinc-400 mt-2 text-sm">
-                Pass coding challenges evaluated by MergeAI to earn Verified
-                Expert badges.
-              </p>
-            </div>
-          </div>
-        )}
 
         <AnimatePresence mode="wait">
           {!activeAssessment ? (
