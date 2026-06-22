@@ -131,25 +131,7 @@ const HackathonsPage = () => {
 
   return (
     <DashboardContainer>
-      {/* Sleek, Compact Header Banner */}
-      <div className="bg-gradient-to-r from-brand-purple/20 via-brand-cyan/15 to-transparent border border-white/5 rounded-2xl p-6 mb-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-brand-cyan/5 rounded-full blur-3xl -z-10" />
-        <div className="flex items-center gap-3.5 mb-2.5">
-          <div className="p-2 bg-brand-cyan/10 border border-brand-cyan/20 rounded-xl text-brand-cyan shadow-[0_0_15px_rgba(0,229,255,0.1)]">
-            <Trophy className="w-5 h-5" />
-          </div>
-          <span className="text-[9px] font-black uppercase tracking-widest text-brand-purple bg-brand-purple/10 px-2 py-0.5 rounded border border-brand-purple/20">
-            Developer Arena
-          </span>
-        </div>
-        
-        <h1 className="text-xl md:text-2xl font-black tracking-tight text-white mb-1">
-          Hackathons
-        </h1>
-        <p className="text-zinc-400 text-xs max-w-xl font-medium leading-relaxed">
-          Build elite teams, match using skills, and win together.
-        </p>
-      </div>
+
 
       {/* Filter Tabs and Host Button */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6 border-b border-white/5 pb-4">
