@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DollarSign, Code2, Clock, Plus, CheckCircle, Search, ShieldCheck, X } from 'lucide-react';
+import { Code2, Clock, Plus, CheckCircle, Search, ShieldCheck, X } from 'lucide-react';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -25,7 +25,7 @@ const BountiesPage = () => {
   const { user } = useAuth();
   
   // Use SWR for smart caching & automatic revalidation
-  const { data: bounties = [], error, mutate, isLoading } = useSWR<Bounty[]>('/bounties', fetcher, {
+  const { data: bounties = [], mutate, isLoading } = useSWR<Bounty[]>('/bounties', fetcher, {
     revalidateOnFocus: false // Don't spam API on every window focus
   });
   

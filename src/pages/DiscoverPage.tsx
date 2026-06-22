@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, X, Heart, SlidersHorizontal, Sparkles, Filter, Brain, Zap, Star } from 'lucide-react';
+import { Users, X, Heart, SlidersHorizontal, Filter } from 'lucide-react';
 import FilterSidebar from '../components/Discover/FilterSidebar';
 import SwipeCard from '../components/Discover/SwipeCard';
 import MatchPopup from '../components/Discover/MatchPopup';
@@ -26,7 +26,7 @@ const DiscoverPage = () => {
   const [filters, setFilters]         = useState({ skills: [] as string[], intent: '', experienceLevel: '' });
   const [matchData, setMatchData]     = useState<any>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [swipeDir, setSwipeDir]       = useState<'left' | 'right' | null>(null);
+  const [, setSwipeDir]       = useState<'left' | 'right' | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   
   const isPro = user?.plan === 'pro';

@@ -296,7 +296,7 @@ const ProfilePage = () => {
                       onClick={async () => {
                       try {
                         const res = await api.post('/swipe/right', { receiverId: profile.id });
-                        setProfile(prev => ({ ...prev, matchStatus: res.data.isMatch ? 'matched' : 'pending' }));
+                        setProfile((prev: any) => ({ ...prev, matchStatus: res.data.isMatch ? 'matched' : 'pending' }));
                         if (res.data.isMatch) {
                           toast.success("It's a Match! 🎉");
                         } else {
