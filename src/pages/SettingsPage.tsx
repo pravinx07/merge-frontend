@@ -432,7 +432,7 @@ const SettingsPage = () => {
                         <h3 className="text-lg font-bold text-white flex items-center gap-2">
                           <GitHubIcon className="w-5 h-5" />
                           Developer Identity
-                          {user?.githubVerified && <span className="text-xs bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full flex items-center gap-1 border border-green-500/20">✓ Verified</span>}
+                          {user?.githubVerified && <span className="text-xs bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full flex items-center gap-1 border border-green-500/20"> Verified</span>}
                         </h3>
                         <p className="text-sm text-zinc-400 mt-1 max-w-md">
                           {user?.githubVerified 
@@ -698,7 +698,7 @@ const SettingsPage = () => {
                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
                   <Ban className="w-5 h-5 text-red-500" /> Blocked Users
                 </h3>
-                <button onClick={() => setIsBlockedUsersModalOpen(false)} className="text-zinc-500 hover:text-white">✕</button>
+                <button onClick={() => setIsBlockedUsersModalOpen(false)} className="text-zinc-500 hover:text-white"></button>
               </div>
               
               <div className="flex-1 overflow-y-auto space-y-3 pr-2">

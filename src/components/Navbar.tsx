@@ -17,11 +17,7 @@ export const Navbar = () => {
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-dark-card/70 backdrop-blur-xl border-b border-white/10 py-3' : 'bg-transparent py-5'}`}>
       <div className="container mx-auto px-6 flex justify-between items-center">
         <Link to="/" className="flex items-center gap-2 group cursor-pointer">
-          <div className="w-8 h-8 bg-linear-to-br from-brand-cyan to-brand-purple rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.3)]">
-            <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="3">
-              <path d="M12 4v16m8-8H4" strokeLinecap="round" />
-            </svg>
-          </div>
+          <img src="/src/assets/logo.png" alt="Merge Logo" className="w-8 h-8 rounded-lg shadow-[0_0_15px_rgba(0,229,255,0.3)] object-cover" />
           <span className="text-2xl font-bold tracking-tight text-white">Merge</span>
         </Link>
         

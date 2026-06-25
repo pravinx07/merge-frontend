@@ -310,10 +310,10 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
                     <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 transition-colors ${allDone ? 'bg-brand-cyan/20 border-2 border-brand-cyan/60' : 'bg-zinc-800 border-2 border-dashed border-zinc-700'}`}>
                       <Trophy className={`w-6 h-6 transition-colors ${allDone ? 'text-brand-cyan' : 'text-zinc-600'}`} />
                     </div>
-                    <h4 className={`text-sm font-bold transition-colors ${allDone ? 'text-brand-cyan' : 'text-zinc-400'}`}>Ship Together 🚀</h4>
+                    <h4 className={`text-sm font-bold transition-colors ${allDone ? 'text-brand-cyan' : 'text-zinc-400'}`}>Ship Together </h4>
                     <p className="text-[10px] text-zinc-500 mt-1">
                       {allDone
-                        ? '🎉 Badge unlocked! Project shipped!'
+                        ? ' Badge unlocked! Project shipped!'
                         : totalTasks === 0
                           ? 'Add tasks to start tracking progress'
                           : `${doneTasks}/${totalTasks} tasks done — keep going!`

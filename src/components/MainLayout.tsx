@@ -117,11 +117,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const SidebarContent = () => (
     <>
       <div className="p-6 flex items-center gap-3">
-        <div className="w-8 h-8 bg-brand-cyan rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(0,229,255,0.4)]">
-          <span className="text-dark-bg font-black text-lg italic tracking-tighter">
-            M
-          </span>
-        </div>
+        <img src="/src/assets/logo.png" alt="Merge Logo" className="w-8 h-8 rounded-lg shadow-[0_0_15px_rgba(0,229,255,0.4)] object-cover" />
         <span className="text-xl font-black tracking-tight">Merge</span>
         {isSidebarOpen && (
           <button 

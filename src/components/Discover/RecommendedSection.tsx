@@ -377,8 +377,8 @@ const RecommendedSection = ({
     try {
       const res = await api.post("/swipe/right", { receiverId: dev.id });
       setDismissed((p) => new Set([...p, dev.id]));
-      if (res.data.isMatch) toast.success(`🎉 It's a match with ${dev.name}!`);
-      else toast.success(`💌 Connect request sent to ${dev.name}`);
+      if (res.data.isMatch) toast.success(` It's a match with ${dev.name}!`);
+      else toast.success(` Connect request sent to ${dev.name}`);
       onSwipeFromRecommended?.("right", dev.id);
     } catch {
       toast.error("Failed to connect");

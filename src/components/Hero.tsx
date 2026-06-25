@@ -65,13 +65,13 @@ export const Hero = () => {
             className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2 mb-10 text-slate-500 text-sm"
           >
             <div className="flex items-center gap-1.5">
-              <span className="text-brand-cyan">✓</span> Connect GitHub
+              <span className="text-brand-cyan"></span> Connect GitHub
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-brand-cyan">✓</span> Showcase projects
+              <span className="text-brand-cyan"></span> Showcase projects
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-brand-cyan">✓</span> Match by skills
+              <span className="text-brand-cyan"></span> Match by skills
             </div>
           </motion.div>
           

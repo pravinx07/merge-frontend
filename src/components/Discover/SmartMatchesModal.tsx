@@ -149,7 +149,7 @@ export const SmartMatchesModal = ({ isOpen, onClose }: SmartMatchesModalProps) =
 
                     {/* Pro benefits */}
                     <div className="mb-5 p-3 bg-gradient-to-r from-violet-500/8 to-purple-600/8 border border-violet-500/20 rounded-2xl">
-                      <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-2">🚀 What Pro unlocks</p>
+                      <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-2"> What Pro unlocks</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                         {PRO_BENEFITS.map(b => (
                           <div key={b} className="flex items-center gap-2">
