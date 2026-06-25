@@ -39,7 +39,7 @@ const ForgotPasswordPage = () => {
       >
         <div className="text-center mb-6">
           <Link to="/" className="inline-flex items-center gap-2 mb-4 group">
-            <img src="/src/assets/logo.png" alt="Merge Logo" className="w-9 h-9 rounded-xl shadow-[0_0_15px_rgba(0,229,255,0.3)] object-cover group-hover:scale-110 transition-transform" />
+            <img src="/logo.png" alt="Merge Logo" className="w-9 h-9 rounded-xl shadow-[0_0_15px_rgba(0,229,255,0.3)] object-cover group-hover:scale-110 transition-transform" />
             <span className="text-2xl font-bold tracking-tight text-white">Merge</span>
           </Link>
           <h1 className="text-xl font-bold text-white">Reset Password</h1>

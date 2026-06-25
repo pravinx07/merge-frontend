@@ -4,7 +4,7 @@ export const Footer = () => {
       <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-12">
         <div className="col-span-2 md:col-span-1">
           <div className="flex items-center gap-2 mb-6">
-            <img src="/src/assets/logo.png" alt="Merge Logo" className="w-8 h-8 rounded-lg shadow-[0_0_15px_rgba(0,229,255,0.3)] object-cover" />
+            <img src="/logo.png" alt="Merge Logo" className="w-8 h-8 rounded-lg shadow-[0_0_15px_rgba(0,229,255,0.3)] object-cover" />
             <span className="text-xl font-bold text-white">Merge</span>
           </div>
           <p className="text-sm text-slate-500 mb-6">Connecting developers through meaningful matches and collaborative projects.</p>
