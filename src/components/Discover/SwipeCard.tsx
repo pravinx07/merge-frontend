@@ -24,21 +24,21 @@ const getScoreMeta = (s: number) => {
     bgCls: 'bg-[#00e5ff]/10', borderCls: 'border-[#00e5ff]/25',
     glowCard: 'shadow-[0_0_40px_rgba(0,229,255,0.15)]',
     heroGrad: 'from-[#00e5ff]/30 via-[#00e5ff]/8',
-    label: 'Elite Match', emoji: '🔥',
+    label: 'Elite Match', emoji: '',
   };
   if (s >= 60) return {
     color: '#7c3aed', textCls: 'text-violet-400',
     bgCls: 'bg-violet-500/10', borderCls: 'border-violet-500/25',
     glowCard: 'shadow-[0_0_40px_rgba(124,58,237,0.18)]',
     heroGrad: 'from-violet-600/30 via-violet-600/8',
-    label: 'Strong Match', emoji: '⚡',
+    label: 'Strong Match', emoji: '',
   };
   if (s >= 35) return {
     color: '#f59e0b', textCls: 'text-amber-400',
     bgCls: 'bg-amber-400/10', borderCls: 'border-amber-400/25',
     glowCard: 'shadow-[0_0_40px_rgba(245,158,11,0.15)]',
     heroGrad: 'from-amber-500/25 via-amber-500/8',
-    label: 'Good Match', emoji: '✨',
+    label: 'Good Match', emoji: '',
   };
   // score == 0 → subtle but visible
   return {
@@ -137,18 +137,18 @@ const SwipeCard = ({ developer, onSwipe, isTop }: SwipeCardProps) => {
       <motion.div style={{ opacity: heartOp }}
         className="absolute top-5 right-5 z-50 px-4 py-2 bg-emerald-500/15 border-2 border-emerald-400 rounded-2xl rotate-[13deg] pointer-events-none"
       >
-        <span className="text-emerald-400 font-black text-xl tracking-wider">MATCH ❤️</span>
+        <span className="text-emerald-400 font-black text-xl tracking-wider">MATCH ️</span>
       </motion.div>
       <motion.div style={{ opacity: skipOp }}
         className="absolute top-5 left-5 z-50 px-4 py-2 bg-red-500/15 border-2 border-red-400 rounded-2xl -rotate-[13deg] pointer-events-none"
       >
-        <span className="text-red-400 font-black text-xl tracking-wider">PASS 👋</span>
+        <span className="text-red-400 font-black text-xl tracking-wider">PASS </span>
       </motion.div>
 
       {/* ═══════════════════════════════════════
           HERO — full-width gradient with avatar
       ═══════════════════════════════════════ */}
-      <div className={`relative flex-shrink-0 h-[180px] bg-gradient-to-b ${meta.heroGrad} to-[#111115]`}>
+      <div className={`relative flex-shrink-0 h-[140px] bg-gradient-to-b ${meta.heroGrad} to-[#111115]`}>
         {/* decorative orb */}
         {hasScore && (
           <div
@@ -205,7 +205,7 @@ const SwipeCard = ({ developer, onSwipe, isTop }: SwipeCardProps) => {
       {/* ═══════════════════════════════════════
           BODY
       ═══════════════════════════════════════ */}
-      <div className="flex-1 flex flex-col px-5 pt-14 pb-4">
+      <div className="flex-1 flex flex-col px-5 pt-12 pb-4">
 
         {/* Name + Role + Location */}
         <div className="text-center mb-4">

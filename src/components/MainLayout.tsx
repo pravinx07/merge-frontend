@@ -20,6 +20,7 @@ import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import { UpgradeModal } from "./Premium/UpgradeModal";
 
 const getRelativeTime = (dateString: string) => {
   const date = new Date(dateString);
@@ -43,6 +44,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
@@ -115,11 +117,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const SidebarContent = () => (
     <>
       <div className="p-6 flex items-center gap-3">
-        <div className="w-8 h-8 bg-brand-cyan rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(0,229,255,0.4)]">
-          <span className="text-dark-bg font-black text-lg italic tracking-tighter">
-            M
-          </span>
-        </div>
+        <img src="/src/assets/logo.png" alt="Merge Logo" className="w-8 h-8 rounded-lg shadow-[0_0_15px_rgba(0,229,255,0.4)] object-cover" />
         <span className="text-xl font-black tracking-tight">Merge</span>
         {isSidebarOpen && (
           <button 
@@ -165,18 +163,22 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       </nav>
 
       <div className="p-6 flex flex-col gap-4">
-        <div className="p-5 rounded-[24px] bg-linear-to-br from-brand-purple/10 to-brand-cyan/10 border border-white/5 relative overflow-hidden group cursor-pointer">
-          <h4 className="text-xs font-black mb-1.5 relative z-10 tracking-tight">
-            Upgrade to Pro
-          </h4>
-          <p className="text-[10px] text-slate-500 mb-4 relative z-10 leading-tight">
-            Advanced filters & more.
-          </p>
-          <button className="w-full py-2 bg-brand-purple text-dark-bg text-[9px] font-black rounded-lg transition-all relative z-10 uppercase tracking-widest shadow-lg active:scale-95">
-            Upgrade
-          </button>
-        </div>
-
+        {user?.plan !== 'pro' && (
+          <div 
+            onClick={() => setIsUpgradeModalOpen(true)}
+            className="p-5 rounded-[24px] bg-linear-to-br from-brand-purple/10 to-brand-cyan/10 border border-white/5 relative overflow-hidden group cursor-pointer"
+          >
+            <h4 className="text-xs font-black mb-1.5 relative z-10 tracking-tight">
+              Upgrade to Pro
+            </h4>
+            <p className="text-[10px] text-slate-500 mb-4 relative z-10 leading-tight">
+              Advanced filters & more.
+            </p>
+            <button className="w-full py-2 bg-brand-purple text-dark-bg text-[9px] font-black rounded-lg transition-all relative z-10 uppercase tracking-widest shadow-lg active:scale-95">
+              Upgrade
+            </button>
+          </div>
+        )}
       </div>
     </>
   );
@@ -213,7 +215,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       </AnimatePresence>
 
       <div className="flex-1 lg:ml-[260px] flex flex-col min-w-0">
-        <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 md:px-8 sticky top-0 bg-[#0A0A0B]/80 backdrop-blur-xl z-40">
+        <header className="h-20 border-b border-white/5 flex items-center justify-between px-4 md:px-8 sticky top-0 bg-[#0A0A0B]/80 backdrop-blur-xl z-40">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsSidebarOpen(true)}
@@ -221,7 +223,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             >
               <Menu className="w-6 h-6" />
             </button>
-            <h1 className="text-sm md:text-lg font-bold text-white tracking-tight truncate max-w-[150px] md:max-w-none">
+            <h1 className="text-xl md:text-2xl font-black text-white tracking-tight truncate max-w-[150px] md:max-w-none">
               {pageTitle}
             </h1>
           </div>
@@ -342,11 +344,11 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                   <span className="text-[13px] font-black tracking-tight group-hover:text-brand-cyan transition-colors">
                     {user?.name}
                   </span>
-                  <span className="text-[9px] text-brand-purple font-black uppercase tracking-widest">
-                    Pro
+                  <span className={`text-[9px] font-black uppercase tracking-widest ${user?.plan === 'pro' ? 'text-brand-purple' : 'text-slate-500'}`}>
+                    {user?.plan === 'pro' ? 'Pro' : 'Free'}
                   </span>
                 </div>
-                <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl border border-white/10 p-0.5 bg-white/5 overflow-hidden group-hover:border-brand-cyan/50 transition-all">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl border border-white/10 p-0.5 bg-white/5 overflow-hidden group-hover:border-brand-cyan/50 transition-all">
                   <img
                     src={
                       user?.avatar ||
@@ -404,6 +406,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         {/* Page Content */}
         <main className="flex-1 relative bg-[#0A0A0B]">{children}</main>
       </div>
+      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
     </div>
   );
 };

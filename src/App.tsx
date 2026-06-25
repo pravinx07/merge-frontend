@@ -29,6 +29,7 @@ const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const ProfileVisitorsPage = lazy(() => import('./pages/ProfileVisitorsPage'));
 const BountiesPage = lazy(() => import('./pages/BountiesPage'));
 const AssessmentsPage = lazy(() => import('./pages/AssessmentsPage'));
+const WorkspacePage = lazy(() => import('./pages/WorkspacePage'));
 
 const LoadingScreen = () => (
   <div className="min-h-screen bg-dark-bg flex items-center justify-center text-white">
@@ -79,7 +80,9 @@ function AppRoutes() {
         path="/community" 
         element={
           <ProtectedRoute>
-            <CommunityPage />
+            <MainLayout>
+              <CommunityPage />
+            </MainLayout>
           </ProtectedRoute>
         } 
       />
@@ -119,6 +122,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <MainLayout>
               <ChatPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/workspace/:chatId" 
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <WorkspacePage />
             </MainLayout>
           </ProtectedRoute>
         } 

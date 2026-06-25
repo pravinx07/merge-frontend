@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DollarSign, Code2, Clock, Plus, CheckCircle, Search, ShieldCheck } from 'lucide-react';
+import { Code2, Clock, Plus, CheckCircle, Search, ShieldCheck, X } from 'lucide-react';
 import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import useSWR from 'swr';
 
 interface Bounty {
   id: string;
@@ -14,15 +15,24 @@ interface Bounty {
   skills: string[];
   owner: { id: string; name: string; avatar: string; plan: string };
   assignee?: { id: string; name: string; avatar: string };
+  solutionLink?: string;
   createdAt: string;
 }
 
+const fetcher = (url: string) => api.get(url).then(res => res.data);
+
 const BountiesPage = () => {
   const { user } = useAuth();
-  const [bounties, setBounties] = useState<Bounty[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // Use SWR for smart caching & automatic revalidation
+  const { data: bounties = [], mutate, isLoading } = useSWR<Bounty[]>('/bounties', fetcher, {
+    revalidateOnFocus: false // Don't spam API on every window focus
+  });
+  
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState<'explore' | 'my_gigs'>('explore');
+  const [solutionLink, setSolutionLink] = useState('');
+  const [completingId, setCompletingId] = useState<string | null>(null);
 
   // Form State
   const [title, setTitle] = useState('');
@@ -30,20 +40,7 @@ const BountiesPage = () => {
   const [amount, setAmount] = useState('');
   const [skillsStr, setSkillsStr] = useState('');
 
-  useEffect(() => {
-    fetchBounties();
-  }, []);
-
-  const fetchBounties = async () => {
-    try {
-      const res = await api.get('/bounties');
-      setBounties(res.data);
-    } catch (error) {
-      toast.error('Failed to load bounties');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Replaced manual useEffect fetch with SWR
 
   const handleCreateBounty = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,41 +48,94 @@ const BountiesPage = () => {
       toast.error('Please fill all required fields');
       return;
     }
+
+    const newBountyPayload = {
+      title,
+      description,
+      amount: parseFloat(amount),
+      skills: skillsStr.split(',').map(s => s.trim()).filter(Boolean)
+    };
+
+    // Optimistic Update
+    const optimisticBounty = {
+      id: Math.random().toString(),
+      ...newBountyPayload,
+      status: 'Open',
+      owner: { id: user?.id || '', name: user?.name || '', avatar: user?.avatar || '', plan: user?.plan || 'free' },
+      createdAt: new Date().toISOString()
+    } as Bounty;
+
+    mutate([optimisticBounty, ...bounties], false);
+    setIsCreating(false);
+    setTitle('');
+    setDescription('');
+    setAmount('');
+    setSkillsStr('');
+
     try {
-      const res = await api.post('/bounties', {
-        title,
-        description,
-        amount: parseFloat(amount),
-        skills: skillsStr.split(',').map(s => s.trim()).filter(Boolean)
-      });
-      setBounties([res.data, ...bounties]);
-      setIsCreating(false);
-      setTitle('');
-      setDescription('');
-      setAmount('');
-      setSkillsStr('');
+      await api.post('/bounties', newBountyPayload);
+      mutate(); // Re-fetch to get real ID
       toast.success('Bounty created successfully!');
     } catch (error) {
+      mutate(); // Rollback on error
       toast.error('Failed to create bounty');
     }
   };
 
   const handleApply = async (id: string) => {
+    // Optimistic Update
+    const updatedBounties = bounties.map(b => 
+      b.id === id ? { ...b, status: 'In Progress', assignee: { id: user?.id || '', name: user?.name || '', avatar: user?.avatar || '' } } : b
+    );
+    mutate(updatedBounties, false);
+
     try {
-      const res = await api.post(`/bounties/${id}/apply`);
-      setBounties(bounties.map(b => b.id === id ? res.data : b));
+      await api.post(`/bounties/${id}/apply`);
+      mutate(); // Sync
       toast.success('Applied to bounty!');
     } catch (error: any) {
+      mutate(); // Rollback
       toast.error(error.response?.data?.error || 'Failed to apply');
     }
   };
 
-  const handleComplete = async (id: string) => {
+  const handleSubmitSolution = async (id: string) => {
+    if (!solutionLink.trim()) {
+      toast.error('Please provide a solution link');
+      return;
+    }
+
+    // Optimistic Update
+    const updatedBounties = bounties.map(b => 
+      b.id === id ? { ...b, status: 'In Review', solutionLink } : b
+    );
+    mutate(updatedBounties, false);
+    setCompletingId(null);
+
     try {
-      const res = await api.put(`/bounties/${id}/complete`);
-      setBounties(bounties.map(b => b.id === id ? res.data : b));
-      toast.success('Bounty marked as completed!');
+      await api.put(`/bounties/${id}/submit`, { solutionLink });
+      setSolutionLink('');
+      mutate();
+      toast.success('Solution submitted! Waiting for owner to review.');
     } catch (error: any) {
+      mutate();
+      toast.error(error.response?.data?.error || 'Failed to submit solution');
+    }
+  };
+
+  const handleComplete = async (id: string) => {
+    // Optimistic Update
+    const updatedBounties = bounties.map(b => 
+      b.id === id ? { ...b, status: 'Completed' } : b
+    );
+    mutate(updatedBounties, false);
+
+    try {
+      await api.put(`/bounties/${id}/complete`);
+      mutate();
+      toast.success('Bounty marked as completed and paid!');
+    } catch (error: any) {
+      mutate();
       toast.error(error.response?.data?.error || 'Failed to complete bounty');
     }
   };
@@ -99,69 +149,70 @@ const BountiesPage = () => {
     <div className="min-h-[calc(100vh-64px)] bg-[#0A0A0B] p-4 md:p-8">
       <div className="max-w-5xl mx-auto space-y-8">
         
-        {/* Header section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-500/20">
-                <DollarSign className="w-5 h-5 text-emerald-400" />
-              </div>
-              Bounty Board
-            </h1>
-            <p className="text-zinc-400 mt-2 text-sm">Pick up gigs, build things, get paid.</p>
-          </div>
-          
+        {/* Action Bar */}
+        <div className="flex justify-end mb-4">
           <button
-            onClick={() => setIsCreating(!isCreating)}
+            onClick={() => setIsCreating(true)}
             className="flex items-center gap-2 bg-brand-cyan text-dark-bg px-5 py-2.5 rounded-xl font-bold text-sm hover:scale-105 transition-transform"
           >
-            {isCreating ? 'Cancel' : <><Plus className="w-4 h-4" /> Post a Gig</>}
+            <Plus className="w-4 h-4" /> Post a Gig
           </button>
         </div>
 
-        {/* Create Bounty Form */}
+        {/* Create Bounty Modal */}
         <AnimatePresence>
           {isCreating && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
-            >
-              <form onSubmit={handleCreateBounty} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
-                <h3 className="text-lg font-bold text-white mb-4">Post a new Gig</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 w-full max-w-lg shadow-2xl"
+              >
+                <form onSubmit={handleCreateBounty} className="space-y-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-xl font-black text-white">Post a new Gig</h3>
+                    <button type="button" onClick={() => setIsCreating(false)} className="text-zinc-400 hover:text-white p-1">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-400 uppercase">Title <span className="text-red-500">*</span></label>
+                      <input value={title} onChange={e => setTitle(e.target.value)} type="text" placeholder="e.g. Build a landing page" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-zinc-400 uppercase">Amount ($) <span className="text-red-500">*</span></label>
+                      <input value={amount} onChange={e => setAmount(e.target.value)} type="number" placeholder="500" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm" />
+                    </div>
+                  </div>
+
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-zinc-400 uppercase">Title</label>
-                    <input value={title} onChange={e => setTitle(e.target.value)} type="text" placeholder="e.g. Build a landing page" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm" />
+                    <label className="text-xs font-bold text-zinc-400 uppercase">Description <span className="text-red-500">*</span></label>
+                    <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Describe the task..." className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm resize-none"></textarea>
                   </div>
+
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-zinc-400 uppercase">Amount ($)</label>
-                    <input value={amount} onChange={e => setAmount(e.target.value)} type="number" placeholder="500" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm" />
+                    <label className="text-xs font-bold text-zinc-400 uppercase">Skills Needed (comma separated)</label>
+                    <input value={skillsStr} onChange={e => setSkillsStr(e.target.value)} type="text" placeholder="React, Node.js, Tailwind" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm" />
                   </div>
-                </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-zinc-400 uppercase">Description</label>
-                  <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Describe the task..." className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm resize-none"></textarea>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-zinc-400 uppercase">Skills Needed (comma separated)</label>
-                  <input value={skillsStr} onChange={e => setSkillsStr(e.target.value)} type="text" placeholder="React, Node.js, Tailwind" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-brand-cyan focus:outline-none text-sm" />
-                </div>
-
-                <div className="flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-2 text-xs text-emerald-400">
-                    <ShieldCheck className="w-4 h-4" /> Secure Escrow
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="flex items-center gap-2 text-xs text-emerald-400">
+                      <ShieldCheck className="w-4 h-4" /> Secure Escrow
+                    </div>
+                    <button 
+                      type="submit" 
+                      disabled={!title || !description || !amount}
+                      className="bg-white text-black px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      Post Bounty
+                    </button>
                   </div>
-                  <button type="submit" className="bg-white text-black px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-zinc-200">
-                    Post Bounty
-                  </button>
-                </div>
-              </form>
-            </motion.div>
+                </form>
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>
 
@@ -217,7 +268,7 @@ const BountiesPage = () => {
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-zinc-800">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between mt-auto pt-4 border-t border-zinc-800 gap-4">
                   <div className="flex items-center gap-2">
                     {bounty.status === 'Open' ? (
                       <span className="flex items-center gap-1.5 text-xs font-bold text-brand-cyan">
@@ -227,6 +278,10 @@ const BountiesPage = () => {
                       <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-500">
                         <CheckCircle className="w-3.5 h-3.5" /> Completed
                       </span>
+                    ) : bounty.status === 'In Review' ? (
+                      <span className="flex items-center gap-1.5 text-xs font-bold text-purple-400">
+                        <Search className="w-3.5 h-3.5" /> In Review
+                      </span>
                     ) : (
                       <span className="flex items-center gap-1.5 text-xs font-bold text-amber-500">
                         <Code2 className="w-3.5 h-3.5" /> In Progress
@@ -234,16 +289,53 @@ const BountiesPage = () => {
                     )}
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {bounty.status === 'Open' && bounty.owner.id !== user?.id && (
                       <button onClick={() => handleApply(bounty.id)} className="bg-white text-black px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-zinc-200">
                         Take Gig
                       </button>
                     )}
-                    {bounty.status === 'In Progress' && bounty.owner.id === user?.id && (
-                      <button onClick={() => handleComplete(bounty.id)} className="bg-brand-cyan text-dark-bg px-4 py-1.5 rounded-lg text-xs font-bold hover:brightness-110">
-                        Mark Completed
-                      </button>
+                    {/* Assignee Submits Solution */}
+                    {bounty.status === 'In Progress' && bounty.assignee?.id === user?.id && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {completingId === bounty.id ? (
+                          <>
+                            <input 
+                              type="url" 
+                              placeholder="GitHub PR or Demo link..." 
+                              value={solutionLink}
+                              onChange={e => setSolutionLink(e.target.value)}
+                              className="px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white outline-none focus:border-brand-cyan flex-1 min-w-[140px]"
+                            />
+                            <button onClick={() => handleSubmitSolution(bounty.id)} className="bg-brand-cyan text-dark-bg px-4 py-1.5 rounded-lg text-xs font-bold hover:brightness-110 whitespace-nowrap">
+                              Submit
+                            </button>
+                            <button onClick={() => { setCompletingId(null); setSolutionLink(''); }} className="bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-zinc-700 whitespace-nowrap">
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <button onClick={() => setCompletingId(bounty.id)} className="bg-brand-cyan text-dark-bg px-4 py-1.5 rounded-lg text-xs font-bold hover:brightness-110">
+                            Submit Solution
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Owner Approves Solution */}
+                    {bounty.status === 'In Review' && bounty.owner.id === user?.id && (
+                      <div className="flex items-center gap-3">
+                        <a href={bounty.solutionLink} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-cyan hover:underline">
+                          View Solution
+                        </a>
+                        <button onClick={() => handleComplete(bounty.id)} className="bg-emerald-500 text-black px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-400">
+                          Approve & Pay
+                        </button>
+                      </div>
+                    )}
+
+                    {bounty.status === 'In Review' && bounty.assignee?.id === user?.id && (
+                       <span className="text-xs text-zinc-400 font-medium">Waiting for owner approval...</span>
                     )}
                     {bounty.assignee && (
                       <div className="flex items-center gap-2 ml-2">

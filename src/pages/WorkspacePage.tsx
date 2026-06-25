@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Rocket, Target, Users, CheckSquare, Zap, Trophy, X, Plus, ChevronLeft, ChevronRight, Code2, Sparkles, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../lib/axios';
@@ -8,15 +7,16 @@ import Editor from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-interface BuildWorkspaceModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  otherUser: any;
-  currentUser: any;
-  chatId: string;
-}
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { DashboardContainer } from '../components/DashboardComponents';
+import { UpgradeModal } from '../components/Premium/UpgradeModal';
 
-export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen, onClose, otherUser, currentUser, chatId }) => {
+const WorkspacePage = () => {
+  const { chatId } = useParams();
+  const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
+  const [otherUser, setOtherUser] = useState<any>(null);
   const [goal, setGoal] = useState("");
   const [myRole, setMyRole] = useState("Frontend");
   const [theirRole, setTheirRole] = useState("Backend");
@@ -32,13 +32,23 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [isAskingAI, setIsAskingAI] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const { socket } = useSocket();
 
   useEffect(() => {
-    if (isOpen && chatId) {
+    if (chatId) {
       const fetchWorkspace = async () => {
         try {
-          const response = await api.get(`/workspace/${chatId}`);
+          const [matchesRes, response] = await Promise.all([
+            api.get('/matches'),
+            api.get(`/workspace/${chatId}`)
+          ]);
+          
+          const currentMatch = matchesRes.data.find((m: any) => m.chatId === chatId);
+          if (currentMatch) {
+            setOtherUser(currentMatch.user);
+          }
+
           const ws = response.data;
           setGoal(ws.goal || "");
           setMyRole(ws.user1Role || "Frontend");
@@ -53,10 +63,10 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
       };
       fetchWorkspace();
     }
-  }, [isOpen, chatId]);
+  }, [chatId]);
 
   useEffect(() => {
-    if (!socket || !chatId || !isOpen) return;
+    if (!socket || !chatId) return;
 
     const handleCodeUpdate = (data: { code: string; language: string }) => {
       setCode(data.code);
@@ -65,15 +75,14 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
 
     socket.on('workspace_code_updated', handleCodeUpdate);
     return () => { socket.off('workspace_code_updated', handleCodeUpdate); };
-  }, [socket, chatId, isOpen]);
+  }, [socket, chatId]);
 
   useEffect(() => {
-    if (!isOpen) return;
     const handler = setTimeout(() => {
-      api.put(`/workspace/${chatId}/code`, { code, language }).catch(console.error);
+      if (chatId) api.put(`/workspace/${chatId}/code`, { code, language }).catch(console.error);
     }, 1500);
     return () => clearTimeout(handler);
-  }, [code, language, chatId, isOpen]);
+  }, [code, language, chatId]);
 
   const handleEditorChange = (value: string | undefined) => {
     const newCode = value || "";
@@ -174,14 +183,18 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
       });
       setUpdates([updateRes.data, ...updates]);
       toast.success("MergeAI generated a response!");
-    } catch (error) {
-      toast.error("Failed to get AI response");
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        setIsUpgradeModalOpen(true);
+      } else {
+        toast.error("Failed to get AI response");
+      }
     } finally {
       setIsAskingAI(false);
     }
   };
 
-  if (!isOpen) return null;
+  if (!chatId) return null;
 
   const getStatusColor = (status: string) => {
     switch(status) {
@@ -193,14 +206,8 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
   };
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-6 bg-black/80 backdrop-blur-md">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="bg-zinc-900 border-0 sm:border border-zinc-800 rounded-none sm:rounded-3xl w-full max-w-4xl h-full sm:h-auto max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col"
-        >
+    <DashboardContainer>
+      <div className="space-y-6">
           {/* Header */}
           <div className="sticky top-0 z-10 bg-zinc-900/90 backdrop-blur-xl border-b border-zinc-800 px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3 sm:gap-4">
@@ -231,8 +238,8 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
                 </div>
               </div>
               
-              <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-full text-zinc-400 transition-colors">
-                <X className="w-5 h-5" />
+              <button onClick={() => navigate(`/chat/${chatId}`)} className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl text-zinc-400 hover:text-white transition-colors flex items-center gap-2 text-sm font-bold">
+                <ChevronLeft className="w-4 h-4" /> Back to Chat
               </button>
             </div>
           </div>
@@ -522,7 +529,7 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
                         </button>
                      </div>
                      {aiResponse && (
-                       <div className="mt-2 p-3 bg-brand-purple/10 border border-brand-purple/20 rounded-lg max-h-40 overflow-y-auto text-[13px] text-zinc-300 relative group prose prose-invert prose-p:my-1 prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-700 prose-pre:p-2 prose-pre:rounded-md max-w-none">
+                       <div className="mt-2 p-3 bg-brand-purple/10 border border-brand-purple/20 rounded-lg max-h-[300px] overflow-y-auto text-[13px] text-zinc-300 relative group prose prose-invert prose-p:my-1 prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-700 prose-pre:p-2 prose-pre:rounded-md max-w-none custom-scrollbar">
                           <button onClick={() => setAiResponse('')} className="absolute top-2 right-2 p-1.5 bg-zinc-800/80 hover:bg-zinc-700 rounded-md text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3"/></button>
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>{aiResponse}</ReactMarkdown>
                        </div>
@@ -533,9 +540,11 @@ export const BuildWorkspaceModal: React.FC<BuildWorkspaceModalProps> = ({ isOpen
               )}
 
             </div>
-          </div>
-        </motion.div>
+        </div>
       </div>
-    </AnimatePresence>
+      <UpgradeModal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} />
+    </DashboardContainer>
   );
 };
+
+export default WorkspacePage;

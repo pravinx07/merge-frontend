@@ -22,7 +22,7 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
   const handleUpgrade = async () => {
     try {
       setIsProcessing(true);
-      const { data: order } = await api.post('/payments/create-order', { amount: 1500 });
+      const { data: order } = await api.post('/payments/create-order', { amount: 599 });
       
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YourKeyIdHere',
@@ -138,7 +138,7 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
                   disabled={isProcessing}
                   className="w-full py-4 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-black rounded-2xl text-sm uppercase tracking-widest hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-violet-500/25"
                 >
-                  {isProcessing ? 'Processing...' : 'Upgrade to Pro - ₹1500'}
+                  {isProcessing ? 'Processing...' : 'Upgrade to Pro - ₹599'}
                 </button>
 
                 <p className="text-center text-[10px] text-zinc-600 mt-4">

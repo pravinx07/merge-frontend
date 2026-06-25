@@ -47,7 +47,7 @@ export const PWAProvider = ({ children }: { children: React.ReactNode }) => {
       setIsInstallable(false);
       console.log('PWA: App installed successfully.');
       toast.success('Merge installed successfully! Check your home screen.', {
-        icon: '🚀',
+        icon: '',
         duration: 5000,
         style: {
           background: '#0a0a0b',

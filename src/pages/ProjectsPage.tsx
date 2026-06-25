@@ -73,11 +73,7 @@ const ProjectsPage = () => {
 
   return (
     <DashboardContainer>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Projects Hub</h1>
-          <p className="text-sm text-zinc-400 mt-1">Build startups & find collaborators</p>
-        </div>
+      <div className="flex flex-col md:flex-row justify-end items-start md:items-center mb-8 gap-4">
         <button 
           onClick={() => setIsCreateModalOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-brand-cyan text-dark-bg font-bold rounded-xl text-sm hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(0,229,255,0.2)] hover:shadow-[0_0_25px_rgba(0,229,255,0.4)]"

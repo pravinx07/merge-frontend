@@ -71,7 +71,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             id: data.id,
             type: 'project_apply',
             sender: { id: 'system', name: data.applicantName, avatar: null },
-            title: 'Project Application 🚀',
+            title: 'Project Application ',
             content: `${data.applicantName} applied to ${data.projectTitle}`,
             path: `/projects/${data.projectId}`,
             createdAt: new Date().toISOString()

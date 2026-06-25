@@ -46,9 +46,10 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen bg-dark-bg flex items-center justify-center p-6 relative overflow-hidden">
+
       {/* Background Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-purple/20 blur-[120px] rounded-full"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-cyan/10 blur-[120px] rounded-full"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-purple/20 blur-[120px] rounded-full z-0"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-brand-cyan/10 blur-[120px] rounded-full z-0"></div>
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -57,11 +58,7 @@ const LoginPage = () => {
       >
         <div className="text-center mb-6">
           <Link to="/" className="inline-flex items-center gap-2 mb-4 group">
-            <div className="w-9 h-9 bg-linear-to-br from-brand-cyan to-brand-purple rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.3)] group-hover:scale-110 transition-transform">
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="3">
-                <path d="M12 4v16m8-8H4" strokeLinecap="round" />
-              </svg>
-            </div>
+            <img src="/src/assets/logo.png" alt="Merge Logo" className="w-9 h-9 rounded-xl shadow-[0_0_15px_rgba(0,229,255,0.3)] object-cover group-hover:scale-110 transition-transform" />
             <span className="text-2xl font-bold tracking-tight text-white">Merge</span>
           </Link>
           <h1 className="text-xl font-bold text-white">Welcome Back</h1>
