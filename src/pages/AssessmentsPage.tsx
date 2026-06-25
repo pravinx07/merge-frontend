@@ -219,7 +219,7 @@ const AssessmentsPage = () => {
                 {/* Popular Challenges */}
                 <div className="bg-[#111114] border border-white/5 rounded-2xl p-6 flex-1 shadow-2xl flex flex-col">
                   <h3 className="text-xs font-black text-white mb-4 flex items-center gap-2 uppercase tracking-widest pb-4 border-b border-white/5">
-                    🔥 Popular Challenges
+                     Popular Challenges
                   </h3>
                   
                   {popularAssessments.length === 0 ? (
@@ -349,7 +349,7 @@ const AssessmentsPage = () => {
 
                   <div className="bg-[#111114] border border-white/5 rounded-2xl p-5 flex-1">
                     <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2 mb-4 pb-4 border-b border-white/5">
-                      <span className="w-4 h-5 border border-zinc-600 rounded-sm flex items-center justify-center text-[8px] text-zinc-400">📄</span>
+                      <span className="w-4 h-5 border border-zinc-600 rounded-sm flex items-center justify-center text-[8px] text-zinc-400"></span>
                       Problem Description
                     </h3>
                     <div className="prose prose-invert prose-p:text-sm prose-p:text-zinc-300 prose-p:leading-relaxed prose-ol:text-sm prose-ol:text-zinc-300 prose-li:mb-2">
@@ -426,10 +426,10 @@ const AssessmentsPage = () => {
                     <h4 className="text-xs font-black text-white mb-4">Submission Guidelines</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {[
-                        { type: 'Do', text: 'Write clean, efficient and working code.', icon: '✓', color: 'text-emerald-400' },
-                        { type: 'Do', text: 'Use functional components and hooks if React.', icon: '✓', color: 'text-amber-400' },
-                        { type: 'Don\'t', text: 'Use external libraries unless specified.', icon: '✕', color: 'text-red-400' },
-                        { type: 'Don\'t', text: 'Modify the hardcoded initial data structures.', icon: '✕', color: 'text-red-400' }
+                        { type: 'Do', text: 'Write clean, efficient and working code.', icon: '', color: 'text-emerald-400' },
+                        { type: 'Do', text: 'Use functional components and hooks if React.', icon: '', color: 'text-amber-400' },
+                        { type: 'Don\'t', text: 'Use external libraries unless specified.', icon: '', color: 'text-red-400' },
+                        { type: 'Don\'t', text: 'Modify the hardcoded initial data structures.', icon: '', color: 'text-red-400' }
                       ].map((g, i) => (
                         <div key={i} className="bg-zinc-950/50 border border-white/5 rounded-xl p-3">
                           <div className={`flex items-center gap-1.5 text-xs font-black mb-1.5 ${g.color}`}>
@@ -455,7 +455,7 @@ const AssessmentsPage = () => {
                         <>
                           <div className="w-24 h-24 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center mb-6 relative">
                             <div className="absolute inset-2 border-2 border-dashed border-zinc-600 rounded-xl" />
-                            <span className="text-3xl">🔍</span>
+                            <span className="text-3xl"></span>
                           </div>
                           <h4 className="text-sm font-black text-white mb-2">Your result will appear here</h4>
                           <p className="text-xs text-zinc-500 max-w-[200px] leading-relaxed">

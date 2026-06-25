@@ -194,7 +194,7 @@ const ProfilePage = () => {
                 onClick={() => setIsBoostModalOpen(true)} 
                 className="px-3 py-1.5 md:px-4 md:py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-bold text-[10px] md:text-xs hover:opacity-90 transition-all flex items-center gap-1.5 md:gap-2 shadow-lg shadow-amber-500/20 cursor-pointer"
               >
-                ⚡ {boostTimer ? `Active: ${boostTimer}` : <><span className="hidden sm:inline">Boost Profile</span><span className="sm:hidden">Boost</span></>}
+                 {boostTimer ? `Active: ${boostTimer}` : <><span className="hidden sm:inline">Boost Profile</span><span className="sm:hidden">Boost</span></>}
               </button>
               <Link to="/settings" className="px-3 py-1.5 md:px-4 md:py-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl font-bold text-[10px] md:text-xs hover:bg-white/10 transition-all flex items-center gap-1.5 md:gap-2">
                 <Settings className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit Profile</span><span className="sm:hidden">Edit</span>
@@ -243,7 +243,7 @@ const ProfilePage = () => {
               <div className="flex items-center justify-center lg:justify-start gap-2">
                 <h1 className="text-3xl font-bold tracking-tight">{profile.name}</h1>
                 <CheckCircle2 className="w-5 h-5 text-brand-cyan" />
-                {profile.githubVerified && <span className="text-xs bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full flex items-center gap-1 border border-green-500/20">✓ GitHub Verified</span>}
+                {profile.githubVerified && <span className="text-xs bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full flex items-center gap-1 border border-green-500/20"> GitHub Verified</span>}
               </div>
 
               <div className="flex flex-wrap items-center gap-3 mt-2">
@@ -298,7 +298,7 @@ const ProfilePage = () => {
                         const res = await api.post('/swipe/right', { receiverId: profile.id });
                         setProfile((prev: any) => ({ ...prev, matchStatus: res.data.isMatch ? 'matched' : 'pending' }));
                         if (res.data.isMatch) {
-                          toast.success("It's a Match! 🎉");
+                          toast.success("It's a Match! ");
                         } else {
                           toast.success("Match request sent!");
                         }
@@ -412,7 +412,7 @@ const ProfilePage = () => {
                       <p className="text-[11px] text-zinc-500 line-clamp-2 leading-relaxed mb-4">{repo.description || 'No description provided.'}</p>
                       <div className="flex items-center gap-4 text-[10px] font-bold text-zinc-400">
                         {repo.language && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-cyan"></span>{repo.language}</span>}
-                        <span className="flex items-center gap-1">★ {repo.stars}</span>
+                        <span className="flex items-center gap-1"> {repo.stars}</span>
                         <span className="flex items-center gap-1">⑂ {repo.forks}</span>
                       </div>
                     </a>
@@ -427,9 +427,9 @@ const ProfilePage = () => {
           {/* Cofounder Insights Section */}
           <section className="bg-zinc-900/20 border border-zinc-800/50 rounded-[32px] p-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4">
-              <span className="text-[10px] font-black uppercase tracking-widest bg-gradient-to-r from-amber-500 to-orange-500 text-transparent bg-clip-text">⭐ PRO</span>
+              <span className="text-[10px] font-black uppercase tracking-widest bg-gradient-to-r from-amber-500 to-orange-500 text-transparent bg-clip-text"> PRO</span>
             </div>
-            <SectionTitle className="mb-6">💼 Cofounder Insights</SectionTitle>
+            <SectionTitle className="mb-6"> Cofounder Insights</SectionTitle>
             
             {!showInsights ? (
               <button 
@@ -638,7 +638,7 @@ const ProfilePage = () => {
 
             <div className="relative z-10">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-[#00e5ff]/20 border border-white/10 flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl">🚀</span>
+                <span className="text-3xl"></span>
               </div>
               
               <h3 className="text-2xl font-black text-white mb-2">Boost Profile</h3>
@@ -664,7 +664,7 @@ const ProfilePage = () => {
               {currentUser?.plan !== 'pro' ? (
                 <div className="space-y-4">
                    <div className="flex items-center justify-center gap-2 text-amber-500 bg-amber-500/10 py-2 rounded-lg text-xs font-bold border border-amber-500/20">
-                     🔒 Merge Pro Feature
+                      Merge Pro Feature
                    </div>
                    <button 
                      onClick={() => { setIsBoostModalOpen(false); setIsUpgradeModalOpen(true); }}
@@ -677,7 +677,7 @@ const ProfilePage = () => {
                 <div className="space-y-4">
                   {boostStatus?.isBoosted ? (
                     <div className="py-3.5 rounded-xl font-black text-sm bg-zinc-800 text-zinc-400 border border-zinc-700">
-                      🚀 Boost Active ({boostTimer})
+                       Boost Active ({boostTimer})
                     </div>
                   ) : (
                     <button 

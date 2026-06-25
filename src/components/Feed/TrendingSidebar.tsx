@@ -99,7 +99,7 @@ const TrendingSidebar: React.FC = () => {
                     <h3 className="font-medium text-sm text-gray-200 group-hover:text-purple-400 transition-colors">{dev.name}</h3>
                     {dev.builderScore !== undefined && (
                       <span className="px-1.5 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[9px] font-black rounded-md flex items-center">
-                        ⭐ {dev.builderScore}
+                         {dev.builderScore}
                       </span>
                     )}
                   </div>
