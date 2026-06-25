@@ -21,11 +21,7 @@ export const PWAInstallBanner = () => {
           >
             {/* Left Side: App Icon */}
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 bg-linear-to-br from-brand-cyan to-brand-purple rounded-xl flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(0,229,255,0.3)]">
-                <span className="text-white font-black text-lg italic tracking-tighter select-none">
-                  M
-                </span>
-              </div>
+              <img src="/logo.png" alt="Merge Logo" className="w-10 h-10 rounded-xl shadow-[0_0_15px_rgba(0,229,255,0.3)] object-cover shrink-0" />
               <div className="min-w-0">
                 <h4 className="text-sm font-bold text-white tracking-tight truncate">
                   Install Merge
