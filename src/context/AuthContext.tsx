@@ -77,6 +77,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       window.history.replaceState({}, document.title, cleanUrl);
     }
 
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      setUser(null);
+      setIsAuthenticated(false);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await api.get('/auth/me');
       setUser(response.data.user);
