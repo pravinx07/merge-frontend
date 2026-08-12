@@ -35,7 +35,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (userData: any, token: string) => void;
   logout: () => Promise<void>;
-  checkAuth: () => Promise<void>;
+  checkAuth: (silent?: boolean) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,8 +63,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const checkAuth = async () => {
-    setIsLoading(true);
+  const checkAuth = async (silent = false) => {
+    if (!silent) setIsLoading(true);
     
     // Extract token from URL query string if present (for OAuth redirects)
     const urlParams = new URLSearchParams(window.location.search);
@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!token) {
       setUser(null);
       setIsAuthenticated(false);
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
       return;
     }
 
@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthenticated(false);
       localStorage.removeItem('token');
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   };
 

@@ -139,7 +139,7 @@ const AssessmentsPage = () => {
         toast.success(
           `Congratulations! You passed the ${activeAssessment.skill} assessment!`,
         );
-        await checkAuth(); // Refresh user state to get new verifiedSkills
+        await checkAuth(true); // Refresh user state silently to get new verifiedSkills
       } else {
         toast.error(`Assessment Failed`);
       }
